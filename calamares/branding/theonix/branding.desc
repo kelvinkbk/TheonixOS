@@ -7,16 +7,16 @@ componentName: theonix
 
 # Strings displayed throughout the installer
 strings:
-    productName:          "@{NAME}"
-    version:              "@{VERSION}"
-    shortVersion:         "@{VERSION_ID}"
-    versionedName:        "@{NAME} @{VERSION}"
-    shortVersionedName:   "@{NAME} @{VERSION_ID}"
+    productName:          "Theonix OS"
+    version:              "1.0"
+    shortVersion:         "1.0"
+    versionedName:        "Theonix OS 1.0"
+    shortVersionedName:   "Theonix OS 1.0"
     bootloaderEntryName:  "Theonix OS"
     productUrl:           "https://theonix.org/"
     supportUrl:           "https://community.theonix.org/"
     knownIssuesUrl:       "https://github.com/theonix-os/theonix/issues"
-    releaseNotesUrl:      "https://theonix.org/release-notes/@{VERSION_ID}/"
+    releaseNotesUrl:      "https://theonix.org/release-notes/1.0/"
 
 # Images — relative to this branding directory
 images:
