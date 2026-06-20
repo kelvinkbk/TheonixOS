@@ -1,0 +1,196 @@
+/* =============================================================================
+   Theonix OS — Calamares Installer Stylesheet
+   ============================================================================= */
+
+/* Import Inter font (fallback to system sans-serif) */
+* {
+    font-family: "Inter", "Noto Sans", "Segoe UI", sans-serif;
+}
+
+/* Main window background */
+#mainApp {
+    background-color: #0F1117;
+    color: #FFFFFF;
+}
+
+/* Sidebar */
+#sidebarApp {
+    background-color: #0A0C11;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#sidebarMenuApp {
+    background-color: transparent;
+}
+
+/* Step items in sidebar */
+QListView::item {
+    color: rgba(255, 255, 255, 0.6);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 2px 8px;
+}
+
+QListView::item:selected {
+    background-color: rgba(108, 99, 255, 0.25);
+    color: #6C63FF;
+    border-left: 3px solid #6C63FF;
+}
+
+QListView::item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+}
+
+/* Content area */
+QStackedWidget {
+    background-color: #0F1117;
+}
+
+/* Headings */
+QLabel[styleSheet~="title"],
+QLabel[objectName="labelTitle"] {
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+QLabel[objectName="labelSubtitle"] {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+/* Primary buttons */
+QPushButton {
+    background-color: #6C63FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 100px;
+}
+
+QPushButton:hover {
+    background-color: #7B73FF;
+}
+
+QPushButton:pressed {
+    background-color: #5A52E0;
+}
+
+QPushButton:disabled {
+    background-color: rgba(108, 99, 255, 0.3);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Back button (secondary style) */
+QPushButton#buttonBack {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+}
+
+QPushButton#buttonBack:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Cancel button */
+QPushButton#buttonCancel {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+QPushButton#buttonCancel:hover {
+    background-color: rgba(255, 80, 80, 0.15);
+    color: #FF6B6B;
+    border-color: rgba(255, 80, 80, 0.3);
+}
+
+/* Input fields */
+QLineEdit, QTextEdit, QComboBox {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #FFFFFF;
+    selection-background-color: #6C63FF;
+}
+
+QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
+    border-color: #6C63FF;
+    background-color: rgba(108, 99, 255, 0.08);
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 32px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #1A1D2E;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #FFFFFF;
+    selection-background-color: rgba(108, 99, 255, 0.3);
+}
+
+/* Progress bar */
+QProgressBar {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    height: 6px;
+    text-align: center;
+    color: transparent;
+}
+
+QProgressBar::chunk {
+    background-color: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 #6C63FF,
+        stop: 1 #00D4FF
+    );
+    border-radius: 4px;
+}
+
+/* Radio buttons and checkboxes */
+QRadioButton, QCheckBox {
+    color: #FFFFFF;
+    spacing: 8px;
+}
+
+QRadioButton::indicator, QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 9px;
+    background-color: transparent;
+}
+
+QRadioButton::indicator:checked, QCheckBox::indicator:checked {
+    background-color: #6C63FF;
+    border-color: #6C63FF;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background: transparent;
+    width: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    min-height: 32px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* Partition widget */
+#partitionBarView {
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}

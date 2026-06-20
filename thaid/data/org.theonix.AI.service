@@ -1,0 +1,15 @@
+[D-BUS Service]
+# =============================================================================
+# Theonix AI Daemon — D-Bus Session Service Activation File
+# =============================================================================
+# This file enables D-Bus auto-activation: when any application sends a
+# message to org.theonix.AI, D-Bus will start thaid automatically.
+#
+# thaid does NOT start at login — it starts on first use.
+# This ensures zero idle RAM footprint until the AI is actually needed.
+# =============================================================================
+
+Name=org.theonix.AI
+Exec=/usr/bin/thaid
+User=
+SystemdService=thaid.service

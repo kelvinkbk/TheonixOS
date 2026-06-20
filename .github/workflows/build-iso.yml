@@ -1,0 +1,75 @@
+name: Theonix OS ISO Build
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+    tags: [ "v*.*.*" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    name: Build ArchISO
+    runs-on: ubuntu-24.04
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Cache mkarchiso working directory
+        uses: actions/cache@v4
+        with:
+          path: work
+          key: ${{ runner.os }}-archiso-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-archiso-
+
+      - name: Pull Theonix Builder Image
+        run: |
+          # Build local image instead of pulling for now, as we don't have a registry yet
+          docker build -t theonix-builder .
+          
+      - name: Build ISO
+        run: |
+          mkdir -p out
+          # Run container with required privileges for mkarchiso
+          docker run --rm \
+            --cap-add SYS_ADMIN \
+            --cap-add MKNOD \
+            --device /dev/loop0 \
+            --device /dev/loop1 \
+            --device /dev/loop-control \
+            --security-opt apparmor:unconfined \
+            -v ${{ github.workspace }}:/workdir \
+            theonix-builder /bin/bash scripts/build_iso.sh
+            
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: theonix-os-x86_64
+          path: out/*.iso
+          retention-days: 7
+
+  trivy-scan:
+    name: Security Scan (Trivy)
+    needs: build-iso
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download ISO Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: theonix-os-x86_64
+          path: out/
+          
+      - name: Run Trivy vulnerability scanner on ISO Rootfs
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'rootfs'
+          scan-ref: 'out/' # Trivy can extract and scan rootfs images inside the ISO
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

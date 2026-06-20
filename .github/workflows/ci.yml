@@ -1,0 +1,57 @@
+name: CI Checks
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  shellcheck:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        run: |
+          find . -name "*.sh" -not -path "*/node_modules/*" -print0 | xargs -0 shellcheck --severity=warning
+
+  rust-checks:
+    name: Rust (thaid)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./thaid
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          work-dir: ./thaid
+          
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+        
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+        
+      - name: Run Tests
+        run: cargo test --all-targets --all-features
+
+  rust-audit:
+    name: Security Audit (thaid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cargo-audit
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./thaid

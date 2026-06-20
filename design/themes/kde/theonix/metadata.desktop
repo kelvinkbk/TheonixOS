@@ -1,0 +1,47 @@
+[Desktop Entry]
+Name=Theonix
+Comment=Theonix OS Global Theme — Dark with purple accents
+X-KDE-PluginInfo-Name=org.theonix.desktop
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Category=Plasma Look And Feel
+X-KDE-PluginInfo-Author=Theonix OS Team
+X-KDE-PluginInfo-Email=design@theonix.org
+X-KDE-PluginInfo-Website=https://theonix.org
+X-KDE-PluginInfo-License=CC-BY-SA-4.0
+
+[Containments][1][General]
+wallpaper=org.kde.image
+wallpaperPluginSource=org.kde.image
+
+[Containments][1][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/wallpapers/Theonix/contents/images/3840x2160.png
+FillMode=2
+
+[Colors]
+ColorScheme=Theonix
+
+[Icons]
+Theme=Papirus-Dark
+
+[Cursors]
+cursorTheme=breeze_cursors
+
+[WindowDecorations]
+library=org.kde.breeze
+theme=Theonix
+
+[kwinrc][Compositing]
+Backend=OpenGL
+GLCore=true
+WindowThumbnailAlways=true
+AnimationSpeed=2
+EffectNoAnimation=false
+
+[kwinrc][Effect-Blur]
+BlurStrength=8
+
+[kwinrc][TabBox]
+LayoutName=Breeze
+
+[kcminputrc][Mouse]
+cursorTheme=breeze_cursors

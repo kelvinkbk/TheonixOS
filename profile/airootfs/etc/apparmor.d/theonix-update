@@ -1,0 +1,58 @@
+# Theonix OS — AppArmor Profile: theonix-update
+#
+# Confines the Theonix Update Manager daemon.
+# Allowed: read package database, run pacman as root (via polkit),
+#          create btrfs snapshots (via snapper), send desktop notifications.
+# Denied: arbitrary code execution, reading user home dirs.
+
+#include <tunables/global>
+
+profile theonix-update /usr/bin/theonix-update {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+
+    /usr/bin/theonix-update                     mr,
+    /usr/lib/**                                 mr,
+
+    # Configuration
+    /etc/theonix/                               r,
+    /etc/theonix/**                             r,
+
+    # Runtime state
+    /var/lib/theonix/update/                    rw,
+    /var/lib/theonix/update/**                  rw,
+
+    # Pacman database (read to check for updates)
+    /var/lib/pacman/                            r,
+    /var/lib/pacman/**                          r,
+    /var/cache/pacman/pkg/                      r,
+
+    # Snapper (snapshot before update)
+    /usr/bin/snapper                            rix,
+    /etc/snapper/                               r,
+    /etc/snapper/**                             r,
+
+    # Polkit for escalation to run pacman -Syu
+    /usr/bin/pkcheck                            rix,
+    /usr/lib/polkit-1/**                        mr,
+
+    # Notification (D-Bus)
+    #include <abstractions/dbus-session-strict>
+    dbus (send)
+        bus=session
+        interface=org.freedesktop.Notifications
+        member={Notify,CloseNotification},
+
+    # D-Bus service binding
+    dbus (bind)
+        bus=session
+        name=org.theonix.Update,
+
+    # Logging
+    /dev/log                                    w,
+
+    # Deny everything else
+    deny /home/**                               rwx,
+    deny /root/**                               rwx,
+    deny /etc/shadow                            rwx,
+}

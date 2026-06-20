@@ -1,0 +1,37 @@
+# =============================================================================
+# Theonix OS — Calamares Branding Descriptor
+# =============================================================================
+# Reference: https://github.com/calamares/calamares/wiki/Develop-Branding
+
+componentName: theonix
+
+# Strings displayed throughout the installer
+strings:
+    productName:          "@{NAME}"
+    version:              "@{VERSION}"
+    shortVersion:         "@{VERSION_ID}"
+    versionedName:        "@{NAME} @{VERSION}"
+    shortVersionedName:   "@{NAME} @{VERSION_ID}"
+    bootloaderEntryName:  "Theonix OS"
+    productUrl:           "https://theonix.org/"
+    supportUrl:           "https://community.theonix.org/"
+    knownIssuesUrl:       "https://github.com/theonix-os/theonix/issues"
+    releaseNotesUrl:      "https://theonix.org/release-notes/@{VERSION_ID}/"
+
+# Images — relative to this branding directory
+images:
+    productIcon:          "logo.png"
+    productLogo:          "logo.png"
+    productWallpaper:     "background.png"
+    productBanner:        "banner.png"
+
+# Installer slideshow (shown during package extraction)
+slideshow:                "show.qml"
+slideshowAPI:             2
+
+# Installer appearance
+style:
+    sidebarBackground:    "#0F1117"
+    sidebarText:          "#FFFFFF"
+    sidebarTextSelect:    "#6C63FF"
+    sidebarTextHighlight: "#00FFAA"

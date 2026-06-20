@@ -1,0 +1,11 @@
+NAME="Theonix OS"
+PRETTY_NAME="Theonix OS"
+ID=theonix
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;108;99;255"
+HOME_URL="https://theonix.org/"
+DOCUMENTATION_URL="https://wiki.theonix.org/"
+SUPPORT_URL="https://forum.theonix.org/"
+BUG_REPORT_URL="https://github.com/theonixos/theonix/issues"
+LOGO=theonix-logo

@@ -1,0 +1,112 @@
+# =============================================================================
+# Theonix OS — .gitignore
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Build artifacts — NEVER commit these
+# ---------------------------------------------------------------------------
+work/
+work_*/
+out/
+*.iso
+*.img
+
+# Exclude generated EFI images (the template dirs are tracked, not the images)
+profile/efiboot/*.img
+
+# ---------------------------------------------------------------------------
+# Security-sensitive files — generated at build time, never stored in VCS
+# ---------------------------------------------------------------------------
+profile/airootfs/etc/shadow
+profile/airootfs/etc/shadow-
+profile/airootfs/etc/gshadow
+profile/airootfs/etc/gshadow-
+
+# Signing keys — private keys must NEVER be in VCS
+keys/secureboot/*.key
+keys/secureboot/*.pem
+keys/secureboot/*.p12
+repo/keys/*.key
+repo/keys/*.pem
+# Public keys ARE tracked (safe to distribute):
+# !keys/secureboot/*.crt
+# !repo/keys/*.pub
+
+# ---------------------------------------------------------------------------
+# Theonix AI Daemon — Rust build outputs
+# ---------------------------------------------------------------------------
+thaid/target/
+thaid/Cargo.lock          # lock file managed by CI
+
+# Theonix Wizard
+theonix-wizard/build/
+theonix-wizard/CMakeCache.txt
+theonix-wizard/CMakeFiles/
+
+# Theonix Store
+theonix-store/build/
+theonix-store/CMakeCache.txt
+
+# Theonix Settings
+theonix-settings/build/
+theonix-settings/CMakeCache.txt
+
+# Theonix Update daemon
+theonix-update/target/
+
+# ---------------------------------------------------------------------------
+# Python cache (Calamares modules are Python-based)
+# ---------------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ---------------------------------------------------------------------------
+# Node / web tooling (website)
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+.next/
+.cache/
+website/.next/
+website/out/
+website/dist/
+
+# ---------------------------------------------------------------------------
+# Editor & OS artifacts
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/settings.json
+*.orig
+
+# ---------------------------------------------------------------------------
+# Logs and temp files
+# ---------------------------------------------------------------------------
+*.log
+*.pid
+*.lock
+/tmp/
+
+# ---------------------------------------------------------------------------
+# Calamares build artifacts
+# ---------------------------------------------------------------------------
+calamares/build/
+
+# ---------------------------------------------------------------------------
+# GPG agent sockets (created at runtime)
+# ---------------------------------------------------------------------------
+profile/airootfs/root/.gnupg/S.*
+profile/airootfs/root/.gnupg/*.gpg~

@@ -1,0 +1,34 @@
+[Unit]
+Description=Theonix AI Daemon
+Documentation=https://docs.theonix.org/thaid
+# Starts on-demand via D-Bus activation — NOT at boot
+# Requires Ollama to be accessible on localhost
+After=network.target
+
+[Service]
+Type=dbus
+BusName=org.theonix.AI
+ExecStart=/usr/bin/thaid
+Restart=on-failure
+RestartSec=5s
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+SystemCallFilter=@system-service
+MemoryDenyWriteExecute=true
+
+# Resource limits
+MemoryHigh=2G
+MemoryMax=4G
+CPUQuota=200%
+
+[Install]
+WantedBy=default.target

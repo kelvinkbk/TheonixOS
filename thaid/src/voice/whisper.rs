@@ -1,0 +1,67 @@
+// =============================================================================
+// thaid — Whisper Voice Transcription
+// =============================================================================
+// Uses whisper.cpp (whisper-cli binary) for fully local transcription.
+// No audio data leaves the device.
+
+use anyhow::{Context, Result};
+use std::path::PathBuf;
+use tokio::process::Command;
+use tracing::{debug, info};
+
+pub struct WhisperTranscriber {
+    model_size: String,
+}
+
+impl WhisperTranscriber {
+    pub fn new(model_size: String) -> Self {
+        Self { model_size }
+    }
+
+    /// Transcribe an audio file to text. The audio_path must be a WAV file.
+    /// Returns the transcribed text.
+    pub async fn transcribe(&self, audio_path: &PathBuf) -> Result<String> {
+        let model_path = format!(
+            "/usr/share/theonix/models/whisper/ggml-{}.bin",
+            self.model_size
+        );
+
+        if !std::path::Path::new(&model_path).exists() {
+            anyhow::bail!(
+                "Whisper model not found: {}. Install with: sudo pacman -S theonix-whisper-{}",
+                model_path,
+                self.model_size
+            );
+        }
+
+        info!(model = %self.model_size, path = %audio_path.display(), "Transcribing audio");
+
+        let output = Command::new("whisper-cli")
+            .arg("--model").arg(&model_path)
+            .arg("--language").arg("auto")
+            .arg("--output-txt")
+            .arg("--no-prints")
+            .arg(audio_path)
+            .output()
+            .await
+            .context("Failed to run whisper-cli — is whisper-cpp installed?")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("whisper-cli failed: {stderr}");
+        }
+
+        // whisper-cli writes output to <input>.txt
+        let txt_path = audio_path.with_extension("txt");
+        let text = tokio::fs::read_to_string(&txt_path)
+            .await
+            .context("Failed to read whisper output")?;
+
+        // Clean up temp text file
+        let _ = tokio::fs::remove_file(&txt_path).await;
+
+        let result = text.trim().to_string();
+        debug!(chars = result.len(), "Transcription complete");
+        Ok(result)
+    }
+}

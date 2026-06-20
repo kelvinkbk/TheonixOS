@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Setup Wizard
+Comment=First boot configuration for Theonix OS
+Exec=theonix-wizard
+Icon=system-run
+Type=Application
+Categories=Settings;System;
+NoDisplay=true
+X-KDE-autostart-phase=1

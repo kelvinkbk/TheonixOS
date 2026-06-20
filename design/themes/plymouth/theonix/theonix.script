@@ -1,0 +1,51 @@
+# Plymouth Boot Theme for Theonix OS
+
+# Screen dimensions
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+# Load background image
+background_image = Image("background.png");
+background_sprite = Sprite(background_image);
+background_sprite.SetX(0);
+background_sprite.SetY(0);
+background_sprite.SetZ(-100);
+
+# Load logo
+logo_image = Image("logo.png");
+logo_sprite = Sprite(logo_image);
+logo_x = (screen_width - logo_image.GetWidth()) / 2;
+logo_y = (screen_height - logo_image.GetHeight()) / 2 - 40;
+logo_sprite.SetX(logo_x);
+logo_sprite.SetY(logo_y);
+logo_sprite.SetZ(10);
+
+# Product text (procedural text)
+title_image = Image.Text("Theonix OS", 1.0, 1.0, 1.0, 0.7);
+title_sprite = Sprite(title_image);
+title_x = (screen_width - title_image.GetWidth()) / 2;
+title_y = logo_y + logo_image.GetHeight() + 20;
+title_sprite.SetX(title_x);
+title_sprite.SetY(title_y);
+title_sprite.SetZ(20);
+
+# Animation state
+logo_opacity = 1.0;
+glow_direction = 1;
+glow_speed = 0.015;
+
+fun refresh_callback() {
+  logo_opacity = logo_opacity + (glow_speed * glow_direction);
+  if (logo_opacity >= 1.0) {
+    logo_opacity = 1.0;
+    glow_direction = -1;
+  }
+  else if (logo_opacity <= 0.3) {
+    logo_opacity = 0.3;
+    glow_direction = 1;
+  }
+  
+  logo_sprite.SetOpacity(logo_opacity);
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);

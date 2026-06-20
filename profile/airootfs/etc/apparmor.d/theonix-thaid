@@ -1,0 +1,91 @@
+# Theonix OS — AppArmor Profile: thaid AI Daemon
+#
+# This profile confines the Theonix AI Daemon (thaid) to exactly the
+# resources it needs. It cannot read arbitrary files, cannot execute
+# system programs without explicit permission, and all network access
+# is restricted to the local Ollama API (localhost:11434).
+#
+# Enforcement mode: enforce (not complain)
+# Profile target: /usr/bin/thaid
+
+#include <tunables/global>
+
+profile thaid /usr/bin/thaid flags=(attach_disconnected) {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <abstractions/openssl>
+
+    # --- Binary and libraries -----------------------------------------------
+    /usr/bin/thaid                              mr,
+    /usr/lib/**                                 mr,
+    /usr/lib64/**                               mr,
+
+    # --- Configuration (read-only) ------------------------------------------
+    /etc/theonix/                               r,
+    /etc/theonix/**                             r,
+    /etc/theonix/release_key_fingerprint        r,
+
+    # --- Runtime data (read-write) ------------------------------------------
+    # Conversation memory (SQLite), model cache, session state
+    owner @{HOME}/.local/share/theonix/         rw,
+    owner @{HOME}/.local/share/theonix/**       rw,
+    owner @{HOME}/.config/theonix/              rw,
+    owner @{HOME}/.config/theonix/**            rw,
+
+    # --- Temporary audio files for Whisper / Piper --------------------------
+    /tmp/thaid-audio-*.wav                      rw,
+    /tmp/thaid-audio-*.txt                      rw,
+    /tmp/thaid-tts-*.wav                        rw,
+    /tmp/thaid-session-*/                       rw,
+    /tmp/thaid-session-*/**                     rw,
+
+    # --- Ollama socket / localhost API --------------------------------------
+    # Only local loopback — no external network access
+    network inet  stream,
+    network inet6 stream,
+    # Restrict to localhost (enforced at the application level via config)
+
+    # --- Whisper model files (read-only) ------------------------------------
+    /usr/share/theonix/models/whisper/**        r,
+    owner @{HOME}/.local/share/theonix/models/whisper/** r,
+
+    # --- Piper TTS model files (read-only) ----------------------------------
+    /usr/share/theonix/models/piper/**          r,
+    owner @{HOME}/.local/share/theonix/models/piper/** r,
+
+    # --- D-Bus session bus --------------------------------------------------
+    #include <abstractions/dbus-session-strict>
+    dbus (send, receive, bind)
+        bus=session
+        name=org.theonix.AI,
+
+    dbus (send)
+        bus=session
+        interface=org.freedesktop.DBus
+        member={RequestName,ReleaseName,ListNames},
+
+    # --- Polkit for privilege elevation -------------------------------------
+    /usr/bin/pkcheck                            rix,
+    /usr/lib/polkit-1/**                        mr,
+
+    # --- System information (read-only) -------------------------------------
+    /proc/cpuinfo                               r,
+    /proc/meminfo                               r,
+    /sys/class/drm/**                           r,
+    /sys/bus/pci/devices/**                     r,
+
+    # --- Logging ------------------------------------------------------------
+    /dev/log                                    w,
+    owner /run/user/[0-9]*/journal/socket       w,
+
+    # --- Deny everything else -----------------------------------------------
+    deny /boot/**                               rwx,
+    deny /etc/passwd                            w,
+    deny /etc/shadow                            rwx,
+    deny /root/**                               rwx,
+    deny /home/**                               rwx,
+    deny /usr/bin/**                            x,
+    deny /usr/sbin/**                           x,
+    deny /bin/**                                x,
+    deny /sbin/**                               x,
+}

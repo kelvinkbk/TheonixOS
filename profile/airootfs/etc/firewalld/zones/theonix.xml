@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Theonix OS — Default Firewall Zone
+  ===================================
+  Default zone for all network interfaces on Theonix OS.
+
+  Policy: DROP (deny-all inbound, allow all outbound)
+  This means all unsolicited incoming connections are silently dropped.
+  Only services explicitly listed below are allowed inbound.
+
+  Allowed inbound:
+    - mDNS    (port 5353/UDP) — local network discovery (Avahi, printers, Chromecast)
+    - DHCPv6  (port 546/UDP)  — IPv6 address assignment from router
+
+  To allow additional services temporarily in the live ISO:
+    sudo firewall-cmd --add-service=ssh --timeout=300
+
+  To make changes permanent on installed system:
+    sudo firewall-cmd --permanent --add-service=<service>
+    sudo firewall-cmd --reload
+-->
+<zone target="DROP">
+  <short>Theonix</short>
+  <description>
+    Theonix OS default security zone. Drops all unsolicited inbound connections.
+    Only mDNS (local discovery) and DHCPv6 are permitted inbound.
+    All outbound connections are allowed.
+  </description>
+
+  <!-- Local network service discovery (Avahi/Bonjour/mDNS) -->
+  <service name="mdns"/>
+
+  <!-- IPv6 address assignment — required for IPv6 DHCP -->
+  <service name="dhcpv6-client"/>
+
+  <!-- Explicitly NOT included by default:
+       - ssh     (available via: sudo theonix-enable-ssh)
+       - samba
+       - vnc
+       - http/https (only needed for server use cases)
+  -->
+</zone>

@@ -1,0 +1,13 @@
+
+████████╗██╗  ██╗███████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗
+╚══██╖══╝██║  ██║██╖════╝██╖═══██╗████╗  ██║██║╚██╗██╔╝
+   ██║   ███████║█████╗  ██║   ██║██╔██╗ ██║██║ ╚███╔╝ 
+   ██║   ██╖══██║██╖══╝  ██║   ██║██║╚██╗██║██║ ██╔██╗ 
+   ██║   ██║  ██║███████╗╚██████╔╝██║ ╚████║██║██╔╝ ██╗
+   ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
+                                                       
+Welcome to Theonix OS — AI-Powered Linux Live Environment
+
+Type 'sudo systemctl start display-manager' if graphical desktop is not active.
+To launch the Calamares system installer, run 'calamares' or look for it in the menu.
+

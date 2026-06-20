@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Theonix OS — /usr/local/bin/theonix-enable-ssh
+# =============================================================================
+# Enables OpenSSH in the live environment for recovery / remote install.
+#
+# This is intentionally a manual step — SSH is masked by default.
+# Run this script only if you need remote access to the live ISO.
+#
+# Usage:  sudo theonix-enable-ssh [--key-only]
+#   --key-only   Allow only public-key authentication (recommended)
+#
+# =============================================================================
+
+set -euo pipefail
+
+# Must run as root
+if [[ "${EUID}" -ne 0 ]]; then
+    echo "ERROR: This script must be run as root (use sudo)." >&2
+    exit 1
+fi
+
+# Defaults
+KEY_ONLY=false
+
+# Parse arguments
+for arg in "$@"; do
+    case "${arg}" in
+        --key-only) KEY_ONLY=true ;;
+        --help|-h)
+            echo "Usage: sudo theonix-enable-ssh [--key-only]"
+            echo "  --key-only  Only allow public-key authentication (more secure)"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: ${arg}" >&2
+            exit 1
+            ;;
+    esac
+done
+
+echo "==> Theonix OS: Enabling SSH daemon for live session"
+echo "    WARNING: SSH is disabled by default for security reasons."
+echo "    Only enable this if you need remote access to the live system."
+echo ""
+
+# ---- Unmask the sshd service -----------------------------------------------
+systemctl unmask sshd.service
+
+# ---- Generate host keys if they don't exist (first enable) -----------------
+if [[ ! -f /etc/ssh/ssh_host_ed25519_key ]]; then
+    echo "==> Generating SSH host keys..."
+    ssh-keygen -A
+fi
+
+# ---- Harden sshd_config for the live environment ---------------------------
+SSHD_LIVE_CONF="/etc/ssh/sshd_config.d/theonix-live.conf"
+
+if "${KEY_ONLY}"; then
+    echo "==> Configuring key-only authentication (--key-only)..."
+    cat > "${SSHD_LIVE_CONF}" << 'SSHCONF'
+# Theonix OS live SSH configuration — key-only mode
+PermitRootLogin prohibit-password
+PasswordAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PermitEmptyPasswords no
+MaxAuthTries 3
+LoginGraceTime 30
+X11Forwarding no
+AllowTcpForwarding no
+SSHCONF
+    echo "==> Key-only mode: paste your public key into /root/.ssh/authorized_keys"
+else
+    echo "==> Configuring password authentication (less secure)..."
+    echo ""
+    echo "    SECURITY WARNING: Password authentication is enabled."
+    echo "    The root account must have a password set for SSH to work:"
+    echo ""
+    passwd root
+    cat > "${SSHD_LIVE_CONF}" << 'SSHCONF'
+# Theonix OS live SSH configuration — password mode
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+MaxAuthTries 3
+LoginGraceTime 30
+X11Forwarding no
+AllowTcpForwarding no
+SSHCONF
+fi
+
+# ---- Start sshd ------------------------------------------------------------
+systemctl start sshd.service
+
+echo ""
+echo "==> SSH is now enabled."
+echo "    Listen addresses:"
+ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | while read -r ip; do
+    echo "      ssh root@${ip}"
+done
+echo ""
+echo "==> To disable SSH again: sudo systemctl stop sshd && sudo systemctl mask sshd"

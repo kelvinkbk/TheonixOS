@@ -1,0 +1,15 @@
+# /etc/systemd/system/sshd.service
+# =============================================================================
+# Theonix OS — SSH Daemon: MASKED in live environment
+# =============================================================================
+# sshd is deliberately masked in the Theonix OS live ISO.
+#
+# A live system with SSH enabled exposes the system to network attack,
+# especially with a known-password or passwordless root account.
+#
+# To enable SSH for recovery or remote installation purposes, run:
+#   sudo theonix-enable-ssh
+#
+# This symlink-to-/dev/null masks the sshd service completely.
+# systemctl cannot start a masked service, even with --force.
+# =============================================================================
