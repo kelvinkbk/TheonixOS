@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Terminal
+Comment=Open a terminal window
+Exec=konsole
+Icon=konsole
+Terminal=false
+StartupNotify=true
+Categories=System;TerminalEmulator;
+X-KDE-autostart-after=panel
+X-GNOME-Autostart-enabled=true

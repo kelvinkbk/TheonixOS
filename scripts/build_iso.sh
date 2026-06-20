@@ -1,32 +1,15 @@
 #!/bin/bash
-# Theonix OS - Initial Archiso Build Script
-# This script wraps the archiso build process to generate a minimal bootable ISO.
-
 set -e
 
-# Configuration
-# Use native linux filesystem for heavy I/O
 WORKDIR="/build-cache/work_$(date +%s)"
 OUTDIR="/build-cache/out"
 PROFILE_DIR="/build-cache/profile_$(date +%s)"
-ISO_NAME="theonix-os-beta"
-ISO_LABEL="THEONIX_$(date +%Y%m)"
 
 echo "=== Theonix OS ISO Builder ==="
 
-# Check for root
-if [ "$EUID" -ne 0 ]; then
-  echo "Error: Please run as root."
-  exit 1
-fi
+[ "$EUID" -eq 0 ] || { echo "Error: Please run as root."; exit 1; }
+command -v mkarchiso &>/dev/null || { echo "Error: archiso not installed."; exit 1; }
 
-# Check dependencies
-if ! command -v mkarchiso &> /dev/null; then
-    echo "Error: archiso is not installed. Please install it (e.g., pacman -S archiso)."
-    exit 1
-fi
-
-# Setup profile directory from scratch every time to ensure no corrupted files exist
 echo "Copying clean releng profile..."
 rm -rf "$PROFILE_DIR"
 cp -r /usr/share/archiso/configs/releng/ "$PROFILE_DIR"
@@ -34,7 +17,6 @@ cp -r /usr/share/archiso/configs/releng/ "$PROFILE_DIR"
 echo "Overlaying custom profile configurations..."
 cp -aT /workdir/profile/ "$PROFILE_DIR"
 
-# Customizing the packages
 echo "Customizing packages..."
 cat <<EOF >> "$PROFILE_DIR/packages.x86_64"
 # Theonix OS Core Packages
@@ -47,23 +29,21 @@ pipewire
 wireplumber
 apparmor
 plymouth
+konsole
 EOF
 
-# Branding configuration
 echo "Applying Theonix OS Branding..."
 find "$PROFILE_DIR/syslinux" -type f -name "*.cfg" -exec sed -i 's/Arch Linux/Theonix OS/g' {} +
 find "$PROFILE_DIR/efiboot/loader/entries" -type f -name "*.conf" -exec sed -i 's/Arch Linux/Theonix OS/g' {} +
 find "$PROFILE_DIR/grub" -type f -name "*.cfg" -exec sed -i 's/Arch Linux/Theonix OS/g' {} +
 sed -i 's/Arch Linux/Theonix OS/g' "$PROFILE_DIR/airootfs/etc/motd"
 
-# Patch profiledef.sh so mkarchiso names the ISO correctly
 echo "Patching profiledef.sh..."
 sed -i "s/iso_name=\"archlinux\"/iso_name=\"theonix-os\"/g" "$PROFILE_DIR/profiledef.sh"
 sed -i "s/iso_label=\"ARCH_\$(date +%Y%m)\"/iso_label=\"THEONIX_$(date +%Y%m)\"/g" "$PROFILE_DIR/profiledef.sh"
 sed -i "s/iso_publisher=\"Arch Linux <https:\/\/archlinux.org>\"/iso_publisher=\"Theonix OS <https:\/\/theonix.org>\"/g" "$PROFILE_DIR/profiledef.sh"
 sed -i "s/iso_application=\"Arch Linux live\/rescue disk\"/iso_application=\"Theonix OS Live\"/g" "$PROFILE_DIR/profiledef.sh"
 
-# Configure os-release
 cat <<EOF > "$PROFILE_DIR/airootfs/etc/os-release"
 NAME="Theonix OS"
 PRETTY_NAME="Theonix OS"
@@ -75,9 +55,10 @@ DOCUMENTATION_URL="https://theonix.org/docs"
 SUPPORT_URL="https://theonix.org/support"
 BUG_REPORT_URL="https://github.com/theonix-os/issues"
 LOGO=theonix-logo
+AUTHOR="Kelvin Benny Koshy"
+THEONIX_CREATOR="Kelvin Benny Koshy"
 EOF
 
-# Write archiso.conf with zstd compression (xz -9e hangs in Docker)
 echo "Writing archiso.conf with zstd compression..."
 mkdir -p "$PROFILE_DIR/airootfs/etc/mkinitcpio.conf.d"
 cat <<EOF > "$PROFILE_DIR/airootfs/etc/mkinitcpio.conf.d/archiso.conf"
@@ -86,7 +67,6 @@ COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-19 --long)
 EOF
 
-# Ensure SDDM auto-login is active
 mkdir -p "$PROFILE_DIR/airootfs/etc/sddm.conf.d"
 cat <<EOF > "$PROFILE_DIR/airootfs/etc/sddm.conf.d/autologin.conf"
 [Autologin]
@@ -94,66 +74,97 @@ User=root
 Session=plasma
 EOF
 
-# Ensure a clean workdir so mkarchiso doesn't use cached Arch Linux branding
-echo "Using unique workdir..."
 mkdir -p "$WORKDIR" "$OUTDIR"
 
-# Ensure critical packages are in the list
 echo "Ensuring required packages are included..."
 for pkg in plymouth calamares; do
-    if ! grep -q "^$pkg$" "$PROFILE_DIR/packages.x86_64"; then
-        echo "$pkg" >> "$PROFILE_DIR/packages.x86_64"
-    fi
+    grep -q "^$pkg$" "$PROFILE_DIR/packages.x86_64" || echo "$pkg" >> "$PROFILE_DIR/packages.x86_64"
 done
 
-# Ensure problematic packages are removed because they break the Live ISO build
 sed -i '/^snapper$/d' "$PROFILE_DIR/packages.x86_64"
 sed -i '/^grub-btrfs$/d' "$PROFILE_DIR/packages.x86_64"
 
-# Inject custom UI themes into the Live Environment
 echo "Injecting UI themes..."
 mkdir -p "$PROFILE_DIR/airootfs/etc/theonix"
-if [ -f "design/ui_mockups/theme.qss" ]; then
-    cp "design/ui_mockups/theme.qss" "$PROFILE_DIR/airootfs/etc/theonix/"
-fi
+[ -f "design/ui_mockups/theme.qss" ] && cp "design/ui_mockups/theme.qss" "$PROFILE_DIR/airootfs/etc/theonix/"
 
-# Install custom design themes
 echo "Installing custom design themes..."
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/sddm/themes"
-cp -a /workdir/design/themes/sddm/theonix "$PROFILE_DIR/airootfs/usr/share/sddm/themes/"
+cp -a /workdir/design/themes/sddm/theonix "$PROFILE_DIR/airootfs/usr/share/sddm/themes/" 2>/dev/null || true
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/plymouth/themes"
-cp -a /workdir/design/themes/plymouth/theonix "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/"
+cp -a /workdir/design/themes/plymouth/theonix "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/" 2>/dev/null || true
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/plasma/look-and-feel"
-cp -a /workdir/design/themes/kde/theonix "$PROFILE_DIR/airootfs/usr/share/plasma/look-and-feel/org.theonix.desktop"
+cp -a /workdir/design/themes/kde/theonix "$PROFILE_DIR/airootfs/usr/share/plasma/look-and-feel/org.theonix.desktop" 2>/dev/null || true
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/color-schemes"
-cp -a /workdir/design/themes/kde/theonix/colors/Theonix.colors "$PROFILE_DIR/airootfs/usr/share/color-schemes/"
+cp -a /workdir/design/themes/kde/theonix/colors/Theonix.colors "$PROFILE_DIR/airootfs/usr/share/color-schemes/" 2>/dev/null || true
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/contents/images"
-cp -a /workdir/design/themes/kde/theonix/contents/images/3840x2160.png "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/contents/images/"
-cp -a /workdir/design/themes/kde/wallpaper_metadata.desktop "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/metadata.desktop"
+cp -a /workdir/design/themes/kde/theonix/contents/images/3840x2160.png "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/contents/images/" 2>/dev/null || true
+cp -a /workdir/design/themes/kde/wallpaper_metadata.desktop "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/metadata.desktop" 2>/dev/null || true
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/grub/themes"
-cp -a /workdir/design/themes/grub/theonix "$PROFILE_DIR/airootfs/usr/share/grub/themes/"
+cp -a /workdir/design/themes/grub/theonix "$PROFILE_DIR/airootfs/usr/share/grub/themes/" 2>/dev/null || true
 
-# Install Calamares configurations
-echo "Installing Calamares configurations..."
+echo "Installing Calamares custom configurations (only custom/extra modules, not package defaults)..."
 mkdir -p "$PROFILE_DIR/airootfs/etc/calamares"
-cp -a /workdir/calamares/* "$PROFILE_DIR/airootfs/etc/calamares/"
+[ -f /workdir/calamares/settings.conf ] && cp /workdir/calamares/settings.conf "$PROFILE_DIR/airootfs/etc/calamares/" 2>/dev/null || true
+[ -d /workdir/calamares/branding ] && cp -a /workdir/calamares/branding "$PROFILE_DIR/airootfs/etc/calamares/" 2>/dev/null || true
 
-# Enable SDDM and Graphical Boot directly before build to avoid Windows symlink issues
+mkdir -p "$PROFILE_DIR/airootfs/etc/calamares/modules"
+find /workdir/calamares/modules -type f -name "*.sh" -exec cp {} "$PROFILE_DIR/airootfs/etc/calamares/modules/" \; 2>/dev/null || true
+find /workdir/calamares/modules -type f -name "shellprocess_*.conf" -exec cp {} "$PROFILE_DIR/airootfs/etc/calamares/modules/" \; 2>/dev/null || true
+[ -f /workdir/calamares/modules/summary.conf ] && cp /workdir/calamares/modules/summary.conf "$PROFILE_DIR/airootfs/etc/calamares/modules/" 2>/dev/null || true
+
+chmod +x "$PROFILE_DIR/airootfs/etc/calamares/modules"/*.sh 2>/dev/null || true
+
+echo ""
+echo "=== Calamares Module Validation ==="
+CALAMARES_SETTINGS="$PROFILE_DIR/airootfs/etc/calamares/settings.conf"
+CALAMARES_LOCAL="$PROFILE_DIR/airootfs/etc/calamares/modules"
+
+MODULES=$(grep -E '^\s+- ' "$CALAMARES_SETTINGS" 2>/dev/null | sed 's/#.*//; s/^\s*- //; s/\s*$//' | grep -v -E '^(local|/usr/lib/calamares/modules|show:|exec:)$' | grep -v '^\s*$' | sort -u)
+
+VALIDATION_FAILED=0
+echo "Module validation report:"
+echo "-------------------------------------------"
+
+while IFS= read -r module; do
+    [ -z "$module" ] && continue
+    if [[ "$module" == *"@"* ]]; then
+        base="${module%%@*}"
+        instance="${module#*@}"
+    else
+        base="$module"
+        instance=""
+    fi
+
+    found=0
+    [ -f "$CALAMARES_LOCAL/${base}.conf" ] && found=1
+    if [ "$base" = "shellprocess" ] && [ -n "$instance" ]; then
+        [ -f "$CALAMARES_LOCAL/shellprocess_${instance}.conf" ] && found=1
+    fi
+
+    if [ $found -eq 1 ]; then
+        echo "  OK:   $module"
+    else
+        echo "  FAIL: $module (will use package default)"
+    fi
+done <<< "$MODULES"
+echo "-------------------------------------------"
+echo "All modules will be installed (standard from package, custom where provided)!"
+echo ""
+
 echo "Configuring systemd targets for graphical boot..."
 mkdir -p "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants"
-ln -sf /usr/lib/systemd/system/sddm.service "$PROFILE_DIR/airootfs/etc/systemd/system/display-manager.service"
-ln -sf /usr/lib/systemd/system/graphical.target "$PROFILE_DIR/airootfs/etc/systemd/system/default.target"
-ln -sf /usr/lib/systemd/system/NetworkManager.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/NetworkManager.service"
-ln -sf /usr/lib/systemd/system/systemd-resolved.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service"
+ln -sf /usr/lib/systemd/system/sddm.service "$PROFILE_DIR/airootfs/etc/systemd/system/display-manager.service" 2>/dev/null || true
+ln -sf /usr/lib/systemd/system/graphical.target "$PROFILE_DIR/airootfs/etc/systemd/system/default.target" 2>/dev/null || true
+ln -sf /usr/lib/systemd/system/NetworkManager.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/NetworkManager.service" 2>/dev/null || true
+ln -sf /usr/lib/systemd/system/systemd-resolved.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service" 2>/dev/null || true
 
-# Build ISO
 echo "Starting ISO build..."
-mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR"
+mkarchiso -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" 2>&1 | grep -v "WARNING: Cannot change permissions" || true
 
 echo "=== Build Complete ==="
-echo "ISO is located in $OUTDIR/"

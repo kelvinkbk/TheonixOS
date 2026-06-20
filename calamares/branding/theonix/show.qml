@@ -46,6 +46,13 @@ Presentation {
                     color: "rgba(255,255,255,0.7)"
                 }
 
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Created by Kelvin Benny Koshy"
+                    font.pixelSize: 13
+                    color: "rgba(255,255,255,0.5)"
+                }
+
                 Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: 64; height: 4; radius: 2
@@ -191,6 +198,13 @@ Presentation {
                     text: "Setting up your Theonix OS system…"
                     font.pixelSize: 16
                     color: "rgba(255,255,255,0.6)"
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Created by Kelvin Benny Koshy"
+                    font.pixelSize: 13
+                    color: "rgba(255,255,255,0.45)"
                 }
 
                 ProgressBar {

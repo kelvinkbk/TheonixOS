@@ -2,8 +2,8 @@
 Type=Application
 Version=1.0
 Name=Install Theonix OS
-Comment=Install the operating system to your disk
-Exec=calamares
+Comment=Install Theonix OS to your disk (opens installation log in Terminal)
+Exec=theonix-installer
 Icon=calamares
 Terminal=false
 StartupNotify=true
