@@ -73,10 +73,28 @@ COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-19 --long)
 EOF
 
+mkdir -p "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants"
+cat <<EOF > "$PROFILE_DIR/airootfs/etc/systemd/system/live-user.service"
+[Unit]
+Description=Create Live User
+Before=sddm.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/bin/useradd -m -g users -G wheel,video,audio,input,storage -s /bin/bash theonix
+ExecStart=-/usr/bin/passwd -d theonix
+ExecStart=/bin/sh -c "mkdir -p /etc/sudoers.d && echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/10-wheel-nopasswd"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+ln -sf /etc/systemd/system/live-user.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/live-user.service"
+
 mkdir -p "$PROFILE_DIR/airootfs/etc/sddm.conf.d"
 cat <<EOF > "$PROFILE_DIR/airootfs/etc/sddm.conf.d/autologin.conf"
 [Autologin]
-User=root
+User=theonix
 Session=plasma
 EOF
 
@@ -119,17 +137,30 @@ mkdir -p "$PROFILE_DIR/airootfs/etc/calamares"
 [ -f /workdir/calamares/settings.conf ] && cp /workdir/calamares/settings.conf "$PROFILE_DIR/airootfs/etc/calamares/" 2>/dev/null || true
 [ -d /workdir/calamares/branding ] && cp -a /workdir/calamares/branding "$PROFILE_DIR/airootfs/etc/calamares/" 2>/dev/null || true
 
-mkdir -p "$PROFILE_DIR/airootfs/etc/calamares/modules"
-find /workdir/calamares/modules -type f -name "*.sh" -exec cp {} "$PROFILE_DIR/airootfs/etc/calamares/modules/" \; 2>/dev/null || true
-find /workdir/calamares/modules -type f -name "shellprocess_*.conf" -exec cp {} "$PROFILE_DIR/airootfs/etc/calamares/modules/" \; 2>/dev/null || true
-[ -f /workdir/calamares/modules/summary.conf ] && cp /workdir/calamares/modules/summary.conf "$PROFILE_DIR/airootfs/etc/calamares/modules/" 2>/dev/null || true
+# To prevent pacman file conflicts during mkarchiso pacstrap, stage modules in a safe location
+mkdir -p "$PROFILE_DIR/airootfs/usr/local/share/calamares_custom/modules"
+cp -a /workdir/calamares/modules/* "$PROFILE_DIR/airootfs/usr/local/share/calamares_custom/modules/" 2>/dev/null || true
+chmod +x "$PROFILE_DIR/airootfs/usr/local/share/calamares_custom/modules"/*.sh 2>/dev/null || true
 
-chmod +x "$PROFILE_DIR/airootfs/etc/calamares/modules"/*.sh 2>/dev/null || true
+# Create a pacman hook to copy the custom modules over the package defaults after installation
+mkdir -p "$PROFILE_DIR/airootfs/etc/pacman.d/hooks"
+cat <<EOF > "$PROFILE_DIR/airootfs/etc/pacman.d/hooks/99-calamares-custom.hook"
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = calamares
+
+[Action]
+Description = Applying custom Calamares module configurations...
+When = PostTransaction
+Exec = /usr/bin/cp -af /usr/local/share/calamares_custom/modules/. /etc/calamares/modules/
+EOF
 
 echo ""
 echo "=== Calamares Module Validation ==="
 CALAMARES_SETTINGS="$PROFILE_DIR/airootfs/etc/calamares/settings.conf"
-CALAMARES_LOCAL="$PROFILE_DIR/airootfs/etc/calamares/modules"
+CALAMARES_LOCAL="$PROFILE_DIR/airootfs/usr/local/share/calamares_custom/modules"
 
 MODULES=$(grep -E '^\s+- ' "$CALAMARES_SETTINGS" 2>/dev/null | sed 's/#.*//; s/^\s*- //; s/\s*$//' | grep -v -E '^(local|/usr/lib/calamares/modules|show:|exec:)$' | grep -v '^\s*$' | sort -u)
 
@@ -171,6 +202,6 @@ ln -sf /usr/lib/systemd/system/NetworkManager.service "$PROFILE_DIR/airootfs/etc
 ln -sf /usr/lib/systemd/system/systemd-resolved.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service" 2>/dev/null || true
 
 echo "Starting ISO build..."
-mkarchiso -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" 2>&1 | grep -v "WARNING: Cannot change permissions" || true
+mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" 2>&1 | grep -v "WARNING: Cannot change permissions" || true
 
 echo "=== Build Complete ==="

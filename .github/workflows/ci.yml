@@ -34,7 +34,7 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          work-dir: ./thaid
+          workspaces: "./thaid"
           
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -54,4 +54,4 @@ jobs:
         uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: ./thaid
+          args: -f ./thaid/Cargo.lock
