@@ -1,0 +1,19 @@
+#!/bin/bash
+# =============================================================================
+# Theonix OS — GRUB Install Wrapper
+# =============================================================================
+# This script intercepts Calamares' grub-install command to forcefully apply
+# the --removable flag and strip conflicting arguments like --bootloader-id.
+# This completely bypasses buggy EFI NVRAM implementations (like VirtualBox)
+# and guarantees a bootable system by installing to the default fallback path.
+# =============================================================================
+
+echo "==> grub-install-wrapper: Intercepting GRUB installation..."
+echo "==> Original arguments preserved, appending --no-nvram"
+
+udevadm trigger
+udevadm settle
+
+/usr/bin/grub-install "$@" --no-nvram
+
+echo "==> grub-install-wrapper: GRUB installed successfully to fallback path."

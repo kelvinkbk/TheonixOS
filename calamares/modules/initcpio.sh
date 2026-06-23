@@ -1,16 +1,38 @@
 #!/bin/bash
 # =============================================================================
-# Theonix OS — Initramfs Generation Script
+# Theonix OS — Initramfs Generation Script (Host Side)
 # =============================================================================
-# Replaces the Arch-specific initcpiocfg + initcpio Calamares modules.
-# Writes /etc/mkinitcpio.conf and runs mkinitcpio -P inside the target chroot.
+# Runs on the Live ISO (dontChroot: true) to copy the kernel into the target
+# system, configure mkinitcpio for a hard drive, and generate the initramfs.
 # =============================================================================
 
 set -e
 
-echo "==> initcpio: Writing /etc/mkinitcpio.conf"
+# ${ROOT} is provided by Calamares (the mount point of the installed system)
+if [ -z "${ROOT}" ]; then
+    echo "ERROR: ROOT variable is not set."
+    exit 1
+fi
 
-ROOT_FS=$(awk '$2=="/" {print $3; exit}' /etc/fstab)
+echo "==> initcpio: Copying kernel from Live ISO to Target System..."
+mkdir -p "${ROOT}/boot"
+
+# The kernel is mounted on the Live ISO at /run/archiso/bootmnt/theonix/boot/x86_64/vmlinuz-linux
+# If that path doesn't exist, fallback to the generic arch path
+KERNEL_SRC="/run/archiso/bootmnt/theonix/boot/x86_64/vmlinuz-linux"
+if [ ! -f "$KERNEL_SRC" ]; then
+    KERNEL_SRC="/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux"
+fi
+
+if [ -f "$KERNEL_SRC" ]; then
+    cp "$KERNEL_SRC" "${ROOT}/boot/vmlinuz-linux"
+else
+    echo "WARNING: Could not find kernel on Live ISO to copy!"
+fi
+
+echo "==> initcpio: Writing target /etc/mkinitcpio.conf"
+
+ROOT_FS=$(awk '$2=="/" {print $3; exit}' "${ROOT}/etc/fstab" || echo "ext4")
 ROOT_FS=${ROOT_FS:-ext4}
 
 HOOKS=(base udev plymouth autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)
@@ -24,8 +46,8 @@ case "$ROOT_FS" in
         ;;
 esac
 
-if grep -qE 'cryptdevice|/dev/mapper/' /etc/fstab 2>/dev/null || \
-   { [ -f /etc/crypttab ] && grep -qv '^#' /etc/crypttab 2>/dev/null; }; then
+if grep -qE 'cryptdevice|/dev/mapper/' "${ROOT}/etc/fstab" 2>/dev/null || \
+   { [ -f "${ROOT}/etc/crypttab" ] && grep -qv '^#' "${ROOT}/etc/crypttab" 2>/dev/null; }; then
     HOOKS=(base udev plymouth autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
     case "$ROOT_FS" in
         btrfs) HOOKS=(base udev plymouth autodetect microcode modconf kms keyboard keymap consolefont block encrypt btrfs filesystems fsck) ;;
@@ -40,9 +62,23 @@ fi
     printf 'HOOKS=('
     printf '%s ' "${HOOKS[@]}"
     echo ')'
-} > /etc/mkinitcpio.conf
+} > "${ROOT}/etc/mkinitcpio.conf"
 
-echo "==> initcpio: Running mkinitcpio -P"
-mkinitcpio -P
+echo "==> initcpio: Removing live-CD remnants from target system..."
+rm -f "${ROOT}/etc/mkinitcpio.conf.d/archiso.conf" 2>/dev/null
+rm -f "${ROOT}/etc/mkinitcpio.d/linux.preset" 2>/dev/null
+
+echo "==> initcpio: Generating standard linux.preset..."
+{
+    echo "PRESETS=(\"default\" \"fallback\")"
+    echo "default_kver=\"/boot/vmlinuz-linux\""
+    echo "default_image=\"/boot/initramfs-linux.img\""
+    echo "fallback_kver=\"/boot/vmlinuz-linux\""
+    echo "fallback_image=\"/boot/initramfs-linux.img\""
+    echo "fallback_options=\"-S autodetect\""
+} > "${ROOT}/etc/mkinitcpio.d/linux.preset"
+
+echo "==> initcpio: Running mkinitcpio -P inside target..."
+arch-chroot "${ROOT}" mkinitcpio -P
 
 echo "==> initcpio: Complete"

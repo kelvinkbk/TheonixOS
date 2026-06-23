@@ -47,7 +47,11 @@ QStackedWidget {
     background-color: #0F1117;
 }
 
-/* Headings */
+/* Headings and generic labels */
+QLabel {
+    color: #FFFFFF;
+}
+
 QLabel[styleSheet~="title"],
 QLabel[objectName="labelTitle"] {
     color: #FFFFFF;

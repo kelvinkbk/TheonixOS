@@ -48,6 +48,7 @@ file_permissions=(
     # Theonix helper scripts
     ["/usr/local/bin/theonix-enable-ssh"]="0:0:755"
     ["/usr/local/bin/theonix-recovery"]="0:0:755"
+    ["/usr/local/bin/grub-install-wrapper"]="0:0:755"
 
     # Legacy Arch helpers (retained for compatibility)
     ["/usr/local/bin/choose-mirror"]="0:0:755"
