@@ -10,6 +10,11 @@
 /* Main window background */
 #mainApp {
     background-color: #0F1117;
+}
+
+/* Force dark background and white text for all standard panels/pages */
+#mainApp QWidget {
+    background-color: #0F1117;
     color: #FFFFFF;
 }
 
@@ -42,8 +47,8 @@ QListView::item:hover {
     color: #FFFFFF;
 }
 
-/* Content area */
-QStackedWidget {
+/* Content area and pages */
+QStackedWidget, QScrollArea, QWidget#mainApp > QWidget, QStackedWidget > QWidget, QScrollArea > QWidget > QWidget {
     background-color: #0F1117;
 }
 
@@ -65,7 +70,7 @@ QLabel[objectName="labelSubtitle"] {
 }
 
 /* Primary buttons */
-QPushButton {
+#mainApp QPushButton {
     background-color: #6C63FF;
     color: #FFFFFF;
     border: none;
@@ -76,44 +81,44 @@ QPushButton {
     min-width: 100px;
 }
 
-QPushButton:hover {
+#mainApp QPushButton:hover {
     background-color: #7B73FF;
 }
 
-QPushButton:pressed {
+#mainApp QPushButton:pressed {
     background-color: #5A52E0;
 }
 
-QPushButton:disabled {
+#mainApp QPushButton:disabled {
     background-color: rgba(108, 99, 255, 0.3);
     color: rgba(255, 255, 255, 0.4);
 }
 
 /* Back button (secondary style) */
-QPushButton#buttonBack {
+#mainApp QPushButton#buttonBack {
     background-color: rgba(255, 255, 255, 0.08);
     color: #FFFFFF;
 }
 
-QPushButton#buttonBack:hover {
+#mainApp QPushButton#buttonBack:hover {
     background-color: rgba(255, 255, 255, 0.14);
 }
 
 /* Cancel button */
-QPushButton#buttonCancel {
+#mainApp QPushButton#buttonCancel {
     background-color: transparent;
     color: rgba(255, 255, 255, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-QPushButton#buttonCancel:hover {
+#mainApp QPushButton#buttonCancel:hover {
     background-color: rgba(255, 80, 80, 0.15);
     color: #FF6B6B;
     border-color: rgba(255, 80, 80, 0.3);
 }
 
 /* Input fields */
-QLineEdit, QTextEdit, QComboBox {
+#mainApp QLineEdit, #mainApp QTextEdit, #mainApp QComboBox {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
@@ -122,17 +127,17 @@ QLineEdit, QTextEdit, QComboBox {
     selection-background-color: #6C63FF;
 }
 
-QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
+#mainApp QLineEdit:focus, #mainApp QTextEdit:focus, #mainApp QComboBox:focus {
     border-color: #6C63FF;
     background-color: rgba(108, 99, 255, 0.08);
 }
 
-QComboBox::drop-down {
+#mainApp QComboBox::drop-down {
     border: none;
     width: 32px;
 }
 
-QComboBox QAbstractItemView {
+#mainApp QComboBox QAbstractItemView {
     background-color: #1A1D2E;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
