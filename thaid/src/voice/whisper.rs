@@ -37,8 +37,10 @@ impl WhisperTranscriber {
         info!(model = %self.model_size, path = %audio_path.display(), "Transcribing audio");
 
         let output = Command::new("whisper-cli")
-            .arg("--model").arg(&model_path)
-            .arg("--language").arg("auto")
+            .arg("--model")
+            .arg(&model_path)
+            .arg("--language")
+            .arg("auto")
             .arg("--output-txt")
             .arg("--no-prints")
             .arg(audio_path)

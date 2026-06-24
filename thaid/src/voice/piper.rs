@@ -28,8 +28,10 @@ impl PiperTts {
         info!(chars = text.len(), "Synthesizing speech");
 
         let output = Command::new("piper")
-            .arg("--model").arg(&self.voice_model_path)
-            .arg("--output_file").arg(output_path)
+            .arg("--model")
+            .arg(&self.voice_model_path)
+            .arg("--output_file")
+            .arg(output_path)
             .stdin(std::process::Stdio::piped())
             .output()
             .await
