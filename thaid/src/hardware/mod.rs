@@ -77,8 +77,8 @@ impl HardwareInfo {
             (true, ram) if ram >= 16_384 => "llama3:8b",
             (true, ram) if ram >= 8_192  => "llama3:8b",
             (false, ram) if ram >= 16_384 => "llama3:8b",
-            (false, ram) if ram >= 8_192  => "phi3:mini",
-            _                             => "gemma:2b",
+            (false, ram) if ram >= 8_192 => "phi3:mini",
+            _ => "gemma:2b",
         }
     }
 }
@@ -134,8 +134,9 @@ fn detect_system_info() -> (u64, usize, String) {
     sys.refresh_all();
 
     let total_ram_mb = sys.total_memory() / 1024 / 1024;
-    let cpu_count    = sys.cpus().len();
-    let cpu_name     = sys.cpus()
+    let cpu_count = sys.cpus().len();
+    let cpu_name = sys
+        .cpus()
         .first()
         .map(|c| c.brand().to_string())
         .unwrap_or_else(|| "Unknown CPU".to_string());

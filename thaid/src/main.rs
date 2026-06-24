@@ -31,25 +31,26 @@ mod voice;
 async fn main() -> Result<()> {
     // ---- Logging setup -----------------------------------------------------
     // Use journald when running under systemd, otherwise pretty-print to stderr
-    let use_journald = std::env::var("JOURNAL_STREAM").is_ok()
-        || std::env::var("INVOCATION_ID").is_ok();
+    let use_journald =
+        std::env::var("JOURNAL_STREAM").is_ok() || std::env::var("INVOCATION_ID").is_ok();
 
     if use_journald {
         // Log to systemd journal with structured fields
-        let journald_layer = tracing_journald::layer()
-            .context("Failed to connect to journald")?;
+        let journald_layer = tracing_journald::layer().context("Failed to connect to journald")?;
         tracing_subscriber::registry()
-            .with(EnvFilter::from_default_env().add_directive(
-                "thaid=info".parse().expect("valid directive"),
-            ))
+            .with(
+                EnvFilter::from_default_env()
+                    .add_directive("thaid=info".parse().expect("valid directive")),
+            )
             .with(journald_layer)
             .init();
     } else {
         // Pretty-print for development / interactive use
         tracing_subscriber::registry()
-            .with(EnvFilter::from_default_env().add_directive(
-                "thaid=debug".parse().expect("valid directive"),
-            ))
+            .with(
+                EnvFilter::from_default_env()
+                    .add_directive("thaid=debug".parse().expect("valid directive")),
+            )
             .with(fmt::layer().with_target(false))
             .init();
     }
