@@ -1,9 +1,13 @@
 #!/bin/bash
 set -e
 
-WORKDIR="/build-cache/work_$(date +%s)"
-OUTDIR="/build-cache/out"
-PROFILE_DIR="/build-cache/profile_$(date +%s)"
+WORKDIR="/workdir/work"
+OUTDIR="/workdir/out"
+PROFILE_DIR="/workdir/profile_build"
+
+# Ensure directories exist
+mkdir -p "$WORKDIR"
+mkdir -p "$OUTDIR"
 
 echo "=== Theonix OS ISO Builder ==="
 
