@@ -101,11 +101,7 @@ impl ConversationStore {
 
     /// Build a context-aware prompt by prepending recent conversation history.
     /// Returns a formatted string suitable for sending to Ollama.
-    pub async fn build_context_prompt(
-        &self,
-        session_id: &str,
-        new_prompt: &str,
-    ) -> Result<String> {
+    pub async fn build_context_prompt(&self, session_id: &str, new_prompt: &str) -> Result<String> {
         let conn = self.conn.lock().unwrap();
 
         // Get the last N turns (most recent first, then reverse)
@@ -113,12 +109,13 @@ impl ConversationStore {
             "SELECT role, content FROM turns
              WHERE session_id = ?1
              ORDER BY created_at DESC
-             LIMIT 20"
+             LIMIT 20",
         )?;
 
-        let turns: Vec<(String, String)> = stmt.query_map(params![session_id], |row| {
-            Ok((row.get(0)?, row.get(1)?))
-        })?.filter_map(|r| r.ok()).collect();
+        let turns: Vec<(String, String)> = stmt
+            .query_map(params![session_id], |row| Ok((row.get(0)?, row.get(1)?)))?
+            .filter_map(|r| r.ok())
+            .collect();
 
         if turns.is_empty() {
             return Ok(new_prompt.to_string());
