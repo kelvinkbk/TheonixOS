@@ -59,12 +59,14 @@ impl AIInterface {
         // Extract optional model override
         let model_override: Option<String> = options
             .get("model")
-            .and_then(|v| String::try_from(v.clone()).ok());
+            .and_then(|v| <&str>::try_from(v).ok())
+            .map(|s| s.to_string());
 
         // Retrieve session context for memory continuity
         let session_id: Option<String> = options
             .get("session")
-            .and_then(|v| String::try_from(v.clone()).ok());
+            .and_then(|v| <&str>::try_from(v).ok())
+            .map(|s| s.to_string());
 
         // Build prompt with conversation history if session provided
         let full_prompt = if let Some(ref sid) = session_id {

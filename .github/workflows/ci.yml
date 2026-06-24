@@ -53,4 +53,6 @@ jobs:
       - name: Run cargo-audit
         run: |
           cargo install cargo-audit
-          cargo audit -f ./thaid/Cargo.lock
+          cd ./thaid
+          cargo generate-lockfile
+          cargo audit

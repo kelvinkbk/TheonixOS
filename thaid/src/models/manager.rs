@@ -2,7 +2,6 @@
 // thaid — Model Manager (lazy loading + idle unload)
 // =============================================================================
 
-use crate::config::ThaidConfig;
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

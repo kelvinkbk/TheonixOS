@@ -1,0 +1,565 @@
+﻿2026-06-24T19:33:40.0079621Z ##[group]Run cargo clippy --all-targets --all-features -- -D warnings
+2026-06-24T19:33:40.0080162Z [36;1mcargo clippy --all-targets --all-features -- -D warnings[0m
+2026-06-24T19:33:40.0110650Z shell: /usr/bin/bash -e {0}
+2026-06-24T19:33:40.0110893Z env:
+2026-06-24T19:33:40.0111088Z   CARGO_HOME: /home/runner/.cargo
+2026-06-24T19:33:40.0111345Z   CARGO_INCREMENTAL: 0
+2026-06-24T19:33:40.0111565Z   CARGO_TERM_COLOR: always
+2026-06-24T19:33:40.0111790Z   CACHE_ON_FAILURE: false
+2026-06-24T19:33:40.0112005Z ##[endgroup]
+2026-06-24T19:33:40.9415501Z [1m[92m    Updating[0m crates.io index
+2026-06-24T19:33:41.7924541Z [1m[92m     Locking[0m 261 packages to latest compatible versions
+2026-06-24T19:33:41.7972790Z [1m[92m      Adding[0m generic-array v0.14.7 [1m[33m(available: v0.14.9)[0m
+2026-06-24T19:33:41.8098224Z [1m[92m      Adding[0m reqwest v0.12.28 [1m[33m(available: v0.13.4)[0m
+2026-06-24T19:33:41.8121430Z [1m[92m      Adding[0m rusqlite v0.31.0 [1m[33m(available: v0.40.1)[0m
+2026-06-24T19:33:41.8220385Z [1m[92m      Adding[0m sysinfo v0.30.13 [1m[33m(available: v0.39.5)[0m
+2026-06-24T19:33:41.8228808Z [1m[92m      Adding[0m thiserror v1.0.69 [1m[33m(available: v2.0.18)[0m
+2026-06-24T19:33:41.8258983Z [1m[92m      Adding[0m toml v0.8.23 [1m[33m(available: v1.1.2+spec-1.1.0)[0m
+2026-06-24T19:33:41.8334822Z [1m[92m      Adding[0m zbus v4.4.0 [1m[33m(available: v5.16.0)[0m
+2026-06-24T19:33:41.8509222Z [1m[92m Downloading[0m crates ...
+2026-06-24T19:33:41.8928821Z [1m[92m  Downloaded[0m futures-macro v0.3.32
+2026-06-24T19:33:41.9417077Z [1m[92m  Downloaded[0m tower-layer v0.3.3
+2026-06-24T19:33:41.9442544Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+2026-06-24T19:33:41.9537588Z [1m[92m  Downloaded[0m mime v0.3.17
+2026-06-24T19:33:41.9560687Z [1m[92m  Downloaded[0m sharded-slab v0.1.7
+2026-06-24T19:33:41.9601993Z [1m[92m  Downloaded[0m zerovec-derive v0.11.3
+2026-06-24T19:33:41.9731270Z [1m[92m  Downloaded[0m parking_lot v0.12.5
+2026-06-24T19:33:41.9764242Z [1m[92m  Downloaded[0m openssl-probe v0.2.1
+2026-06-24T19:33:41.9784154Z [1m[92m  Downloaded[0m pin-project-lite v0.2.17
+2026-06-24T19:33:41.9850456Z [1m[92m  Downloaded[0m zerofrom-derive v0.1.7
+2026-06-24T19:33:41.9871219Z [1m[92m  Downloaded[0m futures-task v0.3.32
+2026-06-24T19:33:41.9896258Z [1m[92m  Downloaded[0m hyper-rustls v0.27.9
+2026-06-24T19:33:41.9922188Z [1m[92m  Downloaded[0m zvariant_utils v2.1.0
+2026-06-24T19:33:41.9942256Z [1m[92m  Downloaded[0m rusqlite v0.31.0
+2026-06-24T19:33:42.0011585Z [1m[92m  Downloaded[0m rand v0.8.6
+2026-06-24T19:33:42.0055728Z [1m[92m  Downloaded[0m log v0.4.33
+2026-06-24T19:33:42.0092668Z [1m[92m  Downloaded[0m sync_wrapper v1.0.2
+2026-06-24T19:33:42.0113065Z [1m[92m  Downloaded[0m zvariant v4.2.0
+2026-06-24T19:33:42.0162453Z [1m[92m  Downloaded[0m tracing-attributes v0.1.31
+2026-06-24T19:33:42.0200748Z [1m[92m  Downloaded[0m tinystr v0.8.3
+2026-06-24T19:33:42.0231921Z [1m[92m  Downloaded[0m zbus_names v3.0.0
+2026-06-24T19:33:42.0254310Z [1m[92m  Downloaded[0m signal-hook-registry v1.4.8
+2026-06-24T19:33:42.0275457Z [1m[92m  Downloaded[0m zmij v1.0.21
+2026-06-24T19:33:42.0301819Z [1m[92m  Downloaded[0m zerocopy v0.8.52
+2026-06-24T19:33:42.0546415Z [1m[92m  Downloaded[0m yoke-derive v0.8.2
+2026-06-24T19:33:42.0559653Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-06-24T19:33:42.0588063Z [1m[92m  Downloaded[0m tokio-stream v0.1.18
+2026-06-24T19:33:42.0646358Z [1m[92m  Downloaded[0m toml_edit v0.22.27
+2026-06-24T19:33:42.0698907Z [1m[92m  Downloaded[0m zvariant_derive v4.2.0
+2026-06-24T19:33:42.0717753Z [1m[92m  Downloaded[0m xdg-home v1.3.0
+2026-06-24T19:33:42.0732951Z [1m[92m  Downloaded[0m want v0.3.1
+2026-06-24T19:33:42.0746629Z [1m[92m  Downloaded[0m toml_write v0.1.2
+2026-06-24T19:33:42.0767607Z [1m[92m  Downloaded[0m tracing-log v0.2.0
+2026-06-24T19:33:42.0787720Z [1m[92m  Downloaded[0m tokio-util v0.7.18
+2026-06-24T19:33:42.0871923Z [1m[92m  Downloaded[0m typenum v1.20.1
+2026-06-24T19:33:42.0916211Z [1m[92m  Downloaded[0m zerovec v0.11.6
+2026-06-24T19:33:42.0986936Z [1m[92m  Downloaded[0m toml_edit v0.25.12+spec-1.1.0
+2026-06-24T19:33:42.1031972Z [1m[92m  Downloaded[0m tower-http v0.6.11
+2026-06-24T19:33:42.1131180Z [1m[92m  Downloaded[0m winnow v1.0.3
+2026-06-24T19:33:42.1252047Z [1m[92m  Downloaded[0m tracing-subscriber v0.3.23
+2026-06-24T19:33:42.1356890Z [1m[92m  Downloaded[0m vcpkg v0.2.15
+2026-06-24T19:33:42.1895308Z [1m[92m  Downloaded[0m tokio-rustls v0.26.4
+2026-06-24T19:33:42.1919801Z [1m[92m  Downloaded[0m syn v2.0.118
+2026-06-24T19:33:42.2032103Z [1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+2026-06-24T19:33:42.2047674Z [1m[92m  Downloaded[0m rustls v0.23.41
+2026-06-24T19:33:42.2169682Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-06-24T19:33:42.2188026Z [1m[92m  Downloaded[0m yoke v0.8.3
+2026-06-24T19:33:42.2211848Z [1m[92m  Downloaded[0m toml_parser v1.1.2+spec-1.1.0
+2026-06-24T19:33:42.2240034Z [1m[92m  Downloaded[0m encoding_rs v0.8.35
+2026-06-24T19:33:42.2439367Z [1m[92m  Downloaded[0m zerotrie v0.2.4
+2026-06-24T19:33:42.2481912Z [1m[92m  Downloaded[0m zbus v4.4.0
+2026-06-24T19:33:42.2551111Z [1m[92m  Downloaded[0m reqwest v0.12.28
+2026-06-24T19:33:42.2608080Z [1m[92m  Downloaded[0m tracing-core v0.1.36
+2026-06-24T19:33:42.2637368Z [1m[92m  Downloaded[0m serde_json v1.0.150
+2026-06-24T19:33:42.2713057Z [1m[92m  Downloaded[0m toml v0.8.23
+2026-06-24T19:33:42.2739245Z [1m[92m  Downloaded[0m rayon v1.12.0
+2026-06-24T19:33:42.2834885Z [1m[92m  Downloaded[0m tower v0.5.3
+2026-06-24T19:33:42.2938943Z [1m[92m  Downloaded[0m tokio-native-tls v0.3.1
+2026-06-24T19:33:42.2959277Z [1m[92m  Downloaded[0m winnow v0.7.15
+2026-06-24T19:33:42.3056234Z [1m[92m  Downloaded[0m untrusted v0.9.0
+2026-06-24T19:33:42.3074272Z [1m[92m  Downloaded[0m getrandom v0.4.3
+2026-06-24T19:33:42.3111977Z [1m[92m  Downloaded[0m futures-io v0.3.32
+2026-06-24T19:33:42.3121912Z [1m[92m  Downloaded[0m scopeguard v1.2.0
+2026-06-24T19:33:42.3135058Z [1m[92m  Downloaded[0m sysinfo v0.30.13
+2026-06-24T19:33:42.3231183Z [1m[92m  Downloaded[0m tracing v0.1.44
+2026-06-24T19:33:42.3387143Z [1m[92m  Downloaded[0m serde_spanned v0.6.9
+2026-06-24T19:33:42.3399550Z [1m[92m  Downloaded[0m libc v0.2.186
+2026-06-24T19:33:42.3786337Z [1m[92m  Downloaded[0m fallible-streaming-iterator v0.1.9
+2026-06-24T19:33:42.3797473Z [1m[92m  Downloaded[0m socket2 v0.6.4
+2026-06-24T19:33:42.3816958Z [1m[92m  Downloaded[0m serde_derive v1.0.228
+2026-06-24T19:33:42.3849123Z [1m[92m  Downloaded[0m percent-encoding v2.3.2
+2026-06-24T19:33:42.3859192Z [1m[92m  Downloaded[0m tempfile v3.27.0
+2026-06-24T19:33:42.3886014Z [1m[92m  Downloaded[0m regex-syntax v0.8.11
+2026-06-24T19:33:42.3953482Z [1m[92m  Downloaded[0m rayon-core v1.13.0
+2026-06-24T19:33:42.3991499Z [1m[92m  Downloaded[0m thiserror v1.0.69
+2026-06-24T19:33:42.4050093Z [1m[92m  Downloaded[0m slab v0.4.12
+2026-06-24T19:33:42.4064682Z [1m[92m  Downloaded[0m shlex v2.0.1
+2026-06-24T19:33:42.4079289Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+2026-06-24T19:33:42.4106511Z [1m[92m  Downloaded[0m toml_datetime v0.6.11
+2026-06-24T19:33:42.4119122Z [1m[92m  Downloaded[0m base64 v0.22.1
+2026-06-24T19:33:42.4157211Z [1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+2026-06-24T19:33:42.4773886Z [1m[92m  Downloaded[0m utf8_iter v1.0.4
+2026-06-24T19:33:42.4783121Z [1m[92m  Downloaded[0m try-lock v0.2.5
+2026-06-24T19:33:42.4792613Z [1m[92m  Downloaded[0m uuid v1.23.4
+2026-06-24T19:33:42.4821777Z [1m[92m  Downloaded[0m toml_datetime v1.1.1+spec-1.1.0
+2026-06-24T19:33:42.4834832Z [1m[92m  Downloaded[0m proc-macro-crate v3.5.0
+2026-06-24T19:33:42.4847910Z [1m[92m  Downloaded[0m smallvec v1.15.2
+2026-06-24T19:33:42.4863039Z [1m[92m  Downloaded[0m rustix v1.1.4
+2026-06-24T19:33:42.5132297Z [1m[92m  Downloaded[0m proc-macro2 v1.0.106
+2026-06-24T19:33:42.5162016Z [1m[92m  Downloaded[0m ordered-stream v0.2.0
+2026-06-24T19:33:42.5173564Z [1m[92m  Downloaded[0m nix v0.29.0
+2026-06-24T19:33:42.5284209Z [1m[92m  Downloaded[0m serde_urlencoded v0.7.1
+2026-06-24T19:33:42.5300790Z [1m[92m  Downloaded[0m tokio v1.52.3
+2026-06-24T19:33:42.5747521Z [1m[92m  Downloaded[0m openssl v0.10.81
+2026-06-24T19:33:42.5843664Z [1m[92m  Downloaded[0m zbus_macros v4.4.0
+2026-06-24T19:33:42.5858068Z [1m[92m  Downloaded[0m writeable v0.6.3
+2026-06-24T19:33:42.5878077Z [1m[92m  Downloaded[0m url v2.5.8
+2026-06-24T19:33:42.5903701Z [1m[92m  Downloaded[0m rustls-webpki v0.103.13
+2026-06-24T19:33:42.5933767Z [1m[92m  Downloaded[0m tracing-journald v0.3.2
+2026-06-24T19:33:42.5945174Z [1m[92m  Downloaded[0m static_assertions v1.1.0
+2026-06-24T19:33:42.5959253Z [1m[92m  Downloaded[0m ring v0.17.14
+2026-06-24T19:33:42.6369372Z [1m[92m  Downloaded[0m ryu v1.0.23
+2026-06-24T19:33:42.6401372Z [1m[92m  Downloaded[0m rustls-pki-types v1.14.1
+2026-06-24T19:33:42.6426390Z [1m[92m  Downloaded[0m serde_repr v0.1.20
+2026-06-24T19:33:42.6446651Z [1m[92m  Downloaded[0m icu_properties_data v2.2.0
+2026-06-24T19:33:42.6553143Z [1m[92m  Downloaded[0m hyper v1.10.1
+2026-06-24T19:33:42.6620515Z [1m[92m  Downloaded[0m hashbrown v0.17.1
+2026-06-24T19:33:42.6672712Z [1m[92m  Downloaded[0m h2 v0.4.15
+2026-06-24T19:33:42.6736434Z [1m[92m  Downloaded[0m aho-corasick v1.1.4
+2026-06-24T19:33:42.6787130Z [1m[92m  Downloaded[0m tower-service v0.3.3
+2026-06-24T19:33:42.6795339Z [1m[92m  Downloaded[0m tokio-macros v2.7.0
+2026-06-24T19:33:42.6806032Z [1m[92m  Downloaded[0m serde_core v1.0.228
+2026-06-24T19:33:42.6832649Z [1m[92m  Downloaded[0m ppv-lite86 v0.2.21
+2026-06-24T19:33:42.6846720Z [1m[92m  Downloaded[0m idna v1.1.0
+2026-06-24T19:33:42.6881484Z [1m[92m  Downloaded[0m hashbrown v0.14.5
+2026-06-24T19:33:42.6928335Z [1m[92m  Downloaded[0m futures-util v0.3.32
+2026-06-24T19:33:42.7058365Z [1m[92m  Downloaded[0m subtle v2.6.1
+2026-06-24T19:33:42.7070003Z [1m[92m  Downloaded[0m mio v1.2.1
+2026-06-24T19:33:42.7128595Z [1m[92m  Downloaded[0m sha1 v0.10.6
+2026-06-24T19:33:42.7144530Z [1m[92m  Downloaded[0m quote v1.0.46
+2026-06-24T19:33:42.7170850Z [1m[92m  Downloaded[0m memchr v2.8.2
+2026-06-24T19:33:42.7225441Z [1m[92m  Downloaded[0m indexmap v2.14.0
+2026-06-24T19:33:42.7268597Z [1m[92m  Downloaded[0m icu_locale_core v2.2.0
+2026-06-24T19:33:42.7337801Z [1m[92m  Downloaded[0m hyper-util v0.1.20
+2026-06-24T19:33:42.7398127Z [1m[92m  Downloaded[0m http v1.4.2
+2026-06-24T19:33:42.7434122Z [1m[92m  Downloaded[0m cc v1.2.65
+2026-06-24T19:33:42.7463013Z [1m[92m  Downloaded[0m thread_local v1.1.9
+2026-06-24T19:33:42.7479187Z [1m[92m  Downloaded[0m synstructure v0.13.2
+2026-06-24T19:33:42.7489547Z [1m[92m  Downloaded[0m rand_chacha v0.3.1
+2026-06-24T19:33:42.7501109Z [1m[92m  Downloaded[0m icu_normalizer v2.2.0
+2026-06-24T19:33:42.7537156Z [1m[92m  Downloaded[0m icu_collections v2.2.0
+2026-06-24T19:33:42.7598208Z [1m[92m  Downloaded[0m bitflags v2.13.0
+2026-06-24T19:33:42.7642383Z [1m[92m  Downloaded[0m regex-automata v0.4.14
+2026-06-24T19:33:42.7778708Z [1m[92m  Downloaded[0m icu_normalizer_data v2.2.0
+2026-06-24T19:33:42.7799215Z [1m[92m  Downloaded[0m bytes v1.12.0
+2026-06-24T19:33:42.7834661Z [1m[92m  Downloaded[0m async-io v2.6.0
+2026-06-24T19:33:42.7863294Z [1m[92m  Downloaded[0m icu_properties v2.2.0
+2026-06-24T19:33:42.7886265Z [1m[92m  Downloaded[0m futures-lite v2.6.1
+2026-06-24T19:33:42.7903220Z [1m[92m  Downloaded[0m enumflags2_derive v0.7.12
+2026-06-24T19:33:42.7911593Z [1m[92m  Downloaded[0m crossbeam-epoch v0.9.18
+2026-06-24T19:33:42.7936111Z [1m[92m  Downloaded[0m anyhow v1.0.102
+2026-06-24T19:33:42.7976614Z [1m[92m  Downloaded[0m openssl-sys v0.9.117
+2026-06-24T19:33:42.8031416Z [1m[92m  Downloaded[0m litemap v0.8.2
+2026-06-24T19:33:42.8054471Z [1m[92m  Downloaded[0m icu_provider v2.2.0
+2026-06-24T19:33:42.8080595Z [1m[92m  Downloaded[0m getrandom v0.2.17
+2026-06-24T19:33:42.8109258Z [1m[92m  Downloaded[0m async-task v4.7.1
+2026-06-24T19:33:42.8134931Z [1m[92m  Downloaded[0m ahash v0.8.12
+2026-06-24T19:33:42.8182948Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-06-24T19:33:42.8211979Z [1m[92m  Downloaded[0m native-tls v0.2.18
+2026-06-24T19:33:42.8227063Z [1m[92m  Downloaded[0m lock_api v0.4.14
+2026-06-24T19:33:42.8239634Z [1m[92m  Downloaded[0m httparse v1.10.1
+2026-06-24T19:33:42.8264412Z [1m[92m  Downloaded[0m futures-channel v0.3.32
+2026-06-24T19:33:42.8282971Z [1m[92m  Downloaded[0m find-msvc-tools v0.1.9
+2026-06-24T19:33:42.8299030Z [1m[92m  Downloaded[0m async-lock v3.4.2
+2026-06-24T19:33:42.8320517Z [1m[92m  Downloaded[0m zeroize v1.9.0
+2026-06-24T19:33:42.8336680Z [1m[92m  Downloaded[0m rand_core v0.6.4
+2026-06-24T19:33:42.8350260Z [1m[92m  Downloaded[0m nu-ansi-term v0.50.3
+2026-06-24T19:33:42.8376592Z [1m[92m  Downloaded[0m ipnet v2.12.0
+2026-06-24T19:33:42.8393332Z [1m[92m  Downloaded[0m http-body-util v0.1.3
+2026-06-24T19:33:42.8411290Z [1m[92m  Downloaded[0m hashlink v0.9.1
+2026-06-24T19:33:42.8429612Z [1m[92m  Downloaded[0m fastrand v2.4.1
+2026-06-24T19:33:42.8443343Z [1m[92m  Downloaded[0m event-listener v5.4.1
+2026-06-24T19:33:42.8463380Z [1m[92m  Downloaded[0m equivalent v1.0.2
+2026-06-24T19:33:42.8473283Z [1m[92m  Downloaded[0m async-fs v2.2.0
+2026-06-24T19:33:42.8484081Z [1m[92m  Downloaded[0m async-channel v2.5.0
+2026-06-24T19:33:42.8496807Z [1m[92m  Downloaded[0m foreign-types v0.3.2
+2026-06-24T19:33:42.8504859Z [1m[92m  Downloaded[0m fallible-iterator v0.3.0
+2026-06-24T19:33:42.8517479Z [1m[92m  Downloaded[0m enumflags2 v0.7.12
+2026-06-24T19:33:42.8531256Z [1m[92m  Downloaded[0m either v1.16.0
+2026-06-24T19:33:42.8546020Z [1m[92m  Downloaded[0m digest v0.10.7
+2026-06-24T19:33:42.8563835Z [1m[92m  Downloaded[0m crossbeam-deque v0.8.6
+2026-06-24T19:33:42.8577637Z [1m[92m  Downloaded[0m concurrent-queue v2.5.0
+2026-06-24T19:33:42.8594464Z [1m[92m  Downloaded[0m autocfg v1.5.1
+2026-06-24T19:33:42.8616861Z [1m[92m  Downloaded[0m zerofrom v0.1.8
+2026-06-24T19:33:42.8626427Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-06-24T19:33:42.8641013Z [1m[92m  Downloaded[0m lazy_static v1.5.0
+2026-06-24T19:33:42.8658856Z [1m[92m  Downloaded[0m displaydoc v0.2.6
+2026-06-24T19:33:42.8679059Z [1m[92m  Downloaded[0m async-trait v0.1.89
+2026-06-24T19:33:42.8715765Z [1m[92m  Downloaded[0m memoffset v0.9.1
+2026-06-24T19:33:42.8728108Z [1m[92m  Downloaded[0m http-body v1.0.1
+2026-06-24T19:33:42.8737826Z [1m[92m  Downloaded[0m hex v0.4.3
+2026-06-24T19:33:42.8754174Z [1m[92m  Downloaded[0m futures-core v0.3.32
+2026-06-24T19:33:42.8767943Z [1m[92m  Downloaded[0m atomic-waker v1.1.2
+2026-06-24T19:33:42.8780017Z [1m[92m  Downloaded[0m openssl-macros v0.1.1
+2026-06-24T19:33:42.8787986Z [1m[92m  Downloaded[0m futures-sink v0.3.32
+2026-06-24T19:33:42.8797034Z [1m[92m  Downloaded[0m endi v1.1.1
+2026-06-24T19:33:42.8808647Z [1m[92m  Downloaded[0m pkg-config v0.3.33
+2026-06-24T19:33:42.8824760Z [1m[92m  Downloaded[0m generic-array v0.14.7
+2026-06-24T19:33:42.8838187Z [1m[92m  Downloaded[0m foreign-types-shared v0.1.1
+2026-06-24T19:33:42.8844862Z [1m[92m  Downloaded[0m errno v0.3.14
+2026-06-24T19:33:42.8859721Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+2026-06-24T19:33:42.8868664Z [1m[92m  Downloaded[0m cfg_aliases v0.2.1
+2026-06-24T19:33:42.8878043Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+2026-06-24T19:33:42.8888045Z [1m[92m  Downloaded[0m serde v1.0.228
+2026-06-24T19:33:42.8926966Z [1m[92m  Downloaded[0m polling v3.11.0
+2026-06-24T19:33:42.8956374Z [1m[92m  Downloaded[0m parking v2.2.1
+2026-06-24T19:33:42.8971452Z [1m[92m  Downloaded[0m event-listener-strategy v0.5.4
+2026-06-24T19:33:42.8982646Z [1m[92m  Downloaded[0m matchers v0.2.0
+2026-06-24T19:33:42.9004767Z [1m[92m  Downloaded[0m idna_adapter v1.2.2
+2026-06-24T19:33:42.9021678Z [1m[92m  Downloaded[0m hyper-tls v0.6.0
+2026-06-24T19:33:42.9035599Z [1m[92m  Downloaded[0m parking_lot_core v0.9.12
+2026-06-24T19:33:42.9055752Z [1m[92m  Downloaded[0m fnv v1.0.7
+2026-06-24T19:33:42.9064637Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+2026-06-24T19:33:42.9077302Z [1m[92m  Downloaded[0m blocking v1.6.2
+2026-06-24T19:33:42.9089137Z [1m[92m  Downloaded[0m async-executor v1.14.0
+2026-06-24T19:33:42.9107191Z [1m[92m  Downloaded[0m potential_utf v0.1.5
+2026-06-24T19:33:42.9117864Z [1m[92m  Downloaded[0m piper v0.2.5
+2026-06-24T19:33:42.9134121Z [1m[92m  Downloaded[0m form_urlencoded v1.2.2
+2026-06-24T19:33:42.9141811Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+2026-06-24T19:33:42.9155586Z [1m[92m  Downloaded[0m async-broadcast v0.7.2
+2026-06-24T19:33:42.9234583Z [1m[92m  Downloaded[0m libsqlite3-sys v0.28.0
+2026-06-24T19:33:43.0807831Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+2026-06-24T19:33:43.0895950Z [1m[92m   Compiling[0m quote v1.0.46
+2026-06-24T19:33:43.0918877Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-06-24T19:33:43.0919794Z [1m[92m    Checking[0m cfg-if v1.0.4
+2026-06-24T19:33:44.6816244Z [1m[92m   Compiling[0m libc v0.2.186
+2026-06-24T19:33:46.8119666Z [1m[92m    Checking[0m pin-project-lite v0.2.17
+2026-06-24T19:33:46.9079467Z [1m[92m    Checking[0m futures-core v0.3.32
+2026-06-24T19:33:47.0298869Z [1m[92m    Checking[0m smallvec v1.15.2
+2026-06-24T19:33:47.2174532Z [1m[92m   Compiling[0m crossbeam-utils v0.8.21
+2026-06-24T19:33:50.1217490Z [1m[92m    Checking[0m once_cell v1.21.4
+2026-06-24T19:33:50.3298880Z [1m[92m   Compiling[0m shlex v2.0.1
+2026-06-24T19:33:50.4413559Z [1m[92m    Checking[0m bytes v1.12.0
+2026-06-24T19:33:50.6053679Z [1m[92m   Compiling[0m find-msvc-tools v0.1.9
+2026-06-24T19:33:50.8124228Z [1m[92m   Compiling[0m parking_lot_core v0.9.12
+2026-06-24T19:33:50.8549286Z [1m[92m    Checking[0m stable_deref_trait v1.2.1
+2026-06-24T19:33:50.8855018Z [1m[92m   Compiling[0m cc v1.2.65
+2026-06-24T19:33:50.9522398Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-06-24T19:33:51.1794110Z [1m[92m   Compiling[0m serde_core v1.0.228
+2026-06-24T19:33:51.3470488Z [1m[92m   Compiling[0m syn v2.0.118
+2026-06-24T19:33:51.3873954Z [1m[92m   Compiling[0m vcpkg v0.2.15
+2026-06-24T19:33:51.7163838Z [1m[92m    Checking[0m scopeguard v1.2.0
+2026-06-24T19:33:51.7554118Z [1m[92m   Compiling[0m pkg-config v0.3.33
+2026-06-24T19:33:52.0654099Z [1m[92m    Checking[0m lock_api v0.4.14
+2026-06-24T19:33:52.2654193Z [1m[92m    Checking[0m errno v0.3.14
+2026-06-24T19:33:52.3494165Z [1m[92m    Checking[0m bitflags v2.13.0
+2026-06-24T19:33:52.3714257Z [1m[92m    Checking[0m futures-io v0.3.32
+2026-06-24T19:33:52.4004545Z [1m[92m    Checking[0m parking_lot v0.12.5
+2026-06-24T19:33:52.4559310Z [1m[92m    Checking[0m signal-hook-registry v1.4.8
+2026-06-24T19:33:52.5451620Z [1m[92m    Checking[0m mio v1.2.1
+2026-06-24T19:33:52.5893926Z [1m[92m    Checking[0m socket2 v0.6.4
+2026-06-24T19:33:52.8147507Z [1m[92m   Compiling[0m serde v1.0.228
+2026-06-24T19:33:52.8454413Z [1m[92m    Checking[0m itoa v1.0.18
+2026-06-24T19:33:52.9643958Z [1m[92m    Checking[0m slab v0.4.12
+2026-06-24T19:33:53.0374418Z [1m[92m    Checking[0m parking v2.2.1
+2026-06-24T19:33:53.0929554Z [1m[92m    Checking[0m concurrent-queue v2.5.0
+2026-06-24T19:33:53.0983705Z [1m[92m    Checking[0m tracing-core v0.1.36
+2026-06-24T19:33:53.3464177Z [1m[92m   Compiling[0m zerocopy v0.8.52
+2026-06-24T19:33:53.3621212Z [1m[92m    Checking[0m futures-sink v0.3.32
+2026-06-24T19:33:53.4134780Z [1m[92m   Compiling[0m openssl-sys v0.9.117
+2026-06-24T19:33:53.5973976Z [1m[92m    Checking[0m atomic-waker v1.1.2
+2026-06-24T19:33:53.6353857Z [1m[92m    Checking[0m litemap v0.8.2
+2026-06-24T19:33:53.7694455Z [1m[92m    Checking[0m writeable v0.6.3
+2026-06-24T19:33:54.1771009Z [1m[92m    Checking[0m http v1.4.2
+2026-06-24T19:33:54.5324569Z [1m[92m   Compiling[0m synstructure v0.13.2
+2026-06-24T19:33:54.8494026Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-06-24T19:33:55.0194286Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-06-24T19:33:55.0457792Z [1m[92m   Compiling[0m icu_normalizer_data v2.2.0
+2026-06-24T19:33:55.1584246Z [1m[92m   Compiling[0m icu_properties_data v2.2.0
+2026-06-24T19:33:55.1931636Z [1m[92m    Checking[0m hashbrown v0.17.1
+2026-06-24T19:33:55.2564255Z [1m[92m   Compiling[0m winnow v1.0.3
+2026-06-24T19:33:55.6782043Z [1m[92m    Checking[0m memchr v2.8.2
+2026-06-24T19:33:56.0812989Z [1m[92m    Checking[0m utf8_iter v1.0.4
+2026-06-24T19:33:56.1503829Z [1m[92m    Checking[0m fastrand v2.4.1
+2026-06-24T19:33:56.1830125Z [1m[92m   Compiling[0m zerofrom-derive v0.1.7
+2026-06-24T19:33:56.2815660Z [1m[92m   Compiling[0m yoke-derive v0.8.2
+2026-06-24T19:33:56.6084009Z [1m[92m   Compiling[0m zerovec-derive v0.11.3
+2026-06-24T19:33:57.2122344Z [1m[92m   Compiling[0m displaydoc v0.2.6
+2026-06-24T19:33:57.3724432Z [1m[92m   Compiling[0m tokio-macros v2.7.0
+2026-06-24T19:33:57.3737615Z [1m[92m    Checking[0m zerofrom v0.1.8
+2026-06-24T19:33:57.4396894Z [1m[92m    Checking[0m yoke v0.8.3
+2026-06-24T19:33:57.5394018Z [1m[92m   Compiling[0m serde_derive v1.0.228
+2026-06-24T19:33:57.5955726Z [1m[92m    Checking[0m zerovec v0.11.6
+2026-06-24T19:33:57.7484585Z [1m[92m   Compiling[0m tracing-attributes v0.1.31
+2026-06-24T19:33:57.9413896Z [1m[92m    Checking[0m tokio v1.52.3
+2026-06-24T19:33:58.0874375Z [1m[92m    Checking[0m tinystr v0.8.3
+2026-06-24T19:33:58.2164376Z [1m[92m    Checking[0m icu_locale_core v2.2.0
+2026-06-24T19:33:58.8080252Z [1m[92m    Checking[0m tracing v0.1.44
+2026-06-24T19:33:58.9255085Z [1m[92m    Checking[0m potential_utf v0.1.5
+2026-06-24T19:33:58.9644252Z [1m[92m    Checking[0m zerotrie v0.2.4
+2026-06-24T19:33:59.1424004Z [1m[92m    Checking[0m icu_provider v2.2.0
+2026-06-24T19:33:59.3182853Z [1m[92m    Checking[0m icu_collections v2.2.0
+2026-06-24T19:33:59.5464107Z [1m[92m   Compiling[0m indexmap v2.14.0
+2026-06-24T19:33:59.5752296Z [1m[92m   Compiling[0m toml_parser v1.1.2+spec-1.1.0
+2026-06-24T19:34:00.2034314Z [1m[92m   Compiling[0m futures-macro v0.3.32
+2026-06-24T19:34:00.8529133Z [1m[92m    Checking[0m event-listener v5.4.1
+2026-06-24T19:34:00.8580980Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-06-24T19:34:00.9314247Z [1m[92m   Compiling[0m toml_datetime v1.1.1+spec-1.1.0
+2026-06-24T19:34:00.9611442Z [1m[92m    Checking[0m percent-encoding v2.3.2
+2026-06-24T19:34:01.0114271Z [1m[92m    Checking[0m log v0.4.33
+2026-06-24T19:34:01.0344563Z [1m[92m    Checking[0m futures-task v0.3.32
+2026-06-24T19:34:01.1164395Z [1m[92m    Checking[0m futures-util v0.3.32
+2026-06-24T19:34:01.1324357Z [1m[92m   Compiling[0m toml_edit v0.25.12+spec-1.1.0
+2026-06-24T19:34:01.1373865Z [1m[92m    Checking[0m event-listener-strategy v0.5.4
+2026-06-24T19:34:01.3384064Z [1m[92m    Checking[0m http-body v1.0.1
+2026-06-24T19:34:01.4034103Z [1m[92m   Compiling[0m httparse v1.10.1
+2026-06-24T19:34:01.6053903Z [1m[92m   Compiling[0m rustix v1.1.4
+2026-06-24T19:34:01.7274211Z [1m[92m    Checking[0m foreign-types-shared v0.1.1
+2026-06-24T19:34:01.7573983Z [1m[92m    Checking[0m typenum v1.20.1
+2026-06-24T19:34:01.8354388Z [1m[92m   Compiling[0m openssl v0.10.81
+2026-06-24T19:34:02.0844352Z [1m[92m    Checking[0m foreign-types v0.3.2
+2026-06-24T19:34:02.1097666Z [1m[92m    Checking[0m tokio-util v0.7.18
+2026-06-24T19:34:02.1953802Z [1m[92m   Compiling[0m proc-macro-crate v3.5.0
+2026-06-24T19:34:02.6514204Z [1m[92m    Checking[0m icu_properties v2.2.0
+2026-06-24T19:34:02.6664045Z [1m[92m    Checking[0m icu_normalizer v2.2.0
+2026-06-24T19:34:02.9163992Z [1m[92m    Checking[0m futures-lite v2.6.1
+2026-06-24T19:34:02.9283926Z [1m[92m   Compiling[0m openssl-macros v0.1.1
+2026-06-24T19:34:03.3454862Z [1m[92m   Compiling[0m zvariant_utils v2.1.0
+2026-06-24T19:34:03.4924010Z [1m[92m   Compiling[0m ahash v0.8.12
+2026-06-24T19:34:03.5034800Z [1m[92m    Checking[0m tower-service v0.3.3
+2026-06-24T19:34:03.5384046Z [1m[92m    Checking[0m linux-raw-sys v0.12.1
+2026-06-24T19:34:03.5453563Z [1m[92m    Checking[0m try-lock v0.2.5
+2026-06-24T19:34:03.5884429Z [1m[92m   Compiling[0m native-tls v0.2.18
+2026-06-24T19:34:03.5946062Z [1m[92m    Checking[0m fnv v1.0.7
+2026-06-24T19:34:03.6307590Z [1m[92m    Checking[0m h2 v0.4.15
+2026-06-24T19:34:03.6443941Z [1m[92m    Checking[0m idna_adapter v1.2.2
+2026-06-24T19:34:03.7084115Z [1m[92m    Checking[0m want v0.3.1
+2026-06-24T19:34:03.9721410Z [1m[92m    Checking[0m form_urlencoded v1.2.2
+2026-06-24T19:34:04.0443968Z [1m[92m   Compiling[0m enumflags2_derive v0.7.12
+2026-06-24T19:34:04.4973960Z [1m[92m   Compiling[0m memoffset v0.9.1
+2026-06-24T19:34:04.6114441Z [1m[92m    Checking[0m getrandom v0.2.17
+2026-06-24T19:34:04.7007876Z [1m[92m    Checking[0m crossbeam-epoch v0.9.18
+2026-06-24T19:34:04.9188216Z [1m[92m    Checking[0m futures-channel v0.3.32
+2026-06-24T19:34:05.0603960Z [1m[92m    Checking[0m async-task v4.7.1
+2026-06-24T19:34:05.1954033Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-06-24T19:34:05.3064058Z [1m[92m    Checking[0m openssl-probe v0.2.1
+2026-06-24T19:34:05.3534134Z [1m[92m    Checking[0m regex-syntax v0.8.11
+2026-06-24T19:34:05.7034664Z [1m[92m   Compiling[0m zmij v1.0.21
+2026-06-24T19:34:05.8524053Z [1m[92m   Compiling[0m cfg_aliases v0.2.1
+2026-06-24T19:34:05.8874672Z [1m[92m   Compiling[0m getrandom v0.4.3
+2026-06-24T19:34:06.0263884Z [1m[92m   Compiling[0m nix v0.29.0
+2026-06-24T19:34:06.2304757Z [1m[92m    Checking[0m regex-automata v0.4.14
+2026-06-24T19:34:06.3474369Z [1m[92m    Checking[0m hyper v1.10.1
+2026-06-24T19:34:06.5544040Z [1m[92m    Checking[0m crossbeam-deque v0.8.6
+2026-06-24T19:34:06.6773894Z [1m[92m    Checking[0m rand_core v0.6.4
+2026-06-24T19:34:06.8292341Z [1m[92m    Checking[0m enumflags2 v0.7.12
+2026-06-24T19:34:07.0883676Z [1m[92m    Checking[0m idna v1.1.0
+2026-06-24T19:34:07.1183207Z [1m[92m   Compiling[0m zvariant_derive v4.2.0
+2026-06-24T19:34:07.2733119Z [1m[92m    Checking[0m crypto-common v0.1.7
+2026-06-24T19:34:07.3323907Z [1m[92m    Checking[0m block-buffer v0.10.4
+2026-06-24T19:34:07.4037222Z [1m[92m    Checking[0m async-channel v2.5.0
+2026-06-24T19:34:07.5344076Z [1m[92m    Checking[0m ppv-lite86 v0.2.21
+2026-06-24T19:34:07.6134233Z [1m[92m    Checking[0m piper v0.2.5
+2026-06-24T19:34:07.7133869Z [1m[92m   Compiling[0m async-io v2.6.0
+2026-06-24T19:34:07.8053734Z [1m[92m   Compiling[0m libsqlite3-sys v0.28.0
+2026-06-24T19:34:07.8447397Z [1m[92m    Checking[0m sync_wrapper v1.0.2
+2026-06-24T19:34:07.8880424Z [1m[92m    Checking[0m endi v1.1.1
+2026-06-24T19:34:07.9287951Z [1m[92m    Checking[0m base64 v0.22.1
+2026-06-24T19:34:07.9644104Z [1m[92m    Checking[0m ipnet v2.12.0
+2026-06-24T19:34:07.9898146Z [1m[92m    Checking[0m tower-layer v0.3.3
+2026-06-24T19:34:08.0056205Z [1m[92m    Checking[0m lazy_static v1.5.0
+2026-06-24T19:34:08.0429279Z [1m[92m   Compiling[0m serde_json v1.0.150
+2026-06-24T19:34:08.1055230Z [1m[92m    Checking[0m static_assertions v1.1.0
+2026-06-24T19:34:08.1302269Z [1m[92m    Checking[0m tower v0.5.3
+2026-06-24T19:34:08.1391954Z [1m[92m    Checking[0m hyper-util v0.1.20
+2026-06-24T19:34:08.1434513Z [1m[92m    Checking[0m zvariant v4.2.0
+2026-06-24T19:34:08.1612149Z [1m[92m    Checking[0m sharded-slab v0.1.7
+2026-06-24T19:34:08.5624430Z [1m[92m    Checking[0m rand_chacha v0.3.1
+2026-06-24T19:34:08.7045908Z [1m[92m    Checking[0m polling v3.11.0
+2026-06-24T19:34:08.8540596Z [1m[92m    Checking[0m blocking v1.6.2
+2026-06-24T19:34:08.9696123Z [1m[92m    Checking[0m matchers v0.2.0
+2026-06-24T19:34:08.9746332Z [1m[92m    Checking[0m digest v0.10.7
+2026-06-24T19:34:09.0304563Z [1m[92m    Checking[0m url v2.5.8
+2026-06-24T19:34:09.0700422Z [1m[92m    Checking[0m hashbrown v0.14.5
+2026-06-24T19:34:09.4286414Z [1m[92m    Checking[0m tokio-native-tls v0.3.1
+2026-06-24T19:34:09.6821840Z [1m[92m    Checking[0m http-body-util v0.1.3
+2026-06-24T19:34:09.7594552Z [1m[92m    Checking[0m async-lock v3.4.2
+2026-06-24T19:34:09.8214425Z [1m[92m    Checking[0m tracing-log v0.2.0
+2026-06-24T19:34:09.8361402Z [1m[92m    Checking[0m serde_spanned v0.6.9
+2026-06-24T19:34:09.8924066Z [1m[92m    Checking[0m toml_datetime v0.6.11
+2026-06-24T19:34:09.9117246Z [1m[92m    Checking[0m thread_local v1.1.9
+2026-06-24T19:34:10.0134054Z [1m[92m    Checking[0m either v1.16.0
+2026-06-24T19:34:10.0293775Z [1m[92m    Checking[0m ryu v1.0.23
+2026-06-24T19:34:10.1121867Z [1m[92m   Compiling[0m anyhow v1.0.102
+2026-06-24T19:34:10.1333977Z [1m[92m    Checking[0m winnow v0.7.15
+2026-06-24T19:34:10.1654108Z [1m[92m    Checking[0m toml_write v0.1.2
+2026-06-24T19:34:10.2915108Z [1m[92m    Checking[0m cpufeatures v0.2.17
+2026-06-24T19:34:10.3021722Z [1m[92m    Checking[0m zeroize v1.9.0
+2026-06-24T19:34:10.3294338Z [1m[92m   Compiling[0m thiserror v1.0.69
+2026-06-24T19:34:10.4034063Z [1m[92m    Checking[0m nu-ansi-term v0.50.3
+2026-06-24T19:34:10.5507455Z [1m[92m    Checking[0m rustls-pki-types v1.14.1
+2026-06-24T19:34:10.5734358Z [1m[92m    Checking[0m tracing-subscriber v0.3.23
+2026-06-24T19:34:10.7573962Z [1m[92m    Checking[0m sha1 v0.10.6
+2026-06-24T19:34:10.9223757Z [1m[92m    Checking[0m async-fs v2.2.0
+2026-06-24T19:34:11.0654367Z [1m[92m    Checking[0m rayon v1.12.0
+2026-06-24T19:34:11.4958792Z [1m[92m    Checking[0m serde_urlencoded v0.7.1
+2026-06-24T19:34:11.4983373Z [1m[92m    Checking[0m toml_edit v0.22.27
+2026-06-24T19:34:11.6348377Z [1m[92m    Checking[0m zbus_names v3.0.0
+2026-06-24T19:34:12.0003262Z [1m[92m    Checking[0m hyper-tls v0.6.0
+2026-06-24T19:34:12.6842943Z [1m[92m    Checking[0m hashlink v0.9.1
+2026-06-24T19:34:12.7544451Z [1m[92m    Checking[0m tower-http v0.6.11
+2026-06-24T19:34:12.9806019Z [1m[92m    Checking[0m rand v0.8.6
+2026-06-24T19:34:13.1354065Z [1m[92m    Checking[0m async-executor v1.14.0
+2026-06-24T19:34:13.2723947Z [1m[92m   Compiling[0m zbus_macros v4.4.0
+2026-06-24T19:34:13.4008896Z [1m[92m    Checking[0m async-broadcast v0.7.2
+2026-06-24T19:34:13.5024502Z [1m[92m   Compiling[0m serde_repr v0.1.20
+2026-06-24T19:34:13.5423994Z [1m[92m   Compiling[0m async-trait v0.1.89
+2026-06-24T19:34:13.8253931Z [1m[92m   Compiling[0m thiserror-impl v1.0.69
+2026-06-24T19:34:14.3244341Z [1m[92m    Checking[0m xdg-home v1.3.0
+2026-06-24T19:34:14.3634062Z [1m[92m    Checking[0m ordered-stream v0.2.0
+2026-06-24T19:34:14.6004016Z [1m[92m    Checking[0m encoding_rs v0.8.35
+2026-06-24T19:34:14.8934006Z [1m[92m    Checking[0m fallible-iterator v0.3.0
+2026-06-24T19:34:15.1453899Z [1m[92m    Checking[0m fallible-streaming-iterator v0.1.9
+2026-06-24T19:34:15.2284061Z [1m[92m    Checking[0m hex v0.4.3
+2026-06-24T19:34:15.4063698Z [1m[92m    Checking[0m mime v0.3.17
+2026-06-24T19:34:15.5533292Z [1m[92m    Checking[0m reqwest v0.12.28
+2026-06-24T19:34:15.5726225Z [1m[92m    Checking[0m sysinfo v0.30.13
+2026-06-24T19:34:15.9934466Z [1m[92m    Checking[0m zbus v4.4.0
+2026-06-24T19:34:15.9993774Z [1m[92m    Checking[0m toml v0.8.23
+2026-06-24T19:34:16.1693930Z [1m[92m    Checking[0m tracing-journald v0.3.2
+2026-06-24T19:34:16.2814217Z [1m[92m    Checking[0m uuid v1.23.4
+2026-06-24T19:34:16.4204081Z [1m[92m    Checking[0m tokio-stream v0.1.18
+2026-06-24T19:34:16.5064018Z [1m[92m    Checking[0m tempfile v3.27.0
+2026-06-24T19:34:32.6104366Z [1m[92m    Checking[0m rusqlite v0.31.0
+2026-06-24T19:34:33.0028653Z [1m[92m    Checking[0m thaid v0.1.0 (/home/runner/work/Theonix-OS/Theonix-OS/thaid)
+2026-06-24T19:34:33.5404336Z [1m[91merror[E0432][0m[1m: unresolved imports `sysinfo::CpuExt`, `sysinfo::SystemExt`[0m
+2026-06-24T19:34:33.5405194Z  [1m[94m--> [0msrc/hardware/mod.rs:5:15
+2026-06-24T19:34:33.5405737Z   [1m[94m|[0m
+2026-06-24T19:34:33.5406324Z [1m[94m5[0m [1m[94m|[0m use sysinfo::{CpuExt, System, SystemExt};
+2026-06-24T19:34:33.5407480Z   [1m[94m|[0m               [1m[91m^^^^^^[0m          [1m[91m^^^^^^^^^[0m [1m[91mno `SystemExt` in the root[0m
+2026-06-24T19:34:33.5408214Z   [1m[94m|[0m               [1m[91m|[0m
+2026-06-24T19:34:33.5408772Z   [1m[94m|[0m               [1m[91mno `CpuExt` in the root[0m
+2026-06-24T19:34:33.5409564Z   [1m[94m|[0m
+2026-06-24T19:34:33.5410041Z [1m[96mhelp[0m: a similar name exists in the module
+2026-06-24T19:34:33.5410554Z   [1m[94m|[0m
+2026-06-24T19:34:33.5411193Z [1m[94m5[0m [91m- [0muse sysinfo::{CpuExt, System, [91mSystemExt[0m};
+2026-06-24T19:34:33.5412090Z [1m[94m5[0m [92m+ [0muse sysinfo::{CpuExt, System, [92mSystem[0m};
+2026-06-24T19:34:33.5412971Z   [1m[94m|[0m
+2026-06-24T19:34:33.5413171Z 
+2026-06-24T19:34:33.8580259Z [1m[91merror[0m[1m: unused import: `error`[0m
+2026-06-24T19:34:33.8580990Z   [1m[94m--> [0msrc/main.rs:18:15
+2026-06-24T19:34:33.8581408Z    [1m[94m|[0m
+2026-06-24T19:34:33.8581982Z [1m[94m18[0m [1m[94m|[0m use tracing::{error, info};
+2026-06-24T19:34:33.8582853Z    [1m[94m|[0m               [1m[91m^^^^^[0m
+2026-06-24T19:34:33.8583272Z    [1m[94m|[0m
+2026-06-24T19:34:33.8583734Z    [1m[94m= [0m[1mnote[0m: `-D unused-imports` implied by `-D warnings`
+2026-06-24T19:34:33.8584491Z    [1m[94m= [0m[1mhelp[0m: to override `-D warnings` add `#[allow(unused_imports)]`
+2026-06-24T19:34:33.8584894Z 
+2026-06-24T19:34:33.9891728Z [1m[91merror[0m[1m: unused import: `crate::config::ThaidConfig`[0m
+2026-06-24T19:34:33.9893202Z  [1m[94m--> [0msrc/models/manager.rs:5:5
+2026-06-24T19:34:33.9893768Z   [1m[94m|[0m
+2026-06-24T19:34:33.9894395Z [1m[94m5[0m [1m[94m|[0m use crate::config::ThaidConfig;
+2026-06-24T19:34:33.9895103Z   [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-06-24T19:34:33.9895486Z 
+2026-06-24T19:34:34.3118283Z [1m[91merror[E0277][0m[1m: the trait bound `std::string::String: std::convert::TryFrom<&zbus::zvariant::OwnedValue>` is not satisfied[0m
+2026-06-24T19:34:34.3119900Z   [1m[94m--> [0msrc/dbus/ai_interface.rs:62:27
+2026-06-24T19:34:34.3120636Z    [1m[94m|[0m
+2026-06-24T19:34:34.3121695Z [1m[94m62[0m [1m[94m|[0m             .and_then(|v| String::try_from(v.clone()).ok());
+2026-06-24T19:34:34.3124286Z    [1m[94m|[0m                           [1m[91m^^^^^^[0m [1m[91mthe trait `std::convert::From<&zbus::zvariant::OwnedValue>` is not implemented for `std::string::String`[0m
+2026-06-24T19:34:34.3125725Z    [1m[94m|[0m
+2026-06-24T19:34:34.3127151Z    [1m[94m= [0m[1mhelp[0m: consider casting the `&zbus::zvariant::OwnedValue` value to `&zbus::zvariant::Value<'static>`
+2026-06-24T19:34:34.3128995Z    [1m[94m= [0m[1mhelp[0m: `std::string::String` implements trait `std::convert::From<T>`:
+2026-06-24T19:34:34.3130006Z              std::convert::From<&mut str>
+2026-06-24T19:34:34.3130840Z              std::convert::From<&std::string::String>
+2026-06-24T19:34:34.3131610Z              std::convert::From<&str>
+2026-06-24T19:34:34.3132433Z              std::convert::From<&zbus::zvariant::Signature<'_>>
+2026-06-24T19:34:34.3133312Z              std::convert::From<char>
+2026-06-24T19:34:34.3133782Z              std::convert::From<reqwest::Url>
+2026-06-24T19:34:34.3134316Z              std::convert::From<std::borrow::Cow<'_, str>>
+2026-06-24T19:34:34.3134884Z              std::convert::From<std::boxed::Box<str>>
+2026-06-24T19:34:34.3135363Z            and 4 others
+2026-06-24T19:34:34.3136549Z    [1m[94m= [0m[1mnote[0m: required for `&zbus::zvariant::OwnedValue` to implement `std::convert::Into<std::string::String>`
+2026-06-24T19:34:34.3138159Z    [1m[94m= [0m[1mnote[0m: required for `std::string::String` to implement `std::convert::TryFrom<&zbus::zvariant::OwnedValue>`
+2026-06-24T19:34:34.3138923Z 
+2026-06-24T19:34:34.3144330Z [1m[91merror[E0277][0m[1m: the trait bound `std::string::String: std::convert::TryFrom<&zbus::zvariant::OwnedValue>` is not satisfied[0m
+2026-06-24T19:34:34.3145906Z   [1m[94m--> [0msrc/dbus/ai_interface.rs:67:27
+2026-06-24T19:34:34.3146676Z    [1m[94m|[0m
+2026-06-24T19:34:34.3147620Z [1m[94m67[0m [1m[94m|[0m             .and_then(|v| String::try_from(v.clone()).ok());
+2026-06-24T19:34:34.3151714Z    [1m[94m|[0m                           [1m[91m^^^^^^[0m [1m[91mthe trait `std::convert::From<&zbus::zvariant::OwnedValue>` is not implemented for `std::string::String`[0m
+2026-06-24T19:34:34.3153899Z    [1m[94m|[0m
+2026-06-24T19:34:34.3155383Z    [1m[94m= [0m[1mhelp[0m: consider casting the `&zbus::zvariant::OwnedValue` value to `&zbus::zvariant::Value<'static>`
+2026-06-24T19:34:34.3157050Z    [1m[94m= [0m[1mhelp[0m: `std::string::String` implements trait `std::convert::From<T>`:
+2026-06-24T19:34:34.3158048Z              std::convert::From<&mut str>
+2026-06-24T19:34:34.3158809Z              std::convert::From<&std::string::String>
+2026-06-24T19:34:34.3159559Z              std::convert::From<&str>
+2026-06-24T19:34:34.3160320Z              std::convert::From<&zbus::zvariant::Signature<'_>>
+2026-06-24T19:34:34.3161217Z              std::convert::From<char>
+2026-06-24T19:34:34.3161905Z              std::convert::From<reqwest::Url>
+2026-06-24T19:34:34.3162955Z              std::convert::From<std::borrow::Cow<'_, str>>
+2026-06-24T19:34:34.3163769Z              std::convert::From<std::boxed::Box<str>>
+2026-06-24T19:34:34.3164504Z            and 4 others
+2026-06-24T19:34:34.3165791Z    [1m[94m= [0m[1mnote[0m: required for `&zbus::zvariant::OwnedValue` to implement `std::convert::Into<std::string::String>`
+2026-06-24T19:34:34.3167573Z    [1m[94m= [0m[1mnote[0m: required for `std::string::String` to implement `std::convert::TryFrom<&zbus::zvariant::OwnedValue>`
+2026-06-24T19:34:34.3168548Z 
+2026-06-24T19:34:34.3547289Z [1m[91merror[E0277][0m[1m: the trait bound `std::string::String: std::convert::From<&zbus::zvariant::OwnedValue>` is not satisfied[0m
+2026-06-24T19:34:34.3548869Z   [1m[94m--> [0msrc/dbus/ai_interface.rs:62:27
+2026-06-24T19:34:34.3549400Z    [1m[94m|[0m
+2026-06-24T19:34:34.3549915Z [1m[94m62[0m [1m[94m|[0m             .and_then(|v| String::try_from(v.clone()).ok());
+2026-06-24T19:34:34.3550813Z    [1m[94m|[0m                           [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[91mthe trait `std::convert::From<&zbus::zvariant::OwnedValue>` is not implemented for `std::string::String`[0m
+2026-06-24T19:34:34.3551463Z    [1m[94m|[0m
+2026-06-24T19:34:34.3552033Z    [1m[94m= [0m[1mhelp[0m: consider casting the `&zbus::zvariant::OwnedValue` value to `&zbus::zvariant::Value<'static>`
+2026-06-24T19:34:34.3553292Z    [1m[94m= [0m[1mhelp[0m: `std::string::String` implements trait `std::convert::From<T>`:
+2026-06-24T19:34:34.3553889Z              std::convert::From<&mut str>
+2026-06-24T19:34:34.3554182Z              std::convert::From<&std::string::String>
+2026-06-24T19:34:34.3554469Z              std::convert::From<&str>
+2026-06-24T19:34:34.3554776Z              std::convert::From<&zbus::zvariant::Signature<'_>>
+2026-06-24T19:34:34.3555082Z              std::convert::From<char>
+2026-06-24T19:34:34.3555351Z              std::convert::From<reqwest::Url>
+2026-06-24T19:34:34.3555653Z              std::convert::From<std::borrow::Cow<'_, str>>
+2026-06-24T19:34:34.3555967Z              std::convert::From<std::boxed::Box<str>>
+2026-06-24T19:34:34.3556243Z            and 4 others
+2026-06-24T19:34:34.3556858Z    [1m[94m= [0m[1mnote[0m: required for `&zbus::zvariant::OwnedValue` to implement `std::convert::Into<std::string::String>`
+2026-06-24T19:34:34.3557720Z    [1m[94m= [0m[1mnote[0m: required for `std::string::String` to implement `std::convert::TryFrom<&zbus::zvariant::OwnedValue>`
+2026-06-24T19:34:34.3558165Z 
+2026-06-24T19:34:34.3558644Z [1m[91merror[E0277][0m[1m: the trait bound `std::string::String: std::convert::From<&zbus::zvariant::OwnedValue>` is not satisfied[0m
+2026-06-24T19:34:34.3559247Z   [1m[94m--> [0msrc/dbus/ai_interface.rs:67:27
+2026-06-24T19:34:34.3559544Z    [1m[94m|[0m
+2026-06-24T19:34:34.3559937Z [1m[94m67[0m [1m[94m|[0m             .and_then(|v| String::try_from(v.clone()).ok());
+2026-06-24T19:34:34.3560811Z    [1m[94m|[0m                           [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[91mthe trait `std::convert::From<&zbus::zvariant::OwnedValue>` is not implemented for `std::string::String`[0m
+2026-06-24T19:34:34.3561665Z    [1m[94m|[0m
+2026-06-24T19:34:34.3562213Z    [1m[94m= [0m[1mhelp[0m: consider casting the `&zbus::zvariant::OwnedValue` value to `&zbus::zvariant::Value<'static>`
+2026-06-24T19:34:34.3563245Z    [1m[94m= [0m[1mhelp[0m: `std::string::String` implements trait `std::convert::From<T>`:
+2026-06-24T19:34:34.3563661Z              std::convert::From<&mut str>
+2026-06-24T19:34:34.3563949Z              std::convert::From<&std::string::String>
+2026-06-24T19:34:34.3564234Z              std::convert::From<&str>
+2026-06-24T19:34:34.3564536Z              std::convert::From<&zbus::zvariant::Signature<'_>>
+2026-06-24T19:34:34.3564840Z              std::convert::From<char>
+2026-06-24T19:34:34.3565097Z              std::convert::From<reqwest::Url>
+2026-06-24T19:34:34.3565396Z              std::convert::From<std::borrow::Cow<'_, str>>
+2026-06-24T19:34:34.3565712Z              std::convert::From<std::boxed::Box<str>>
+2026-06-24T19:34:34.3565997Z            and 4 others
+2026-06-24T19:34:34.3566983Z    [1m[94m= [0m[1mnote[0m: required for `&zbus::zvariant::OwnedValue` to implement `std::convert::Into<std::string::String>`
+2026-06-24T19:34:34.3568698Z    [1m[94m= [0m[1mnote[0m: required for `std::string::String` to implement `std::convert::TryFrom<&zbus::zvariant::OwnedValue>`
+2026-06-24T19:34:34.3569504Z 
+2026-06-24T19:34:34.4472164Z [1m[91merror[E0433][0m[1m: cannot find module or crate `dirs_next` in this scope[0m
+2026-06-24T19:34:34.4472988Z   [1m[94m--> [0msrc/config.rs:45:24
+2026-06-24T19:34:34.4473290Z    [1m[94m|[0m
+2026-06-24T19:34:34.4474066Z [1m[94m45[0m [1m[94m|[0m         let data_dir = dirs_next::data_local_dir()
+2026-06-24T19:34:34.4474687Z    [1m[94m|[0m                        [1m[91m^^^^^^^^^[0m [1m[91muse of unresolved module or unlinked crate `dirs_next`[0m
+2026-06-24T19:34:34.4475135Z    [1m[94m|[0m
+2026-06-24T19:34:34.4475668Z    [1m[94m= [0m[1mhelp[0m: if you wanted to use a crate named `dirs_next`, use `cargo add dirs_next` to add it to your `Cargo.toml`
+2026-06-24T19:34:34.4476133Z 
+2026-06-24T19:34:34.4778700Z [1m[91merror[E0433][0m[1m: cannot find module or crate `dirs_next` in this scope[0m
+2026-06-24T19:34:34.4779740Z   [1m[94m--> [0msrc/config.rs:73:35
+2026-06-24T19:34:34.4780350Z    [1m[94m|[0m
+2026-06-24T19:34:34.4781269Z [1m[94m73[0m [1m[94m|[0m         if let Some(config_dir) = dirs_next::config_dir() {
+2026-06-24T19:34:34.4782991Z    [1m[94m|[0m                                   [1m[91m^^^^^^^^^[0m [1m[91muse of unresolved module or unlinked crate `dirs_next`[0m
+2026-06-24T19:34:34.4784113Z    [1m[94m|[0m
+2026-06-24T19:34:34.4785349Z    [1m[94m= [0m[1mhelp[0m: if you wanted to use a crate named `dirs_next`, use `cargo add dirs_next` to add it to your `Cargo.toml`
+2026-06-24T19:34:34.4786325Z 
+2026-06-24T19:34:34.8070874Z [1mSome errors have detailed explanations: E0277, E0432, E0433.[0m
+2026-06-24T19:34:34.8071900Z [1mFor more information about an error, try `rustc --explain E0277`.[0m
+2026-06-24T19:34:34.8549437Z [1m[91merror[0m: could not compile `thaid` (bin "thaid" test) due to 9 previous errors
+2026-06-24T19:34:34.8550463Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+2026-06-24T19:34:34.8562485Z [1m[91merror[0m: could not compile `thaid` (bin "thaid") due to 9 previous errors
+2026-06-24T19:34:34.9252092Z ##[error]Process completed with exit code 101.

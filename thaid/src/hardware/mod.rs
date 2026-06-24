@@ -2,7 +2,7 @@
 // thaid — Hardware Detection (GPU backend for Ollama)
 // =============================================================================
 
-use sysinfo::{CpuExt, System, SystemExt};
+use sysinfo::System;
 use tracing::info;
 
 /// Which GPU compute backend Ollama should use.

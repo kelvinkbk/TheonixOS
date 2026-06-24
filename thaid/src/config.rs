@@ -42,7 +42,7 @@ pub struct ThaidConfig {
 
 impl Default for ThaidConfig {
     fn default() -> Self {
-        let data_dir = dirs_next::data_local_dir()
+        let data_dir = dirs::data_local_dir()
             .unwrap_or_else(|| PathBuf::from("/tmp"))
             .join("theonix")
             .join("ai");
@@ -70,7 +70,7 @@ impl ThaidConfig {
     ///   3. Built-in defaults                     (no file found)
     pub fn load() -> Result<Self> {
         // 1. User config
-        if let Some(config_dir) = dirs_next::config_dir() {
+        if let Some(config_dir) = dirs::config_dir() {
             let user_config = config_dir.join("theonix").join("thaid.toml");
             if user_config.exists() {
                 tracing::debug!("Loading user config: {}", user_config.display());

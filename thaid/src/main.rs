@@ -15,7 +15,7 @@
 //   - All AI processing is local — no data leaves the device
 
 use anyhow::{Context, Result};
-use tracing::{error, info};
+use tracing::info;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 mod config;
