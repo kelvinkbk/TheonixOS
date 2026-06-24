@@ -14,6 +14,8 @@
 //   - Models loaded lazily on first query, unloaded after idle timeout
 //   - All AI processing is local — no data leaves the device
 
+#![allow(dead_code)]
+
 use anyhow::{Context, Result};
 use tracing::info;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
