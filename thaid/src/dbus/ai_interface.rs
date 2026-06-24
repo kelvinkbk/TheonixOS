@@ -13,16 +13,16 @@ use zbus::interface;
 /// Implements the org.theonix.AI D-Bus interface.
 /// This is the primary interface for all AI operations.
 pub struct AIInterface {
-    config:        ThaidConfig,
+    config: ThaidConfig,
     model_manager: Arc<ModelManager>,
-    memory:        Arc<RwLock<ConversationStore>>,
+    memory: Arc<RwLock<ConversationStore>>,
 }
 
 impl AIInterface {
     pub fn new(
-        config:        ThaidConfig,
+        config: ThaidConfig,
         model_manager: Arc<ModelManager>,
-        memory:        ConversationStore,
+        memory: ConversationStore,
     ) -> Self {
         Self {
             config,
@@ -45,11 +45,13 @@ impl AIInterface {
     /// Returns: The AI's response text
     async fn query(
         &self,
-        prompt:  String,
+        prompt: String,
         options: HashMap<String, zbus::zvariant::OwnedValue>,
     ) -> zbus::fdo::Result<String> {
         if prompt.trim().is_empty() {
-            return Err(zbus::fdo::Error::InvalidArgs("Prompt cannot be empty".into()));
+            return Err(zbus::fdo::Error::InvalidArgs(
+                "Prompt cannot be empty".into(),
+            ));
         }
 
         info!(prompt_len = prompt.len(), "Query received");
@@ -79,7 +81,8 @@ impl AIInterface {
         };
 
         // Send to model manager (loads model lazily)
-        let response = self.model_manager
+        let response = self
+            .model_manager
             .query(&full_prompt, model_override.as_deref())
             .await
             .map_err(|e| {
@@ -105,22 +108,23 @@ impl AIInterface {
     ///   "model_state"  — "unloaded" | "loading" | "ready"
     ///   "model_name"   — current model name (or empty string)
     ///   "version"      — thaid version string
-    async fn get_status(
-        &self,
-    ) -> zbus::fdo::Result<HashMap<String, String>> {
+    async fn get_status(&self) -> zbus::fdo::Result<HashMap<String, String>> {
         let state = self.model_manager.get_state().await;
 
         let (state_str, model_name) = match &state {
-            crate::models::ModelState::Unloaded  => ("unloaded".to_string(), String::new()),
-            crate::models::ModelState::Loading   => ("loading".to_string(),  String::new()),
+            crate::models::ModelState::Unloaded => ("unloaded".to_string(), String::new()),
+            crate::models::ModelState::Loading => ("loading".to_string(), String::new()),
             crate::models::ModelState::Ready { name } => ("ready".to_string(), name.clone()),
         };
 
         let mut status = HashMap::new();
         status.insert("model_state".to_string(), state_str);
-        status.insert("model_name".to_string(),  model_name);
-        status.insert("version".to_string(),      env!("CARGO_PKG_VERSION").to_string());
-        status.insert("default_model".to_string(), self.config.default_model.clone());
+        status.insert("model_name".to_string(), model_name);
+        status.insert("version".to_string(), env!("CARGO_PKG_VERSION").to_string());
+        status.insert(
+            "default_model".to_string(),
+            self.config.default_model.clone(),
+        );
 
         Ok(status)
     }
@@ -129,7 +133,9 @@ impl AIInterface {
     async fn new_session(&self) -> zbus::fdo::Result<String> {
         let session_id = Uuid::new_v4().to_string();
         let mut memory = self.memory.write().await;
-        memory.create_session(&session_id).await
+        memory
+            .create_session(&session_id)
+            .await
             .map_err(|e| zbus::fdo::Error::Failed(format!("Failed to create session: {e}")))?;
         info!(session_id = %session_id, "New AI session created");
         Ok(session_id)
@@ -138,7 +144,9 @@ impl AIInterface {
     /// Delete a conversation session and all its history.
     async fn delete_session(&self, session_id: String) -> zbus::fdo::Result<()> {
         let mut memory = self.memory.write().await;
-        memory.delete_session(&session_id).await
+        memory
+            .delete_session(&session_id)
+            .await
             .map_err(|e| zbus::fdo::Error::Failed(format!("Failed to delete session: {e}")))?;
         info!(session_id = %session_id, "Session deleted");
         Ok(())

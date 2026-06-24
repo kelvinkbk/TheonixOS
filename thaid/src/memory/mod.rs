@@ -51,7 +51,9 @@ impl ConversationStore {
         )?;
 
         info!(path = %path.display(), "Conversation memory database opened");
-        Ok(Self { conn: Mutex::new(conn) })
+        Ok(Self {
+            conn: Mutex::new(conn),
+        })
     }
 
     /// Create a new conversation session.
@@ -60,7 +62,8 @@ impl ConversationStore {
         conn.execute(
             "INSERT OR IGNORE INTO sessions (id) VALUES (?1)",
             params![session_id],
-        ).context("Failed to create session")?;
+        )
+        .context("Failed to create session")?;
         debug!(session_id, "Session created");
         Ok(())
     }

@@ -21,9 +21,9 @@ pub enum GpuBackend {
 impl std::fmt::Display for GpuBackend {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            GpuBackend::Cuda    => write!(f, "cuda"),
-            GpuBackend::Rocm    => write!(f, "rocm"),
-            GpuBackend::Sycl    => write!(f, "sycl"),
+            GpuBackend::Cuda => write!(f, "cuda"),
+            GpuBackend::Rocm => write!(f, "rocm"),
+            GpuBackend::Sycl => write!(f, "sycl"),
             GpuBackend::CpuOnly => write!(f, "cpu-only"),
         }
     }
@@ -32,23 +32,23 @@ impl std::fmt::Display for GpuBackend {
 /// System hardware information relevant to AI performance.
 #[derive(Debug, Clone)]
 pub struct HardwareInfo {
-    pub gpu_backend:  GpuBackend,
+    pub gpu_backend: GpuBackend,
     pub total_ram_mb: u64,
-    pub cpu_count:    usize,
-    pub cpu_name:     String,
+    pub cpu_count: usize,
+    pub cpu_name: String,
 }
 
 impl HardwareInfo {
     /// Detect GPU and memory at startup.
     /// This is a best-effort detection — never fails.
     pub fn detect() -> Self {
-        let gpu_backend  = detect_gpu_backend();
+        let gpu_backend = detect_gpu_backend();
         let (ram, cpus, cpu_name) = detect_system_info();
 
         let info = Self {
             gpu_backend,
             total_ram_mb: ram,
-            cpu_count:    cpus,
+            cpu_count: cpus,
             cpu_name,
         };
 
@@ -75,7 +75,7 @@ impl HardwareInfo {
         let has_gpu = self.gpu_backend != GpuBackend::CpuOnly;
         match (has_gpu, self.total_ram_mb) {
             (true, ram) if ram >= 16_384 => "llama3:8b",
-            (true, ram) if ram >= 8_192  => "llama3:8b",
+            (true, ram) if ram >= 8_192 => "llama3:8b",
             (false, ram) if ram >= 16_384 => "llama3:8b",
             (false, ram) if ram >= 8_192 => "phi3:mini",
             _ => "gemma:2b",

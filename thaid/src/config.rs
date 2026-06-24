@@ -48,15 +48,17 @@ impl Default for ThaidConfig {
             .join("ai");
 
         Self {
-            ollama_url:              "http://127.0.0.1:11434".to_string(),
-            default_model:           "llama3:8b".to_string(),
-            idle_timeout_secs:       600, // 10 minutes
-            memory_db_path:          data_dir.join("memory.db"),
-            memory_max_turns:        100,
-            whisper_model:           "base".to_string(),
-            piper_voice_path:        PathBuf::from("/usr/share/theonix/models/piper/en_US-lessac-medium.onnx"),
+            ollama_url: "http://127.0.0.1:11434".to_string(),
+            default_model: "llama3:8b".to_string(),
+            idle_timeout_secs: 600, // 10 minutes
+            memory_db_path: data_dir.join("memory.db"),
+            memory_max_turns: 100,
+            whisper_model: "base".to_string(),
+            piper_voice_path: PathBuf::from(
+                "/usr/share/theonix/models/piper/en_US-lessac-medium.onnx",
+            ),
             default_permission_tier: 1, // suggest-only by default
-            telemetry_enabled:       false,
+            telemetry_enabled: false,
         }
     }
 }
