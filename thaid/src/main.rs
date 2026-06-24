@@ -60,8 +60,7 @@ async fn main() -> Result<()> {
     );
 
     // ---- Configuration -----------------------------------------------------
-    let config = config::ThaidConfig::load()
-        .context("Failed to load thaid configuration")?;
+    let config = config::ThaidConfig::load().context("Failed to load thaid configuration")?;
 
     info!(
         ollama_url = %config.ollama_url,
@@ -84,13 +83,11 @@ async fn main() -> Result<()> {
         .context("Failed to open conversation memory database")?;
 
     // ---- Model manager (lazy loading) -------------------------------------
-    let model_manager = std::sync::Arc::new(
-        models::ModelManager::new(
-            config.ollama_url.clone(),
-            config.default_model.clone(),
-            std::time::Duration::from_secs(config.idle_timeout_secs),
-        )
-    );
+    let model_manager = std::sync::Arc::new(models::ModelManager::new(
+        config.ollama_url.clone(),
+        config.default_model.clone(),
+        std::time::Duration::from_secs(config.idle_timeout_secs),
+    ));
 
     // Start the idle watcher — unloads model after inactivity
     let mgr_clone = model_manager.clone();
@@ -105,11 +102,7 @@ async fn main() -> Result<()> {
         .context("Cannot acquire D-Bus name org.theonix.AI — another instance may be running")?
         .serve_at(
             "/org/theonix/AI",
-            dbus::AIInterface::new(
-                config.clone(),
-                model_manager.clone(),
-                memory,
-            ),
+            dbus::AIInterface::new(config.clone(), model_manager.clone(), memory),
         )
         .context("Failed to register D-Bus object")?
         .build()

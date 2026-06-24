@@ -1,0 +1,4 @@
+﻿2026-06-24T18:49:40.8297817Z ##[group]Run find . -name "*.sh" -not -path "*/node_modules/*" -print0 | xargs -0 shellcheck --severity=warning
+2026-06-24T18:49:40.8299330Z [36;1mfind . -name "*.sh" -not -path "*/node_modules/*" -print0 | xargs -0 shellcheck --severity=warning[0m
+2026-06-24T18:49:40.8490260Z shell: /usr/bin/bash -e {0}
+2026-06-24T18:49:40.8491028Z ##[endgroup]

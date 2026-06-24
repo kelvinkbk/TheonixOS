@@ -30,7 +30,8 @@ impl ConversationStore {
         conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;")?;
 
         // Schema migration (idempotent)
-        conn.execute_batch("
+        conn.execute_batch(
+            "
             CREATE TABLE IF NOT EXISTS sessions (
                 id         TEXT PRIMARY KEY,
                 created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
@@ -46,7 +47,8 @@ impl ConversationStore {
             );
 
             CREATE INDEX IF NOT EXISTS idx_turns_session ON turns(session_id, created_at);
-        ")?;
+        ",
+        )?;
 
         info!(path = %path.display(), "Conversation memory database opened");
         Ok(Self { conn: Mutex::new(conn) })
