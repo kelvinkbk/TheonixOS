@@ -132,6 +132,15 @@ cp -a /workdir/design/themes/kde/wallpaper_metadata.desktop "$PROFILE_DIR/airoot
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/grub/themes"
 cp -a /workdir/design/themes/grub/theonix "$PROFILE_DIR/airootfs/usr/share/grub/themes/" 2>/dev/null || true
 
+echo "Applying dark theme to root user for Calamares pkexec compatibility..."
+mkdir -p "$PROFILE_DIR/airootfs/root/.config"
+cat <<EOF > "$PROFILE_DIR/airootfs/root/.config/kdeglobals"
+[General]
+ColorScheme=Theonix
+[KDE]
+widgetStyle=Breeze
+EOF
+
 echo "Installing Calamares custom configurations (only custom/extra modules, not package defaults)..."
 mkdir -p "$PROFILE_DIR/airootfs/etc/calamares"
 [ -f /workdir/calamares/settings.conf ] && cp /workdir/calamares/settings.conf "$PROFILE_DIR/airootfs/etc/calamares/" 2>/dev/null || true
@@ -200,6 +209,8 @@ ln -sf /usr/lib/systemd/system/sddm.service "$PROFILE_DIR/airootfs/etc/systemd/s
 ln -sf /usr/lib/systemd/system/graphical.target "$PROFILE_DIR/airootfs/etc/systemd/system/default.target" 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/NetworkManager.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/NetworkManager.service" 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/systemd-resolved.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service" 2>/dev/null || true
+
+chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/force-resolution.sh" 2>/dev/null || true
 
 echo "Starting ISO build..."
 mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" 2>&1 | grep -v "WARNING: Cannot change permissions" || true
