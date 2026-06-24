@@ -128,7 +128,7 @@ impl ConversationStore {
         let mut context = String::new();
         for (role, content) in turns.iter().rev() {
             match role.as_str() {
-                "user"      => context.push_str(&format!("User: {content}\n")),
+                "user" => context.push_str(&format!("User: {content}\n")),
                 "assistant" => context.push_str(&format!("Assistant: {content}\n")),
                 _ => {}
             }
@@ -141,10 +141,8 @@ impl ConversationStore {
     /// Delete a session and all its turns.
     pub async fn delete_session(&mut self, session_id: &str) -> Result<()> {
         let conn = self.conn.lock().unwrap();
-        conn.execute(
-            "DELETE FROM sessions WHERE id = ?1",
-            params![session_id],
-        ).context("Failed to delete session")?;
+        conn.execute("DELETE FROM sessions WHERE id = ?1", params![session_id])
+            .context("Failed to delete session")?;
         debug!(session_id, "Session deleted");
         Ok(())
     }

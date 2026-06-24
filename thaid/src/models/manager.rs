@@ -25,27 +25,23 @@ pub enum ModelState {
 /// Manages the Ollama model lifecycle: lazy loading and idle unloading.
 /// All public methods are async and safe to call from concurrent tasks.
 pub struct ModelManager {
-    ollama_url:     String,
-    default_model:  String,
-    idle_timeout:   Duration,
-    state:          Arc<RwLock<ModelState>>,
-    last_used:      Arc<RwLock<Option<Instant>>>,
-    http:           Client,
+    ollama_url: String,
+    default_model: String,
+    idle_timeout: Duration,
+    state: Arc<RwLock<ModelState>>,
+    last_used: Arc<RwLock<Option<Instant>>>,
+    http: Client,
 }
 
 impl ModelManager {
-    pub fn new(
-        ollama_url:    String,
-        default_model: String,
-        idle_timeout:  Duration,
-    ) -> Self {
+    pub fn new(ollama_url: String, default_model: String, idle_timeout: Duration) -> Self {
         Self {
             ollama_url,
             default_model,
             idle_timeout,
-            state:     Arc::new(RwLock::new(ModelState::Unloaded)),
+            state: Arc::new(RwLock::new(ModelState::Unloaded)),
             last_used: Arc::new(RwLock::new(None)),
-            http:      Client::builder()
+            http: Client::builder()
                 .timeout(Duration::from_secs(300)) // long timeout for model pulls
                 .build()
                 .expect("Failed to build HTTP client"),
@@ -89,7 +85,9 @@ impl ModelManager {
             Ok(()) => {
                 info!(model = %model_name, "Model loaded successfully");
                 let mut state = self.state.write().await;
-                *state = ModelState::Ready { name: model_name.clone() };
+                *state = ModelState::Ready {
+                    name: model_name.clone(),
+                };
                 self.update_last_used().await;
                 Ok(model_name)
             }
@@ -108,7 +106,7 @@ impl ModelManager {
 
         #[derive(Serialize)]
         struct OllamaRequest<'a> {
-            model:  &'a str,
+            model: &'a str,
             prompt: &'a str,
             stream: bool,
         }

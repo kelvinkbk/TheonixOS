@@ -1,0 +1,31 @@
+﻿2026-06-24T18:29:39.7441712Z Current runner version: '2.335.1'
+2026-06-24T18:29:39.7470965Z ##[group]Runner Image Provisioner
+2026-06-24T18:29:39.7472228Z Hosted Compute Agent
+2026-06-24T18:29:39.7473098Z Version: 20260611.554
+2026-06-24T18:29:39.7473954Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-24T18:29:39.7475071Z Build Date: 2026-06-11T21:40:46Z
+2026-06-24T18:29:39.7476096Z Worker ID: {3a441642-475f-4da7-91e8-fa241449565f}
+2026-06-24T18:29:39.7477216Z Azure Region: centralus
+2026-06-24T18:29:39.7478361Z ##[endgroup]
+2026-06-24T18:29:39.7480250Z ##[group]Operating System
+2026-06-24T18:29:39.7481341Z Ubuntu
+2026-06-24T18:29:39.7482158Z 24.04.4
+2026-06-24T18:29:39.7482882Z LTS
+2026-06-24T18:29:39.7483754Z ##[endgroup]
+2026-06-24T18:29:39.7484555Z ##[group]Runner Image
+2026-06-24T18:29:39.7485479Z Image: ubuntu-24.04
+2026-06-24T18:29:39.7486253Z Version: 20260622.220.1
+2026-06-24T18:29:39.7487860Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260622.220/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-24T18:29:39.7490742Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260622.220
+2026-06-24T18:29:39.7492310Z ##[endgroup]
+2026-06-24T18:29:39.7493976Z ##[group]GITHUB_TOKEN Permissions
+2026-06-24T18:29:39.7497022Z Contents: read
+2026-06-24T18:29:39.7497926Z Metadata: read
+2026-06-24T18:29:39.7498935Z Packages: read
+2026-06-24T18:29:39.7499790Z ##[endgroup]
+2026-06-24T18:29:39.7503142Z Secret source: Actions
+2026-06-24T18:29:39.7504336Z Prepare workflow directory
+2026-06-24T18:29:39.7854847Z Prepare all required actions
+2026-06-24T18:29:39.7893782Z Getting action download info
+2026-06-24T18:29:40.0364310Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-06-24T18:29:40.1861670Z Complete job name: Security Audit (thaid)

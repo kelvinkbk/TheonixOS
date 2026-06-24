@@ -1,0 +1,73 @@
+﻿2026-06-24T18:29:40.2532675Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-24T18:29:40.2541334Z ##[group]Run actions/checkout@v4
+2026-06-24T18:29:40.2542215Z with:
+2026-06-24T18:29:40.2542708Z   repository: kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.2547326Z   token: ***
+2026-06-24T18:29:40.2547833Z   ssh-strict: true
+2026-06-24T18:29:40.2548441Z   ssh-user: git
+2026-06-24T18:29:40.2548968Z   persist-credentials: true
+2026-06-24T18:29:40.2549510Z   clean: true
+2026-06-24T18:29:40.2550021Z   sparse-checkout-cone-mode: true
+2026-06-24T18:29:40.2550597Z   fetch-depth: 1
+2026-06-24T18:29:40.2551062Z   fetch-tags: false
+2026-06-24T18:29:40.2551556Z   show-progress: true
+2026-06-24T18:29:40.2552043Z   lfs: false
+2026-06-24T18:29:40.2552520Z   submodules: false
+2026-06-24T18:29:40.2553159Z   set-safe-directory: true
+2026-06-24T18:29:40.2554018Z ##[endgroup]
+2026-06-24T18:29:40.3490937Z Syncing repository: kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.3492848Z ##[group]Getting Git version info
+2026-06-24T18:29:40.3493715Z Working directory is '/home/runner/work/Theonix-OS/Theonix-OS'
+2026-06-24T18:29:40.3494838Z [command]/usr/bin/git version
+2026-06-24T18:29:40.3552066Z git version 2.54.0
+2026-06-24T18:29:40.3570369Z ##[endgroup]
+2026-06-24T18:29:40.3586604Z Temporarily overriding HOME='/home/runner/work/_temp/e614cbec-7484-46dd-ab02-f4ac4125ea49' before making global git config changes
+2026-06-24T18:29:40.3589258Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-24T18:29:40.3593321Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Theonix-OS/Theonix-OS
+2026-06-24T18:29:40.3641156Z Deleting the contents of '/home/runner/work/Theonix-OS/Theonix-OS'
+2026-06-24T18:29:40.3646002Z ##[group]Initializing the repository
+2026-06-24T18:29:40.3651093Z [command]/usr/bin/git init /home/runner/work/Theonix-OS/Theonix-OS
+2026-06-24T18:29:40.3742774Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-24T18:29:40.3744365Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-24T18:29:40.3745476Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-24T18:29:40.3746340Z hint: call:
+2026-06-24T18:29:40.3747103Z hint:
+2026-06-24T18:29:40.3747818Z hint: 	git config --global init.defaultBranch <name>
+2026-06-24T18:29:40.3748798Z hint:
+2026-06-24T18:29:40.3749489Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-24T18:29:40.3750447Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-24T18:29:40.3751228Z hint:
+2026-06-24T18:29:40.3751709Z hint: 	git branch -m <name>
+2026-06-24T18:29:40.3752268Z hint:
+2026-06-24T18:29:40.3753033Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-24T18:29:40.3760208Z Initialized empty Git repository in /home/runner/work/Theonix-OS/Theonix-OS/.git/
+2026-06-24T18:29:40.3771631Z [command]/usr/bin/git remote add origin https://github.com/kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.3813416Z ##[endgroup]
+2026-06-24T18:29:40.3814304Z ##[group]Disabling automatic garbage collection
+2026-06-24T18:29:40.3816837Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-24T18:29:40.3842500Z ##[endgroup]
+2026-06-24T18:29:40.3843334Z ##[group]Setting up auth
+2026-06-24T18:29:40.3848749Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-24T18:29:40.3879042Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-24T18:29:40.4186500Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-24T18:29:40.4216596Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-24T18:29:40.4394348Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-24T18:29:40.4422280Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-24T18:29:40.4599693Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-24T18:29:40.4631634Z ##[endgroup]
+2026-06-24T18:29:40.4633358Z ##[group]Fetching the repository
+2026-06-24T18:29:40.4641730Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +40168bda755f3e08212396d7d681543607de2ffa:refs/remotes/origin/main
+2026-06-24T18:29:41.2015788Z From https://github.com/kelvinkbk/Theonix-OS
+2026-06-24T18:29:41.2017734Z  * [new ref]         40168bda755f3e08212396d7d681543607de2ffa -> origin/main
+2026-06-24T18:29:41.2051020Z ##[endgroup]
+2026-06-24T18:29:41.2058822Z ##[group]Determining the checkout info
+2026-06-24T18:29:41.2060156Z ##[endgroup]
+2026-06-24T18:29:41.2060870Z [command]/usr/bin/git sparse-checkout disable
+2026-06-24T18:29:41.2097408Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-24T18:29:41.2119809Z ##[group]Checking out the ref
+2026-06-24T18:29:41.2123158Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-06-24T18:29:41.2878284Z Switched to a new branch 'main'
+2026-06-24T18:29:41.2881197Z branch 'main' set up to track 'origin/main'.
+2026-06-24T18:29:41.2886733Z ##[endgroup]
+2026-06-24T18:29:41.2890710Z [command]/usr/bin/git log -1 --format=%H
+2026-06-24T18:29:41.2892822Z 40168bda755f3e08212396d7d681543607de2ffa

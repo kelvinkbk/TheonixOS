@@ -1,0 +1,771 @@
+﻿2026-06-24T18:29:39.7442521Z Current runner version: '2.335.1'
+2026-06-24T18:29:39.7471003Z ##[group]Runner Image Provisioner
+2026-06-24T18:29:39.7472243Z Hosted Compute Agent
+2026-06-24T18:29:39.7473105Z Version: 20260611.554
+2026-06-24T18:29:39.7473963Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-24T18:29:39.7475084Z Build Date: 2026-06-11T21:40:46Z
+2026-06-24T18:29:39.7476108Z Worker ID: {3a441642-475f-4da7-91e8-fa241449565f}
+2026-06-24T18:29:39.7477233Z Azure Region: centralus
+2026-06-24T18:29:39.7478375Z ##[endgroup]
+2026-06-24T18:29:39.7480272Z ##[group]Operating System
+2026-06-24T18:29:39.7481429Z Ubuntu
+2026-06-24T18:29:39.7482165Z 24.04.4
+2026-06-24T18:29:39.7482891Z LTS
+2026-06-24T18:29:39.7483762Z ##[endgroup]
+2026-06-24T18:29:39.7484565Z ##[group]Runner Image
+2026-06-24T18:29:39.7485490Z Image: ubuntu-24.04
+2026-06-24T18:29:39.7486262Z Version: 20260622.220.1
+2026-06-24T18:29:39.7488409Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260622.220/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-24T18:29:39.7490762Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260622.220
+2026-06-24T18:29:39.7492326Z ##[endgroup]
+2026-06-24T18:29:39.7493990Z ##[group]GITHUB_TOKEN Permissions
+2026-06-24T18:29:39.7497053Z Contents: read
+2026-06-24T18:29:39.7497936Z Metadata: read
+2026-06-24T18:29:39.7498947Z Packages: read
+2026-06-24T18:29:39.7499799Z ##[endgroup]
+2026-06-24T18:29:39.7503173Z Secret source: Actions
+2026-06-24T18:29:39.7504345Z Prepare workflow directory
+2026-06-24T18:29:39.7854886Z Prepare all required actions
+2026-06-24T18:29:39.7893831Z Getting action download info
+2026-06-24T18:29:40.0364354Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-06-24T18:29:40.1861709Z Complete job name: Security Audit (thaid)
+2026-06-24T18:29:40.2532708Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-24T18:29:40.2541364Z ##[group]Run actions/checkout@v4
+2026-06-24T18:29:40.2542223Z with:
+2026-06-24T18:29:40.2542714Z   repository: kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.2547335Z   token: ***
+2026-06-24T18:29:40.2547837Z   ssh-strict: true
+2026-06-24T18:29:40.2548446Z   ssh-user: git
+2026-06-24T18:29:40.2548971Z   persist-credentials: true
+2026-06-24T18:29:40.2549513Z   clean: true
+2026-06-24T18:29:40.2550025Z   sparse-checkout-cone-mode: true
+2026-06-24T18:29:40.2550601Z   fetch-depth: 1
+2026-06-24T18:29:40.2551065Z   fetch-tags: false
+2026-06-24T18:29:40.2551559Z   show-progress: true
+2026-06-24T18:29:40.2552046Z   lfs: false
+2026-06-24T18:29:40.2552653Z   submodules: false
+2026-06-24T18:29:40.2553162Z   set-safe-directory: true
+2026-06-24T18:29:40.2554024Z ##[endgroup]
+2026-06-24T18:29:40.3490996Z Syncing repository: kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.3492862Z ##[group]Getting Git version info
+2026-06-24T18:29:40.3493720Z Working directory is '/home/runner/work/Theonix-OS/Theonix-OS'
+2026-06-24T18:29:40.3494842Z [command]/usr/bin/git version
+2026-06-24T18:29:40.3552120Z git version 2.54.0
+2026-06-24T18:29:40.3570398Z ##[endgroup]
+2026-06-24T18:29:40.3586641Z Temporarily overriding HOME='/home/runner/work/_temp/e614cbec-7484-46dd-ab02-f4ac4125ea49' before making global git config changes
+2026-06-24T18:29:40.3589271Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-24T18:29:40.3593355Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Theonix-OS/Theonix-OS
+2026-06-24T18:29:40.3641198Z Deleting the contents of '/home/runner/work/Theonix-OS/Theonix-OS'
+2026-06-24T18:29:40.3646084Z ##[group]Initializing the repository
+2026-06-24T18:29:40.3651127Z [command]/usr/bin/git init /home/runner/work/Theonix-OS/Theonix-OS
+2026-06-24T18:29:40.3742871Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-24T18:29:40.3744376Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-24T18:29:40.3745481Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-24T18:29:40.3746348Z hint: call:
+2026-06-24T18:29:40.3747108Z hint:
+2026-06-24T18:29:40.3747822Z hint: 	git config --global init.defaultBranch <name>
+2026-06-24T18:29:40.3748805Z hint:
+2026-06-24T18:29:40.3749494Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-24T18:29:40.3750450Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-24T18:29:40.3751233Z hint:
+2026-06-24T18:29:40.3751712Z hint: 	git branch -m <name>
+2026-06-24T18:29:40.3752274Z hint:
+2026-06-24T18:29:40.3753065Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-24T18:29:40.3760252Z Initialized empty Git repository in /home/runner/work/Theonix-OS/Theonix-OS/.git/
+2026-06-24T18:29:40.3771672Z [command]/usr/bin/git remote add origin https://github.com/kelvinkbk/Theonix-OS
+2026-06-24T18:29:40.3813447Z ##[endgroup]
+2026-06-24T18:29:40.3814309Z ##[group]Disabling automatic garbage collection
+2026-06-24T18:29:40.3816846Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-24T18:29:40.3842529Z ##[endgroup]
+2026-06-24T18:29:40.3843338Z ##[group]Setting up auth
+2026-06-24T18:29:40.3848763Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-24T18:29:40.3879109Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-24T18:29:40.4186931Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-24T18:29:40.4216678Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-24T18:29:40.4394436Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-24T18:29:40.4422350Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-24T18:29:40.4599770Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-24T18:29:40.4631697Z ##[endgroup]
+2026-06-24T18:29:40.4633375Z ##[group]Fetching the repository
+2026-06-24T18:29:40.4641777Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +40168bda755f3e08212396d7d681543607de2ffa:refs/remotes/origin/main
+2026-06-24T18:29:41.2015956Z From https://github.com/kelvinkbk/Theonix-OS
+2026-06-24T18:29:41.2017748Z  * [new ref]         40168bda755f3e08212396d7d681543607de2ffa -> origin/main
+2026-06-24T18:29:41.2051094Z ##[endgroup]
+2026-06-24T18:29:41.2058860Z ##[group]Determining the checkout info
+2026-06-24T18:29:41.2060161Z ##[endgroup]
+2026-06-24T18:29:41.2060875Z [command]/usr/bin/git sparse-checkout disable
+2026-06-24T18:29:41.2097455Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-24T18:29:41.2119839Z ##[group]Checking out the ref
+2026-06-24T18:29:41.2123179Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-06-24T18:29:41.2878421Z Switched to a new branch 'main'
+2026-06-24T18:29:41.2881236Z branch 'main' set up to track 'origin/main'.
+2026-06-24T18:29:41.2886763Z ##[endgroup]
+2026-06-24T18:29:41.2890757Z [command]/usr/bin/git log -1 --format=%H
+2026-06-24T18:29:41.2892844Z 40168bda755f3e08212396d7d681543607de2ffa
+2026-06-24T18:29:41.3071225Z ##[group]Run cargo install cargo-audit
+2026-06-24T18:29:41.3072932Z [36;1mcargo install cargo-audit[0m
+2026-06-24T18:29:41.3074461Z [36;1mcargo audit -f ./thaid/Cargo.lock[0m
+2026-06-24T18:29:41.3212898Z shell: /usr/bin/bash -e {0}
+2026-06-24T18:29:41.3214459Z ##[endgroup]
+2026-06-24T18:29:44.1954193Z     Updating crates.io index
+2026-06-24T18:29:44.4434281Z  Downloading crates ...
+2026-06-24T18:29:44.4949770Z   Downloaded cargo-audit v0.22.2
+2026-06-24T18:29:44.8032181Z   Installing cargo-audit v0.22.2
+2026-06-24T18:29:45.2448518Z     Updating crates.io index
+2026-06-24T18:29:46.3189599Z      Locking 389 packages to latest compatible versions
+2026-06-24T18:29:46.3300750Z       Adding generic-array v0.14.7 (available: v0.14.9)
+2026-06-24T18:29:46.3876289Z  Downloading crates ...
+2026-06-24T18:29:46.4943266Z   Downloaded gix-features v0.48.1
+2026-06-24T18:29:46.5173383Z   Downloaded gix-discover v0.52.0
+2026-06-24T18:29:46.5190998Z   Downloaded gix-date v0.15.5
+2026-06-24T18:29:46.5207171Z   Downloaded compression-core v0.4.32
+2026-06-24T18:29:46.5218266Z   Downloaded canonical-path v2.0.2
+2026-06-24T18:29:46.5226912Z   Downloaded auditable-serde v0.9.0
+2026-06-24T18:29:46.5260870Z   Downloaded gix-error v0.2.4
+2026-06-24T18:29:46.5299504Z   Downloaded defmt-parser v1.0.0
+2026-06-24T18:29:46.5314969Z   Downloaded gix-actor v0.41.1
+2026-06-24T18:29:46.5328199Z   Downloaded gix-chunk v0.7.2
+2026-06-24T18:29:46.5340340Z   Downloaded errno v0.3.14
+2026-06-24T18:29:46.5357161Z   Downloaded cfg-if v1.0.4
+2026-06-24T18:29:46.5378972Z   Downloaded gix-protocol v0.62.0
+2026-06-24T18:29:46.5403352Z   Downloaded gix-path v0.12.1
+2026-06-24T18:29:46.5437039Z   Downloaded gix-quote v0.7.2
+2026-06-24T18:29:46.5449976Z   Downloaded cfg_aliases v0.2.1
+2026-06-24T18:29:46.5462351Z   Downloaded gix-shallow v0.12.1
+2026-06-24T18:29:46.5476018Z   Downloaded hash32 v0.3.1
+2026-06-24T18:29:46.5491066Z   Downloaded auditable-info v0.10.0
+2026-06-24T18:29:46.5500460Z   Downloaded auditable-extract v0.3.5
+2026-06-24T18:29:46.5509681Z   Downloaded anstyle-query v1.1.5
+2026-06-24T18:29:46.5522197Z   Downloaded gix-trace v0.1.20
+2026-06-24T18:29:46.5532826Z   Downloaded atomic-waker v1.1.2
+2026-06-24T18:29:46.5546007Z   Downloaded io-close v0.3.7
+2026-06-24T18:29:46.5556049Z   Downloaded home v0.5.12
+2026-06-24T18:29:46.5568558Z   Downloaded openssl-probe v0.2.1
+2026-06-24T18:29:46.5578888Z   Downloaded matchers v0.2.0
+2026-06-24T18:29:46.5589917Z   Downloaded colorchoice v1.0.5
+2026-06-24T18:29:46.5602032Z   Downloaded display-error-chain v0.2.2
+2026-06-24T18:29:46.5615080Z   Downloaded form_urlencoded v1.2.2
+2026-06-24T18:29:46.5624818Z   Downloaded faster-hex v0.10.0
+2026-06-24T18:29:46.5640079Z   Downloaded lazy_static v1.5.0
+2026-06-24T18:29:46.5682352Z   Downloaded is_terminal_polyfill v1.70.2
+2026-06-24T18:29:46.5695275Z   Downloaded percent-encoding v2.3.2
+2026-06-24T18:29:46.5704862Z   Downloaded heck v0.5.0
+2026-06-24T18:29:46.5719752Z   Downloaded num-conv v0.2.2
+2026-06-24T18:29:46.5731395Z   Downloaded mime v0.3.17
+2026-06-24T18:29:46.5748933Z   Downloaded lru-slab v0.1.2
+2026-06-24T18:29:46.5760667Z   Downloaded gix-config-value v0.18.1
+2026-06-24T18:29:46.5774648Z   Downloaded gix-utils v0.3.3
+2026-06-24T18:29:46.5788465Z   Downloaded foldhash v0.1.5
+2026-06-24T18:29:46.5883495Z   Downloaded powerfmt v0.2.0
+2026-06-24T18:29:46.5903301Z   Downloaded potential_utf v0.1.5
+2026-06-24T18:29:46.5914441Z   Downloaded gix-diff v0.64.0
+2026-06-24T18:29:46.5939340Z   Downloaded fs-err v3.3.0
+2026-06-24T18:29:46.5963218Z   Downloaded quitters v0.1.0
+2026-06-24T18:29:46.5979391Z   Downloaded nu-ansi-term v0.50.3
+2026-06-24T18:29:46.5998798Z   Downloaded owo-colors v4.3.0
+2026-06-24T18:29:46.6023441Z   Downloaded gix-attributes v0.33.2
+2026-06-24T18:29:46.6043656Z   Downloaded pin-project-lite v0.2.17
+2026-06-24T18:29:46.6085205Z   Downloaded secrecy v0.10.3
+2026-06-24T18:29:46.6094903Z   Downloaded gix-traverse v0.58.0
+2026-06-24T18:29:46.6110221Z   Downloaded gix-revwalk v0.32.0
+2026-06-24T18:29:46.6122631Z   Downloaded gix-revision v0.46.0
+2026-06-24T18:29:46.6137082Z   Downloaded gix-refspec v0.42.0
+2026-06-24T18:29:46.6153526Z   Downloaded gix-ignore v0.21.1
+2026-06-24T18:29:46.6169910Z   Downloaded rustc-hash v2.1.2
+2026-06-24T18:29:46.6186163Z   Downloaded rustls-native-certs v0.8.4
+2026-06-24T18:29:46.6204233Z   Downloaded scopeguard v1.2.0
+2026-06-24T18:29:46.6215040Z   Downloaded compression-codecs v0.4.38
+2026-06-24T18:29:46.6238764Z   Downloaded bytes v1.12.0
+2026-06-24T18:29:46.6269681Z   Downloaded subtle v2.6.1
+2026-06-24T18:29:46.6284777Z   Downloaded quote v1.0.46
+2026-06-24T18:29:46.6306878Z   Downloaded serde_spanned v1.1.1
+2026-06-24T18:29:46.6317980Z   Downloaded same-file v1.0.6
+2026-06-24T18:29:46.6329320Z   Downloaded rustversion v1.0.22
+2026-06-24T18:29:46.6361819Z   Downloaded tinyvec_macros v0.1.1
+2026-06-24T18:29:46.6369514Z   Downloaded sync_wrapper v1.0.2
+2026-06-24T18:29:46.6377279Z   Downloaded stable_deref_trait v1.2.1
+2026-06-24T18:29:46.6385100Z   Downloaded rayon-core v1.13.0
+2026-06-24T18:29:46.6409607Z   Downloaded quinn v0.11.11
+2026-06-24T18:29:46.6436518Z   Downloaded icu_normalizer v2.2.0
+2026-06-24T18:29:46.6476301Z   Downloaded wait-timeout v0.2.1
+2026-06-24T18:29:46.6489157Z   Downloaded tower-layer v0.3.3
+2026-06-24T18:29:46.6509791Z   Downloaded topological-sort v0.2.2
+2026-06-24T18:29:46.6518770Z   Downloaded serde_derive v1.0.228
+2026-06-24T18:29:46.6558318Z   Downloaded tracing-log v0.2.0
+2026-06-24T18:29:46.6570254Z   Downloaded unicode-ident v1.0.24
+2026-06-24T18:29:46.6593343Z   Downloaded toml_writer v1.1.1+spec-1.1.0
+2026-06-24T18:29:46.6609301Z   Downloaded twox-hash v2.1.2
+2026-06-24T18:29:46.6635018Z   Downloaded zerofrom-derive v0.1.7
+2026-06-24T18:29:46.6647023Z   Downloaded zmij v1.0.21
+2026-06-24T18:29:46.6661969Z   Downloaded unicode-normalization v0.1.25
+2026-06-24T18:29:46.6690215Z   Downloaded typenum v1.20.1
+2026-06-24T18:29:46.6718619Z   Downloaded zerotrie v0.2.4
+2026-06-24T18:29:46.6750706Z   Downloaded zeroize v1.9.0
+2026-06-24T18:29:46.6769876Z   Downloaded zerovec v0.11.6
+2026-06-24T18:29:46.6814228Z   Downloaded tower v0.5.3
+2026-06-24T18:29:46.6879962Z   Downloaded serde_json v1.0.150
+2026-06-24T18:29:46.6931925Z   Downloaded tracing-subscriber v0.3.23
+2026-06-24T18:29:46.6993542Z   Downloaded tower-http v0.6.11
+2026-06-24T18:29:46.7055203Z   Downloaded object v0.37.3
+2026-06-24T18:29:46.7132144Z   Downloaded gix v0.84.0
+2026-06-24T18:29:46.7230713Z   Downloaded zlib-rs v0.6.4
+2026-06-24T18:29:46.7269993Z   Downloaded winnow v1.0.3
+2026-06-24T18:29:46.7337280Z   Downloaded time v0.3.51
+2026-06-24T18:29:46.7422255Z   Downloaded rustix v1.1.4
+2026-06-24T18:29:46.7571646Z   Downloaded syn v2.0.118
+2026-06-24T18:29:46.7642059Z   Downloaded zerocopy v0.8.52
+2026-06-24T18:29:46.7764813Z   Downloaded wasmparser v0.247.0
+2026-06-24T18:29:46.7825236Z   Downloaded tracing v0.1.44
+2026-06-24T18:29:46.7931063Z   Downloaded regex-syntax v0.8.11
+2026-06-24T18:29:46.7991072Z   Downloaded rustls v0.23.41
+2026-06-24T18:29:46.8068163Z   Downloaded object v0.39.1
+2026-06-24T18:29:46.8141862Z   Downloaded winnow v0.7.15
+2026-06-24T18:29:46.8201033Z   Downloaded wasmparser v0.207.0
+2026-06-24T18:29:46.8243089Z   Downloaded bstr v1.12.1
+2026-06-24T18:29:46.8299180Z   Downloaded color-eyre v0.6.5
+2026-06-24T18:29:46.8355132Z   Downloaded regex-automata v0.4.14
+2026-06-24T18:29:46.8452668Z   Downloaded gimli v0.32.3
+2026-06-24T18:29:46.8502113Z   Downloaded quinn-proto v0.11.15
+2026-06-24T18:29:46.8548783Z   Downloaded aws-lc-rs v1.17.0
+2026-06-24T18:29:46.8613047Z   Downloaded rayon v1.12.0
+2026-06-24T18:29:46.8669273Z   Downloaded jiff v0.2.29
+2026-06-24T18:29:46.8786916Z   Downloaded yoke v0.8.3
+2026-06-24T18:29:46.8801230Z   Downloaded sha1-checked v0.10.0
+2026-06-24T18:29:46.8849293Z   Downloaded libc v0.2.186
+2026-06-24T18:29:46.9068691Z   Downloaded petgraph v0.8.3
+2026-06-24T18:29:46.9202917Z   Downloaded writeable v0.6.3
+2026-06-24T18:29:46.9215534Z   Downloaded walkdir v2.5.0
+2026-06-24T18:29:46.9227840Z   Downloaded regex v1.12.4
+2026-06-24T18:29:46.9267948Z   Downloaded clap_builder v4.6.0
+2026-06-24T18:29:46.9309243Z   Downloaded tokio-util v0.7.18
+2026-06-24T18:29:46.9354631Z   Downloaded tokio v1.52.3
+2026-06-24T18:29:46.9607361Z   Downloaded reqwest v0.13.4
+2026-06-24T18:29:46.9649813Z   Downloaded icu_properties_data v2.2.0
+2026-06-24T18:29:46.9711860Z   Downloaded h2 v0.4.15
+2026-06-24T18:29:46.9755169Z   Downloaded zerovec-derive v0.11.3
+2026-06-24T18:29:46.9766723Z   Downloaded zerofrom v0.1.8
+2026-06-24T18:29:46.9774491Z   Downloaded want v0.3.1
+2026-06-24T18:29:46.9781342Z   Downloaded url v2.5.8
+2026-06-24T18:29:46.9802216Z   Downloaded tracing-core v0.1.36
+2026-06-24T18:29:46.9826649Z   Downloaded toml_parser v1.1.2+spec-1.1.0
+2026-06-24T18:29:46.9843036Z   Downloaded toml v1.1.2+spec-1.1.0
+2026-06-24T18:29:46.9868976Z   Downloaded serde v1.0.228
+2026-06-24T18:29:46.9893006Z   Downloaded idna v1.1.0
+2026-06-24T18:29:46.9920903Z   Downloaded hyper v1.10.1
+2026-06-24T18:29:46.9963936Z   Downloaded hashbrown v0.17.1
+2026-06-24T18:29:47.0000518Z   Downloaded futures-util v0.3.32
+2026-06-24T18:29:47.0071965Z   Downloaded yoke-derive v0.8.2
+2026-06-24T18:29:47.0081113Z   Downloaded tracing-attributes v0.1.31
+2026-06-24T18:29:47.0097237Z   Downloaded toml-span v0.7.1
+2026-06-24T18:29:47.0109622Z   Downloaded tinyvec v1.11.0
+2026-06-24T18:29:47.0127414Z   Downloaded time-macros v0.2.30
+2026-06-24T18:29:47.0143496Z   Downloaded hashbrown v0.16.1
+2026-06-24T18:29:47.0176662Z   Downloaded hashbrown v0.15.5
+2026-06-24T18:29:47.0209424Z   Downloaded toml_datetime v1.1.1+spec-1.1.0
+2026-06-24T18:29:47.0219585Z   Downloaded encoding_rs v0.8.35
+2026-06-24T18:29:47.0371461Z   Downloaded toml_datetime v0.7.5+spec-1.1.0
+2026-06-24T18:29:47.0381666Z   Downloaded socket2 v0.6.4
+2026-06-24T18:29:47.0396310Z   Downloaded tame-index v0.26.3
+2026-06-24T18:29:47.0422728Z   Downloaded indexmap v2.14.0
+2026-06-24T18:29:47.0451002Z   Downloaded icu_collections v2.2.0
+2026-06-24T18:29:47.0487053Z   Downloaded http v1.4.2
+2026-06-24T18:29:47.0512688Z   Downloaded ring v0.17.14
+2026-06-24T18:29:47.0777022Z   Downloaded gix-pack v0.71.0
+2026-06-24T18:29:47.0815281Z   Downloaded toml v0.9.12+spec-1.1.0
+2026-06-24T18:29:47.0840889Z   Downloaded rand v0.9.4
+2026-06-24T18:29:47.0866624Z   Downloaded tinystr v0.8.3
+2026-06-24T18:29:47.0880014Z   Downloaded thread_local v1.1.9
+2026-06-24T18:29:47.0889637Z   Downloaded thiserror-impl v2.0.18
+2026-06-24T18:29:47.0898890Z   Downloaded termcolor v1.4.1
+2026-06-24T18:29:47.0907349Z   Downloaded tempfile v3.27.0
+2026-06-24T18:29:47.0925762Z   Downloaded serde_core v1.0.228
+2026-06-24T18:29:47.0947098Z   Downloaded rustls-webpki v0.103.13
+2026-06-24T18:29:47.0968992Z   Downloaded mio v1.2.1
+2026-06-24T18:29:47.1004982Z   Downloaded smallvec v1.15.2
+2026-06-24T18:29:47.1015704Z   Downloaded sharded-slab v0.1.7
+2026-06-24T18:29:47.1037022Z   Downloaded rustsec v0.33.0
+2026-06-24T18:29:47.1067810Z   Downloaded memchr v2.8.2
+2026-06-24T18:29:47.1100984Z   Downloaded icu_normalizer_data v2.2.0
+2026-06-24T18:29:47.1117884Z   Downloaded hyper-util v0.1.20
+2026-06-24T18:29:47.1153635Z   Downloaded async-compression v0.4.42
+2026-06-24T18:29:47.1371935Z   Downloaded aho-corasick v1.1.4
+2026-06-24T18:29:47.1451524Z   Downloaded version_check v0.9.5
+2026-06-24T18:29:47.1459736Z   Downloaded utf8parse v0.2.2
+2026-06-24T18:29:47.1466185Z   Downloaded utf8_iter v1.0.4
+2026-06-24T18:29:47.1472882Z   Downloaded untrusted v0.9.0
+2026-06-24T18:29:47.1483031Z   Downloaded unicode-bom v2.0.3
+2026-06-24T18:29:47.1491094Z   Downloaded uluru v3.1.0
+2026-06-24T18:29:47.1496917Z   Downloaded try-lock v0.2.5
+2026-06-24T18:29:47.1502827Z   Downloaded tower-service v0.3.3
+2026-06-24T18:29:47.1511655Z   Downloaded tokio-rustls v0.26.4
+2026-06-24T18:29:47.1524993Z   Downloaded time-core v0.1.9
+2026-06-24T18:29:47.1532770Z   Downloaded thiserror v2.0.18
+2026-06-24T18:29:47.1565915Z   Downloaded synstructure v0.13.2
+2026-06-24T18:29:47.1573815Z   Downloaded jiff-static v0.2.29
+2026-06-24T18:29:47.1591416Z   Downloaded gix-transport v0.57.2
+2026-06-24T18:29:47.1614729Z   Downloaded prodash v31.0.0
+2026-06-24T18:29:47.1640339Z   Downloaded heapless v0.8.0
+2026-06-24T18:29:47.1663133Z   Downloaded gix-ref v0.64.0
+2026-06-24T18:29:47.1742024Z   Downloaded gix-odb v0.81.0
+2026-06-24T18:29:47.1764362Z   Downloaded gix-index v0.52.0
+2026-06-24T18:29:47.1787604Z   Downloaded cc v1.2.65
+2026-06-24T18:29:47.1809239Z   Downloaded borsh v1.7.0
+2026-06-24T18:29:47.1847973Z   Downloaded backtrace v0.3.76
+2026-06-24T18:29:47.1877564Z   Downloaded static_assertions v1.1.0
+2026-06-24T18:29:47.1886814Z   Downloaded smol_str v0.3.6
+2026-06-24T18:29:47.1900981Z   Downloaded slab v0.4.12
+2026-06-24T18:29:47.1909962Z   Downloaded simd-adler32 v0.3.9
+2026-06-24T18:29:47.1983049Z   Downloaded semver v1.0.28
+2026-06-24T18:29:47.1998899Z   Downloaded rustls-platform-verifier v0.7.0
+2026-06-24T18:29:47.2415978Z   Downloaded rustls-pki-types v1.14.1
+2026-06-24T18:29:47.3006114Z   Downloaded miniz_oxide v0.8.9
+2026-06-24T18:29:47.3025852Z   Downloaded icu_locale_core v2.2.0
+2026-06-24T18:29:47.3064473Z   Downloaded flate2 v1.1.9
+2026-06-24T18:29:47.3093870Z   Downloaded crossbeam-channel v0.5.15
+2026-06-24T18:29:47.3120267Z   Downloaded rustc-demangle v0.1.27
+2026-06-24T18:29:47.3132226Z   Downloaded proc-macro2 v1.0.106
+2026-06-24T18:29:47.3150370Z   Downloaded gix-config v0.57.0
+2026-06-24T18:29:47.3177605Z   Downloaded icu_provider v2.2.0
+2026-06-24T18:29:47.3195431Z   Downloaded gix-object v0.61.0
+2026-06-24T18:29:47.3215977Z   Downloaded strsim v0.11.1
+2026-06-24T18:29:47.3224715Z   Downloaded shlex v2.0.1
+2026-06-24T18:29:47.3232839Z   Downloaded shell-words v1.1.1
+2026-06-24T18:29:47.3238881Z   Downloaded sha1 v0.10.6
+2026-06-24T18:29:47.3248411Z   Downloaded parking_lot v0.12.5
+2026-06-24T18:29:47.3263214Z   Downloaded log v0.4.33
+2026-06-24T18:29:47.3280233Z   Downloaded litemap v0.8.2
+2026-06-24T18:29:47.3294615Z   Downloaded icu_properties v2.2.0
+2026-06-24T18:29:47.3312547Z   Downloaded base64 v0.22.1
+2026-06-24T18:29:47.3336777Z   Downloaded arc-swap v1.9.1
+2026-06-24T18:29:47.3360936Z   Downloaded allocator-api2 v0.2.21
+2026-06-24T18:29:47.3379345Z   Downloaded rustc-stable-hash v0.1.2
+2026-06-24T18:29:47.3390015Z   Downloaded rand_core v0.9.5
+2026-06-24T18:29:47.3398673Z   Downloaded rand_chacha v0.9.0
+2026-06-24T18:29:47.3406961Z   Downloaded platforms v3.12.0
+2026-06-24T18:29:47.3420180Z   Downloaded gix-filter v0.31.0
+2026-06-24T18:29:47.3436050Z   Downloaded getrandom v0.3.4
+2026-06-24T18:29:47.3457164Z   Downloaded defmt v1.1.0
+2026-06-24T18:29:47.3482951Z   Downloaded cvss v2.2.0
+2026-06-24T18:29:47.3511576Z   Downloaded clap v4.6.1
+2026-06-24T18:29:47.3562796Z   Downloaded cargo-lock v11.0.1
+2026-06-24T18:29:47.3582712Z   Downloaded bitflags v2.13.0
+2026-06-24T18:29:47.3608383Z   Downloaded quinn-udp v0.5.14
+2026-06-24T18:29:47.3620661Z   Downloaded httparse v1.10.1
+2026-06-24T18:29:47.3635911Z   Downloaded linux-raw-sys v0.12.1
+2026-06-24T18:29:47.4066198Z   Downloaded gix-tempfile v23.0.2
+2026-06-24T18:29:47.4073922Z   Downloaded gix-submodule v0.31.0
+2026-06-24T18:29:47.4082105Z   Downloaded once_cell v1.21.4
+2026-06-24T18:29:47.4096615Z   Downloaded memmap2 v0.9.11
+2026-06-24T18:29:47.4107521Z   Downloaded getrandom v0.4.3
+2026-06-24T18:29:47.4129954Z   Downloaded getrandom v0.2.17
+2026-06-24T18:29:47.4146944Z   Downloaded futures-channel v0.3.32
+2026-06-24T18:29:47.4158970Z   Downloaded displaydoc v0.2.6
+2026-06-24T18:29:47.4171233Z   Downloaded gix-hash v0.25.1
+2026-06-24T18:29:47.4182516Z   Downloaded gix-fs v0.21.2
+2026-06-24T18:29:47.4193113Z   Downloaded proc-macro-error2 v2.0.1
+2026-06-24T18:29:47.4210895Z   Downloaded ppv-lite86 v0.2.21
+2026-06-24T18:29:47.4219335Z   Downloaded parking_lot_core v0.9.12
+2026-06-24T18:29:47.4232432Z   Downloaded maybe-async v0.2.11
+2026-06-24T18:29:47.4248353Z   Downloaded lock_api v0.4.14
+2026-06-24T18:29:47.4256967Z   Downloaded jobserver v0.1.34
+2026-06-24T18:29:47.4269738Z   Downloaded gix-worktree v0.53.0
+2026-06-24T18:29:47.4280398Z   Downloaded gix-packetline v0.21.5
+2026-06-24T18:29:47.4292367Z   Downloaded eyre v0.6.12
+2026-06-24T18:29:47.4311682Z   Downloaded camino v1.2.3
+2026-06-24T18:29:47.4325879Z   Downloaded abscissa_core v0.9.0
+2026-06-24T18:29:47.4347876Z   Downloaded fs_extra v1.3.0
+2026-06-24T18:29:47.4358292Z   Downloaded fixedbitset v0.5.7
+2026-06-24T18:29:47.4370802Z   Downloaded filetime v0.2.29
+2026-06-24T18:29:47.4381100Z   Downloaded deranged v0.5.8
+2026-06-24T18:29:47.4390678Z   Downloaded crossbeam-epoch v0.9.18
+2026-06-24T18:29:47.4405407Z   Downloaded crc32fast v1.5.0
+2026-06-24T18:29:47.4417873Z   Downloaded clap_derive v4.6.1
+2026-06-24T18:29:47.4431707Z   Downloaded nonempty v0.12.0
+2026-06-24T18:29:47.4439374Z   Downloaded ipnet v2.12.0
+2026-06-24T18:29:47.4450811Z   Downloaded gix-worktree-stream v0.33.0
+2026-06-24T18:29:47.4459981Z   Downloaded kstring v2.0.2
+2026-06-24T18:29:47.4483971Z   Downloaded hyper-rustls v0.27.9
+2026-06-24T18:29:47.4484635Z   Downloaded http-body-util v0.1.3
+2026-06-24T18:29:47.4489854Z   Downloaded http-body v1.0.1
+2026-06-24T18:29:47.4495658Z   Downloaded gix-worktree-state v0.31.0
+2026-06-24T18:29:47.4505629Z   Downloaded gix-url v0.36.1
+2026-06-24T18:29:47.4515537Z   Downloaded gix-glob v0.26.1
+2026-06-24T18:29:47.4524842Z   Downloaded proc-macro-error-attr2 v2.0.0
+2026-06-24T18:29:47.4530870Z   Downloaded gix-pathspec v0.18.1
+2026-06-24T18:29:47.4540867Z   Downloaded foldhash v0.2.0
+2026-06-24T18:29:47.4549526Z   Downloaded find-msvc-tools v0.1.9
+2026-06-24T18:29:47.4559648Z   Downloaded digest v0.10.7
+2026-06-24T18:29:47.4571012Z   Downloaded defmt-macros v1.1.0
+2026-06-24T18:29:47.4590697Z   Downloaded crossbeam-utils v0.8.21
+2026-06-24T18:29:47.4607617Z   Downloaded crossbeam-deque v0.8.6
+2026-06-24T18:29:47.4616755Z   Downloaded bitflags v1.3.2
+2026-06-24T18:29:47.4634085Z   Downloaded autocfg v1.5.1
+2026-06-24T18:29:47.4645414Z   Downloaded arrayvec v0.7.7
+2026-06-24T18:29:47.4658717Z   Downloaded anstyle v1.0.14
+2026-06-24T18:29:47.4668469Z   Downloaded adler2 v2.0.1
+2026-06-24T18:29:47.4676231Z   Downloaded itoa v1.0.18
+2026-06-24T18:29:47.4685196Z   Downloaded gix-sec v0.14.1
+2026-06-24T18:29:47.4693603Z   Downloaded gix-negotiate v0.32.0
+2026-06-24T18:29:47.4701803Z   Downloaded gix-lock v23.0.1
+2026-06-24T18:29:47.4709351Z   Downloaded gix-credentials v0.38.1
+2026-06-24T18:29:47.4720836Z   Downloaded gix-commitgraph v0.37.1
+2026-06-24T18:29:47.4732289Z   Downloaded futures-sink v0.3.32
+2026-06-24T18:29:47.4737560Z   Downloaded fastrand v2.4.1
+2026-06-24T18:29:47.4746567Z   Downloaded cmake v0.1.58
+2026-06-24T18:29:47.4754907Z   Downloaded clru v0.6.3
+2026-06-24T18:29:47.4762922Z   Downloaded anstream v1.0.0
+2026-06-24T18:29:47.4776253Z   Downloaded either v1.16.0
+2026-06-24T18:29:47.4785437Z   Downloaded binfarce v0.2.1
+2026-06-24T18:29:47.4795152Z   Downloaded futures-io v0.3.32
+2026-06-24T18:29:47.4801038Z   Downloaded futures-core v0.3.32
+2026-06-24T18:29:47.4809134Z   Downloaded gix-validate v0.11.2
+2026-06-24T18:29:47.4816054Z   Downloaded gix-hashtable v0.15.2
+2026-06-24T18:29:47.4822664Z   Downloaded gix-bitmap v0.3.2
+2026-06-24T18:29:47.4828832Z   Downloaded generic-array v0.14.7
+2026-06-24T18:29:47.4837279Z   Downloaded anstyle-parse v1.0.0
+2026-06-24T18:29:47.4847666Z   Downloaded idna_adapter v1.2.2
+2026-06-24T18:29:47.4854292Z   Downloaded addr2line v0.25.1
+2026-06-24T18:29:47.4866676Z   Downloaded ident_case v1.0.1
+2026-06-24T18:29:47.4871754Z   Downloaded gix-command v0.9.1
+2026-06-24T18:29:47.4878320Z   Downloaded futures-task v0.3.32
+2026-06-24T18:29:47.4885510Z   Downloaded fnv v1.0.7
+2026-06-24T18:29:47.4891580Z   Downloaded dunce v1.0.5
+2026-06-24T18:29:47.4896869Z   Downloaded byteorder v1.5.0
+2026-06-24T18:29:47.4906504Z   Downloaded indenter v0.3.4
+2026-06-24T18:29:47.4913748Z   Downloaded equivalent v1.0.2
+2026-06-24T18:29:47.4919460Z   Downloaded crypto-common v0.1.7
+2026-06-24T18:29:47.4925526Z   Downloaded clap_lex v1.1.0
+2026-06-24T18:29:47.4932680Z   Downloaded cpufeatures v0.2.17
+2026-06-24T18:29:47.4954567Z   Downloaded block-buffer v0.10.4
+2026-06-24T18:29:47.4961269Z   Downloaded abscissa_derive v0.9.0
+2026-06-24T18:29:47.4966575Z   Downloaded gix-prompt v0.15.1
+2026-06-24T18:29:47.5249547Z   Downloaded aws-lc-sys v0.41.0
+2026-06-24T18:29:47.7708644Z    Compiling proc-macro2 v1.0.106
+2026-06-24T18:29:47.7760656Z    Compiling unicode-ident v1.0.24
+2026-06-24T18:29:47.7761255Z    Compiling quote v1.0.46
+2026-06-24T18:29:47.7761703Z    Compiling libc v0.2.186
+2026-06-24T18:29:50.9374356Z    Compiling memchr v2.8.2
+2026-06-24T18:29:52.6910336Z    Compiling cfg-if v1.0.4
+2026-06-24T18:29:52.7113020Z    Compiling aho-corasick v1.1.4
+2026-06-24T18:29:52.9289199Z    Compiling regex-syntax v0.8.11
+2026-06-24T18:29:54.0259265Z    Compiling smallvec v1.15.2
+2026-06-24T18:29:54.0878941Z    Compiling syn v2.0.118
+2026-06-24T18:29:54.2267018Z    Compiling once_cell v1.21.4
+2026-06-24T18:29:54.4356395Z    Compiling bytes v1.12.0
+2026-06-24T18:29:55.3609155Z    Compiling regex-automata v0.4.14
+2026-06-24T18:29:58.9179254Z    Compiling bstr v1.12.1
+2026-06-24T18:29:59.7909120Z    Compiling stable_deref_trait v1.2.1
+2026-06-24T18:29:59.8219492Z    Compiling thiserror v2.0.18
+2026-06-24T18:30:00.0579440Z    Compiling thiserror-impl v2.0.18
+2026-06-24T18:30:00.6629621Z    Compiling crossbeam-utils v0.8.21
+2026-06-24T18:30:00.8309276Z    Compiling crc32fast v1.5.0
+2026-06-24T18:30:00.9699521Z    Compiling tinyvec_macros v0.1.1
+2026-06-24T18:30:00.9968369Z    Compiling gix-trace v0.1.20
+2026-06-24T18:30:01.0712453Z    Compiling tinyvec v1.11.0
+2026-06-24T18:30:01.6019063Z    Compiling gix-validate v0.11.2
+2026-06-24T18:30:01.6959280Z    Compiling fastrand v2.4.1
+2026-06-24T18:30:01.9139508Z    Compiling bitflags v2.13.0
+2026-06-24T18:30:01.9459419Z    Compiling parking_lot_core v0.9.12
+2026-06-24T18:30:02.0579162Z    Compiling gix-path v0.12.1
+2026-06-24T18:30:02.1669154Z    Compiling unicode-normalization v0.1.25
+2026-06-24T18:30:02.2899087Z    Compiling scopeguard v1.2.0
+2026-06-24T18:30:02.3359185Z    Compiling lock_api v0.4.14
+2026-06-24T18:30:02.6961885Z    Compiling gix-utils v0.3.3
+2026-06-24T18:30:02.8214646Z    Compiling itoa v1.0.18
+2026-06-24T18:30:02.8267308Z    Compiling parking_lot v0.12.5
+2026-06-24T18:30:03.0919359Z    Compiling crossbeam-channel v0.5.15
+2026-06-24T18:30:03.7909268Z    Compiling allocator-api2 v0.2.21
+2026-06-24T18:30:03.7957189Z    Compiling same-file v1.0.6
+2026-06-24T18:30:03.9259492Z    Compiling equivalent v1.0.2
+2026-06-24T18:30:03.9594203Z    Compiling foldhash v0.2.0
+2026-06-24T18:30:04.1049161Z    Compiling walkdir v2.5.0
+2026-06-24T18:30:04.1289422Z    Compiling prodash v31.0.0
+2026-06-24T18:30:04.1350442Z    Compiling zlib-rs v0.6.4
+2026-06-24T18:30:04.9649270Z    Compiling gix-error v0.2.4
+2026-06-24T18:30:05.4363342Z    Compiling version_check v0.9.5
+2026-06-24T18:30:05.6629517Z    Compiling generic-array v0.14.7
+2026-06-24T18:30:05.7349203Z    Compiling hashbrown v0.17.1
+2026-06-24T18:30:06.1399159Z    Compiling typenum v1.20.1
+2026-06-24T18:30:06.4709160Z    Compiling serde_core v1.0.228
+2026-06-24T18:30:06.6159063Z    Compiling heapless v0.8.0
+2026-06-24T18:30:06.7539266Z    Compiling byteorder v1.5.0
+2026-06-24T18:30:06.8364784Z    Compiling gix-features v0.48.1
+2026-06-24T18:30:07.5229239Z    Compiling hash32 v0.3.1
+2026-06-24T18:30:08.9150256Z    Compiling block-buffer v0.10.4
+2026-06-24T18:30:09.0019289Z    Compiling crypto-common v0.1.7
+2026-06-24T18:30:09.0609017Z    Compiling digest v0.10.7
+2026-06-24T18:30:09.1909286Z    Compiling faster-hex v0.10.0
+2026-06-24T18:30:09.6659564Z    Compiling synstructure v0.13.2
+2026-06-24T18:30:09.8589161Z    Compiling cpufeatures v0.2.17
+2026-06-24T18:30:09.8979197Z    Compiling sha1 v0.10.6
+2026-06-24T18:30:10.1765123Z    Compiling sha1-checked v0.10.0
+2026-06-24T18:30:10.3319209Z    Compiling jiff v0.2.29
+2026-06-24T18:30:10.3739220Z    Compiling zerofrom-derive v0.1.7
+2026-06-24T18:30:11.0254482Z    Compiling gix-hash v0.25.1
+2026-06-24T18:30:11.4018795Z    Compiling zerofrom v0.1.8
+2026-06-24T18:30:11.4799324Z    Compiling yoke-derive v0.8.2
+2026-06-24T18:30:11.6489184Z    Compiling rustix v1.1.4
+2026-06-24T18:30:11.8480147Z    Compiling pin-project-lite v0.2.17
+2026-06-24T18:30:12.3836246Z    Compiling yoke v0.8.3
+2026-06-24T18:30:12.5549372Z    Compiling gix-hashtable v0.15.2
+2026-06-24T18:30:12.6309066Z    Compiling linux-raw-sys v0.12.1
+2026-06-24T18:30:12.8729236Z    Compiling jobserver v0.1.34
+2026-06-24T18:30:13.1819256Z    Compiling zerovec-derive v0.11.3
+2026-06-24T18:30:13.9449600Z    Compiling shlex v2.0.1
+2026-06-24T18:30:14.0587818Z    Compiling find-msvc-tools v0.1.9
+2026-06-24T18:30:14.1059189Z    Compiling zerovec v0.11.6
+2026-06-24T18:30:14.2309196Z    Compiling gix-date v0.15.5
+2026-06-24T18:30:14.7299085Z    Compiling gix-actor v0.41.1
+2026-06-24T18:30:15.1639161Z    Compiling gix-object v0.61.0
+2026-06-24T18:30:16.7429494Z    Compiling cc v1.2.65
+2026-06-24T18:30:16.9029120Z    Compiling displaydoc v0.2.6
+2026-06-24T18:30:17.4429102Z    Compiling memmap2 v0.9.11
+2026-06-24T18:30:17.7051632Z    Compiling getrandom v0.4.3
+2026-06-24T18:30:17.8329243Z    Compiling cmake v0.1.58
+2026-06-24T18:30:18.1439048Z    Compiling serde v1.0.228
+2026-06-24T18:30:18.2409494Z    Compiling dunce v1.0.5
+2026-06-24T18:30:18.2826711Z    Compiling futures-core v0.3.32
+2026-06-24T18:30:18.2906185Z    Compiling fs_extra v1.3.0
+2026-06-24T18:30:18.3816474Z    Compiling serde_derive v1.0.228
+2026-06-24T18:30:18.4899380Z    Compiling aws-lc-sys v0.41.0
+2026-06-24T18:30:18.5089167Z    Compiling socket2 v0.6.4
+2026-06-24T18:30:19.2629341Z    Compiling mio v1.2.1
+2026-06-24T18:30:19.4749414Z    Compiling zeroize v1.9.0
+2026-06-24T18:30:19.6109153Z    Compiling tokio v1.52.3
+2026-06-24T18:30:21.6473199Z    Compiling tempfile v3.27.0
+2026-06-24T18:30:22.5449274Z    Compiling tinystr v0.8.3
+2026-06-24T18:30:22.6881907Z    Compiling gix-fs v0.21.2
+2026-06-24T18:30:23.3284679Z    Compiling gix-chunk v0.7.2
+2026-06-24T18:30:23.4370271Z    Compiling futures-sink v0.3.32
+2026-06-24T18:30:23.4919844Z    Compiling percent-encoding v2.3.2
+2026-06-24T18:30:23.5362927Z    Compiling litemap v0.8.2
+2026-06-24T18:30:23.6709404Z    Compiling simd-adler32 v0.3.9
+2026-06-24T18:30:23.6842110Z    Compiling writeable v0.6.3
+2026-06-24T18:30:23.8538738Z    Compiling adler2 v2.0.1
+2026-06-24T18:30:23.9487078Z    Compiling miniz_oxide v0.8.9
+2026-06-24T18:30:24.5650332Z    Compiling icu_locale_core v2.2.0
+2026-06-24T18:30:25.4402068Z    Compiling gix-tempfile v23.0.2
+2026-06-24T18:30:26.1409172Z    Compiling zerotrie v0.2.4
+2026-06-24T18:30:26.4959285Z    Compiling potential_utf v0.1.5
+2026-06-24T18:30:26.5989131Z    Compiling gix-quote v0.7.2
+2026-06-24T18:30:26.9317894Z    Compiling tracing-core v0.1.36
+2026-06-24T18:30:27.3963882Z    Compiling icu_normalizer_data v2.2.0
+2026-06-24T18:30:27.4701300Z    Compiling utf8_iter v1.0.4
+2026-06-24T18:30:27.5481430Z    Compiling aws-lc-rs v1.17.0
+2026-06-24T18:30:27.6803787Z    Compiling icu_properties_data v2.2.0
+2026-06-24T18:30:27.7469369Z    Compiling nonempty v0.12.0
+2026-06-24T18:30:27.8559112Z    Compiling icu_collections v2.2.0
+2026-06-24T18:30:27.8902800Z    Compiling icu_provider v2.2.0
+2026-06-24T18:30:28.4529383Z    Compiling http v1.4.2
+2026-06-24T18:30:28.5533242Z    Compiling tracing-attributes v0.1.31
+2026-06-24T18:30:29.4107659Z    Compiling fnv v1.0.7
+2026-06-24T18:30:29.4579050Z    Compiling slab v0.4.12
+2026-06-24T18:30:29.4879435Z    Compiling tracing v0.1.44
+2026-06-24T18:30:29.7343610Z    Compiling gix-commitgraph v0.37.1
+2026-06-24T18:30:29.7616040Z    Compiling rustls-pki-types v1.14.1
+2026-06-24T18:30:30.5669149Z    Compiling gix-glob v0.26.1
+2026-06-24T18:30:30.6271291Z    Compiling indexmap v2.14.0
+2026-06-24T18:30:30.6469141Z    Compiling gix-revwalk v0.32.0
+2026-06-24T18:30:30.8619167Z    Compiling icu_properties v2.2.0
+2026-06-24T18:30:31.2442840Z    Compiling icu_normalizer v2.2.0
+2026-06-24T18:30:31.4954111Z    Compiling http-body v1.0.1
+2026-06-24T18:30:31.5834025Z    Compiling gix-lock v23.0.1
+2026-06-24T18:30:32.0939093Z    Compiling tokio-util v0.7.18
+2026-06-24T18:30:32.4656988Z    Compiling futures-task v0.3.32
+2026-06-24T18:30:32.4838503Z    Compiling rustls v0.23.41
+2026-06-24T18:30:32.5420273Z    Compiling futures-io v0.3.32
+2026-06-24T18:30:32.5639116Z    Compiling httparse v1.10.1
+2026-06-24T18:30:32.6592319Z    Compiling untrusted v0.9.0
+2026-06-24T18:30:32.7371891Z    Compiling futures-util v0.3.32
+2026-06-24T18:30:32.7409152Z    Compiling idna_adapter v1.2.2
+2026-06-24T18:30:32.8129163Z    Compiling log v0.4.33
+2026-06-24T18:30:32.9666841Z    Compiling subtle v2.6.1
+2026-06-24T18:30:33.0369383Z    Compiling unicode-bom v2.0.3
+2026-06-24T18:30:33.1779369Z    Compiling tower-service v0.3.3
+2026-06-24T18:30:33.2154199Z    Compiling try-lock v0.2.5
+2026-06-24T18:30:33.2682043Z    Compiling atomic-waker v1.1.2
+2026-06-24T18:30:33.3329149Z    Compiling h2 v0.4.15
+2026-06-24T18:30:33.4044967Z    Compiling want v0.3.1
+2026-06-24T18:30:33.5089312Z    Compiling idna v1.1.0
+2026-06-24T18:30:35.6601226Z    Compiling flate2 v1.1.9
+2026-06-24T18:30:35.9728998Z    Compiling form_urlencoded v1.2.2
+2026-06-24T18:30:36.1559119Z    Compiling futures-channel v0.3.32
+2026-06-24T18:30:36.1779083Z    Compiling gix-config-value v0.18.1
+2026-06-24T18:30:36.3564009Z    Compiling compression-core v0.4.32
+2026-06-24T18:30:36.4221889Z    Compiling static_assertions v1.1.0
+2026-06-24T18:30:36.4472807Z    Compiling shell-words v1.1.1
+2026-06-24T18:30:36.5817396Z    Compiling gix-command v0.9.1
+2026-06-24T18:30:37.0229573Z    Compiling kstring v2.0.2
+2026-06-24T18:30:37.0974381Z    Compiling compression-codecs v0.4.38
+2026-06-24T18:30:37.1987823Z    Compiling hyper v1.10.1
+2026-06-24T18:30:37.3919578Z    Compiling url v2.5.8
+2026-06-24T18:30:40.0629067Z    Compiling sync_wrapper v1.0.2
+2026-06-24T18:30:40.1099605Z    Compiling gix-sec v0.14.1
+2026-06-24T18:30:40.3373512Z    Compiling encoding_rs v0.8.35
+2026-06-24T18:30:40.3779481Z    Compiling ipnet v2.12.0
+2026-06-24T18:30:41.1870029Z    Compiling tower-layer v0.3.3
+2026-06-24T18:30:41.3323082Z    Compiling base64 v0.22.1
+2026-06-24T18:30:41.6999380Z    Compiling openssl-probe v0.2.1
+2026-06-24T18:30:41.7857669Z    Compiling rustls-native-certs v0.8.4
+2026-06-24T18:30:41.8662050Z    Compiling hyper-util v0.1.20
+2026-06-24T18:30:42.5350453Z    Compiling tower v0.5.3
+2026-06-24T18:30:43.0659218Z    Compiling async-compression v0.4.42
+2026-06-24T18:30:43.5169212Z    Compiling gix-attributes v0.33.2
+2026-06-24T18:30:44.7598953Z    Compiling http-body-util v0.1.3
+2026-06-24T18:30:44.9752989Z    Compiling semver v1.0.28
+2026-06-24T18:30:45.6089138Z    Compiling rustversion v1.0.22
+2026-06-24T18:30:45.6219695Z    Compiling zmij v1.0.21
+2026-06-24T18:30:45.7240027Z    Compiling tower-http v0.6.11
+2026-06-24T18:30:45.7768636Z    Compiling gix-ref v0.64.0
+2026-06-24T18:30:46.0999286Z    Compiling gix-url v0.36.1
+2026-06-24T18:30:46.4864731Z    Compiling gix-packetline v0.21.5
+2026-06-24T18:30:46.8639129Z    Compiling mime v0.3.17
+2026-06-24T18:30:47.2902971Z    Compiling serde_json v1.0.150
+2026-06-24T18:30:47.3515532Z    Compiling winnow v1.0.3
+2026-06-24T18:30:47.7109086Z    Compiling toml_parser v1.1.2+spec-1.1.0
+2026-06-24T18:30:48.1403190Z    Compiling gix-prompt v0.15.1
+2026-06-24T18:30:48.5649230Z    Compiling gix-revision v0.46.0
+2026-06-24T18:30:49.0883137Z    Compiling gix-traverse v0.58.0
+2026-06-24T18:30:50.1109031Z    Compiling serde_spanned v1.1.1
+2026-06-24T18:30:50.2019459Z    Compiling gix-bitmap v0.3.2
+2026-06-24T18:30:50.5362100Z    Compiling hashbrown v0.16.1
+2026-06-24T18:30:50.9515587Z    Compiling crossbeam-epoch v0.9.18
+2026-06-24T18:30:51.2428907Z    Compiling filetime v0.2.29
+2026-06-24T18:30:51.2735169Z    Compiling toml_writer v1.1.1+spec-1.1.0
+2026-06-24T18:30:51.3669223Z    Compiling utf8parse v0.2.2
+2026-06-24T18:30:51.3769496Z    Compiling autocfg v1.5.1
+2026-06-24T18:30:51.4017324Z    Compiling object v0.37.3
+2026-06-24T18:30:51.4576926Z    Compiling rayon-core v1.13.0
+2026-06-24T18:30:51.5139789Z    Compiling arrayvec v0.7.7
+2026-06-24T18:30:51.5589099Z    Compiling anstyle-parse v1.0.0
+2026-06-24T18:30:51.6743948Z    Compiling fs-err v3.3.0
+2026-06-24T18:30:51.6969241Z    Compiling uluru v3.1.0
+2026-06-24T18:30:51.7029255Z    Compiling gix-index v0.52.0
+2026-06-24T18:30:51.7609181Z    Compiling clru v0.6.3
+2026-06-24T18:30:51.7641057Z    Compiling crossbeam-deque v0.8.6
+2026-06-24T18:30:51.9197011Z    Compiling gix-refspec v0.42.0
+2026-06-24T18:30:51.9636846Z    Compiling gix-credentials v0.38.1
+2026-06-24T18:30:54.1139032Z    Compiling arc-swap v1.9.1
+2026-06-24T18:30:54.3417154Z    Compiling gix-ignore v0.21.1
+2026-06-24T18:30:54.7658796Z    Compiling toml_datetime v0.7.5+spec-1.1.0
+2026-06-24T18:30:55.0659167Z    Compiling colorchoice v1.0.5
+2026-06-24T18:30:55.1159312Z    Compiling anstyle-query v1.1.5
+2026-06-24T18:30:55.2799512Z    Compiling camino v1.2.3
+2026-06-24T18:30:55.4180326Z    Compiling winnow v0.7.15
+2026-06-24T18:30:56.1164926Z    Compiling owo-colors v4.3.0
+2026-06-24T18:30:56.2538655Z    Compiling eyre v0.6.12
+2026-06-24T18:30:56.3833730Z    Compiling anstyle v1.0.14
+2026-06-24T18:30:56.5939483Z    Compiling gimli v0.32.3
+2026-06-24T18:30:57.1558200Z    Compiling is_terminal_polyfill v1.70.2
+2026-06-24T18:30:57.1899312Z    Compiling foldhash v0.1.5
+2026-06-24T18:30:57.3119539Z    Compiling hashbrown v0.15.5
+2026-06-24T18:30:57.3989457Z    Compiling anstream v1.0.0
+2026-06-24T18:30:57.7769132Z    Compiling toml v0.9.12+spec-1.1.0
+2026-06-24T18:30:58.2490184Z    Compiling gix-worktree v0.53.0
+2026-06-24T18:30:59.3999450Z    Compiling addr2line v0.25.1
+2026-06-24T18:30:59.7289163Z    Compiling gix-pack v0.71.0
+2026-06-24T18:31:02.8419428Z    Compiling gix-filter v0.31.0
+2026-06-24T18:31:04.9729212Z    Compiling gix-config v0.57.0
+2026-06-24T18:31:05.7569500Z    Compiling gix-pathspec v0.18.1
+2026-06-24T18:31:07.5144368Z    Compiling gix-shallow v0.12.1
+2026-06-24T18:31:07.9519381Z    Compiling gix-negotiate v0.32.0
+2026-06-24T18:31:08.1899399Z    Compiling wasmparser v0.207.0
+2026-06-24T18:31:09.0619026Z    Compiling maybe-async v0.2.11
+2026-06-24T18:31:09.5679492Z    Compiling regex v1.12.4
+2026-06-24T18:31:11.0999088Z    Compiling io-close v0.3.7
+2026-06-24T18:31:11.2149261Z    Compiling rustc-demangle v0.1.27
+2026-06-24T18:31:11.4519118Z    Compiling heck v0.5.0
+2026-06-24T18:31:11.6089085Z    Compiling indenter v0.3.4
+2026-06-24T18:31:11.7329516Z    Compiling binfarce v0.2.1
+2026-06-24T18:31:12.3419364Z    Compiling clap_lex v1.1.0
+2026-06-24T18:31:12.6369105Z    Compiling lazy_static v1.5.0
+2026-06-24T18:31:12.6779373Z    Compiling topological-sort v0.2.2
+2026-06-24T18:31:12.7819201Z    Compiling strsim v0.11.1
+2026-06-24T18:31:13.6489540Z    Compiling fixedbitset v0.5.7
+2026-06-24T18:31:14.1309678Z    Compiling either v1.16.0
+2026-06-24T18:31:14.2335882Z    Compiling petgraph v0.8.3
+2026-06-24T18:31:14.2899370Z    Compiling rayon v1.12.0
+2026-06-24T18:31:14.4598923Z    Compiling clap_builder v4.6.0
+2026-06-24T18:31:16.7809456Z    Compiling auditable-serde v0.9.0
+2026-06-24T18:31:17.0599679Z    Compiling sharded-slab v0.1.7
+2026-06-24T18:31:17.6369054Z    Compiling auditable-extract v0.3.5
+2026-06-24T18:31:18.6935167Z    Compiling clap_derive v4.6.1
+2026-06-24T18:31:20.1189154Z    Compiling backtrace v0.3.76
+2026-06-24T18:31:20.1629196Z    Compiling gix-worktree-state v0.31.0
+2026-06-24T18:31:20.7944841Z    Compiling gix-submodule v0.31.0
+2026-06-24T18:31:23.1542568Z    Compiling gix-odb v0.81.0
+2026-06-24T18:31:27.0558943Z    Compiling gix-discover v0.52.0
+2026-06-24T18:31:27.0893354Z    Compiling tracing-log v0.2.0
+2026-06-24T18:31:27.3531096Z    Compiling gix-diff v0.64.0
+2026-06-24T18:31:27.6159122Z    Compiling deranged v0.5.8
+2026-06-24T18:31:28.4211464Z    Compiling smol_str v0.3.6
+2026-06-24T18:31:28.7729388Z    Compiling toml_datetime v1.1.1+spec-1.1.0
+2026-06-24T18:31:28.8749444Z    Compiling matchers v0.2.0
+2026-06-24T18:31:28.9639421Z    Compiling toml-span v0.7.1
+2026-06-24T18:31:29.1379284Z    Compiling thread_local v1.1.9
+2026-06-24T18:31:29.3257594Z    Compiling ident_case v1.0.1
+2026-06-24T18:31:29.3664145Z    Compiling time-core v0.1.9
+2026-06-24T18:31:29.3934938Z    Compiling powerfmt v0.2.0
+2026-06-24T18:31:29.5189048Z    Compiling twox-hash v2.1.2
+2026-06-24T18:31:29.5939415Z    Compiling num-conv v0.2.2
+2026-06-24T18:31:29.6099227Z    Compiling rustc-stable-hash v0.1.2
+2026-06-24T18:31:29.7049279Z    Compiling object v0.39.1
+2026-06-24T18:31:29.7539677Z    Compiling nu-ansi-term v0.50.3
+2026-06-24T18:31:29.8488992Z    Compiling time v0.3.51
+2026-06-24T18:31:30.2668492Z    Compiling tracing-subscriber v0.3.23
+2026-06-24T18:31:32.7357350Z    Compiling abscissa_derive v0.9.0
+2026-06-24T18:31:32.9509111Z    Compiling toml v1.1.2+spec-1.1.0
+2026-06-24T18:31:33.0040844Z    Compiling color-eyre v0.6.5
+2026-06-24T18:31:34.3383026Z    Compiling clap v4.6.1
+2026-06-24T18:31:35.1139301Z    Compiling auditable-info v0.10.0
+2026-06-24T18:31:36.1729412Z    Compiling cargo-lock v11.0.1
+2026-06-24T18:31:36.8749302Z    Compiling quitters v0.1.0
+2026-06-24T18:31:37.6919349Z    Compiling cvss v2.2.0
+2026-06-24T18:31:37.9741648Z    Compiling platforms v3.12.0
+2026-06-24T18:31:38.4258519Z    Compiling secrecy v0.10.3
+2026-06-24T18:31:38.5006042Z    Compiling wasmparser v0.247.0
+2026-06-24T18:31:40.0556428Z    Compiling wait-timeout v0.2.1
+2026-06-24T18:31:40.4882578Z    Compiling canonical-path v2.0.2
+2026-06-24T18:31:40.6639155Z    Compiling home v0.5.12
+2026-06-24T18:31:40.7396363Z    Compiling termcolor v1.4.1
+2026-06-24T18:31:41.1799243Z    Compiling abscissa_core v0.9.0
+2026-06-24T18:31:45.4439421Z    Compiling display-error-chain v0.2.2
+2026-06-24T18:32:04.6554156Z    Compiling rustls-webpki v0.103.13
+2026-06-24T18:32:08.1842617Z    Compiling tokio-rustls v0.26.4
+2026-06-24T18:32:08.1843863Z    Compiling rustls-platform-verifier v0.7.0
+2026-06-24T18:32:08.4256424Z    Compiling hyper-rustls v0.27.9
+2026-06-24T18:32:08.7439361Z    Compiling reqwest v0.13.4
+2026-06-24T18:32:10.5629385Z    Compiling gix-transport v0.57.2
+2026-06-24T18:32:10.5686019Z    Compiling tame-index v0.26.3
+2026-06-24T18:32:16.9789096Z    Compiling gix-protocol v0.62.0
+2026-06-24T18:32:20.8374617Z    Compiling gix v0.84.0
+2026-06-24T18:32:25.8898944Z    Compiling rustsec v0.33.0
+2026-06-24T18:32:28.4589216Z    Compiling cargo-audit v0.22.2
+2026-06-24T18:32:50.7863723Z     Finished `release` profile [optimized] target(s) in 3m 08s
+2026-06-24T18:32:50.8535745Z   Installing /home/runner/.cargo/bin/cargo-audit
+2026-06-24T18:32:50.8539686Z    Installed package `cargo-audit v0.22.2` (executable `cargo-audit`)
+2026-06-24T18:32:50.9706324Z     Fetching advisory database from `https://github.com/RustSec/advisory-db.git`
+2026-06-24T18:32:54.2660454Z       Loaded 1138 security advisories (from /home/runner/.cargo/advisory-db)
+2026-06-24T18:32:54.2660987Z     Updating crates.io index
+2026-06-24T18:32:54.2769062Z error: not found: Couldn't load ./thaid/Cargo.lock
+2026-06-24T18:32:54.2769486Z Caused by:
+2026-06-24T18:32:54.2769997Z   -> I/O operation failed: I/O operation failed: entity not found
+2026-06-24T18:32:54.2770526Z   -> I/O operation failed: entity not found
+2026-06-24T18:32:54.2798623Z ##[error]Process completed with exit code 2.
+2026-06-24T18:32:54.2988477Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-24T18:32:54.2989942Z Post job cleanup.
+2026-06-24T18:32:54.3812653Z [command]/usr/bin/git version
+2026-06-24T18:32:54.3847344Z git version 2.54.0
+2026-06-24T18:32:54.3881028Z Temporarily overriding HOME='/home/runner/work/_temp/d21fb8b0-8190-409f-a186-a94c8551d65a' before making global git config changes
+2026-06-24T18:32:54.3881768Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-24T18:32:54.3886606Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Theonix-OS/Theonix-OS
+2026-06-24T18:32:54.3920248Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-24T18:32:54.3947320Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-24T18:32:54.4130687Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-24T18:32:54.4150274Z http.https://github.com/.extraheader
+2026-06-24T18:32:54.4158789Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-06-24T18:32:54.4184392Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-24T18:32:54.4353287Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-24T18:32:54.4379620Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-24T18:32:54.4681110Z Cleaning up orphan processes
+2026-06-24T18:32:54.4915541Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
