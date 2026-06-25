@@ -1,5 +1,6 @@
 #!/bin/bash
 # Wait for Plasma to fully initialize
+# (OTA Update Test)
 sleep 3
 
 # Get the connected output name (e.g. Virtual-1 or XWAYLAND0)
