@@ -5,4 +5,5 @@
 # Starts Calamares with root privileges
 # =============================================================================
 
-exec sudo calamares "$@"
+# Use pkexec for standard polkit GUI escalation on Wayland
+exec pkexec calamares "$@"
