@@ -221,6 +221,6 @@ ln -sf /usr/lib/systemd/system/systemd-resolved.service "$PROFILE_DIR/airootfs/e
 chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/force-resolution.sh" 2>/dev/null || true
 
 echo "Starting ISO build..."
-mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" 2>&1 | grep -v "WARNING: Cannot change permissions" || true
+mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" || { echo "mkarchiso failed!"; exit 1; }
 
 echo "=== Build Complete ==="
