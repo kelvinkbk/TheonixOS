@@ -30,6 +30,8 @@ jobs:
           image: archlinux:base-devel
           options: -v ${{ github.workspace }}:/workdir -w /workdir
           run: |
+            set -ex
+            
             # Update system and install dependencies
             pacman -Syu --noconfirm git rust cargo sudo dbus sqlite
             
