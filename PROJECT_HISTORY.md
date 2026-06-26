@@ -22,7 +22,3 @@ This document serves as a chronological record of the major features, fixes, and
 - **KDE Discover & System Settings:** Enabled out-of-the-box support for the KDE Discover App Store and the System Settings "Software Update" module, allowing users to update their OS with a single click.
 - **OTA Verification:** Successfully performed a complete end-to-end test of the update pipeline by bumping the `theonix-config` version via GitHub Actions and verifying its seamless deployment to a running VirtualBox installation.
 
-## Phase 5: The AI Core (In Progress)
-- **Theonix AI Daemon (`thaid`):** Scaffolded the core intelligence daemon in Rust.
-- **Build Fixes:** Resolved complex Link-Time Optimization (LTO) linking errors on GitHub Actions by migrating away from bundled C libraries (e.g., `rusqlite` bundled features) to system-provided dynamic libraries.
-- **Architecture:** Laid the groundwork for voice processing (`whisper.rs`, `piper.rs`), hardware management, and deep D-Bus integration (`ai_interface.rs`) to allow the desktop environment to natively communicate with the AI.
