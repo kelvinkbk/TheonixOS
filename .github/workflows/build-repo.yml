@@ -31,6 +31,8 @@ jobs:
           options: -v ${{ github.workspace }}:/workdir -w /workdir
           run: |
             set -ex
+            # Enable multilib for wine
+            sed -i '/\[multilib\]/,/Include = /s/^#//' /etc/pacman.conf
             
             # Update system and install dependencies
             pacman -Syu --noconfirm git rust cargo sudo dbus sqlite pipewire-jack qt6-multimedia-ffmpeg
@@ -42,6 +44,14 @@ jobs:
             
             # Setup repository directory
             mkdir -p /workdir/repo/x86_64
+            
+            # Build and install debtap from AUR
+            cd /tmp
+            sudo -u builduser git clone https://aur.archlinux.org/debtap.git
+            cd debtap
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            sudo pacman -U --noconfirm *.pkg.tar.zst
             
             # Build thaid
             cd /workdir/packages/thaid
