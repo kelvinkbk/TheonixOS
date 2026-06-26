@@ -1,6 +1,6 @@
 pkgname=theonix-uacl
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Theonix OS Universal Application Compatibility Layer (Backend)"
 arch=('x86_64')
 url="https://github.com/kelvinkbk/Theonix-OS"
@@ -13,8 +13,10 @@ md5sums=('SKIP')
 prepare() {
     if [ -d "$srcdir/../../../theonix-uacl" ]; then
         cp -r "$srcdir/../../../theonix-uacl" "$srcdir/"
+        cp -r "$srcdir/../../../packages/theonix-config/src-files/usr/share/applications/theonix-uacl.desktop" "$srcdir/"
     elif [ -d "$srcdir/local-source/theonix-uacl" ]; then
         cp -r "$srcdir/local-source/theonix-uacl" "$srcdir/"
+        cp -r "$srcdir/local-source/packages/theonix-config/src-files/usr/share/applications/theonix-uacl.desktop" "$srcdir/"
     fi
 }
 
@@ -28,4 +30,8 @@ build() {
 package() {
     cd "$srcdir/theonix-uacl"
     install -Dm755 target/release/theonix-uacl "$pkgdir/usr/bin/theonix-uacl"
+    
+    # Install the desktop file
+    cd "$srcdir"
+    install -Dm644 theonix-uacl.desktop "$pkgdir/usr/share/applications/theonix-uacl.desktop"
 }

@@ -1,6 +1,6 @@
 pkgname=theonix-app-manager
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Theonix OS Universal Application Compatibility Layer (GUI)"
 arch=('any')
 url="https://github.com/kelvinkbk/Theonix-OS"
@@ -12,8 +12,10 @@ md5sums=('SKIP')
 prepare() {
     if [ -d "$srcdir/../../../theonix-app-manager" ]; then
         cp -r "$srcdir/../../../theonix-app-manager" "$srcdir/"
+        cp -r "$srcdir/../../../packages/theonix-config/src-files/usr/share/applications/theonix-app-manager.desktop" "$srcdir/"
     elif [ -d "$srcdir/local-source/theonix-app-manager" ]; then
         cp -r "$srcdir/local-source/theonix-app-manager" "$srcdir/"
+        cp -r "$srcdir/local-source/packages/theonix-config/src-files/usr/share/applications/theonix-app-manager.desktop" "$srcdir/"
     fi
 }
 
@@ -24,6 +26,7 @@ package() {
     install -d "$pkgdir/opt/theonix-app-manager"
     install -Dm644 main.py "$pkgdir/opt/theonix-app-manager/main.py"
     
-    # Wait, the .desktop file is provided by theonix-config currently!
-    # I'll leave the .desktop in theonix-config to avoid conflicts.
+    # Install the desktop file
+    cd "$srcdir"
+    install -Dm644 theonix-app-manager.desktop "$pkgdir/usr/share/applications/theonix-app-manager.desktop"
 }
