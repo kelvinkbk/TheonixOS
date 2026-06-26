@@ -13,6 +13,7 @@ DB_PATH = os.path.expanduser("~/.config/theonix/uacl.db")
 
 class Database:
     def __init__(self):
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
         self.conn = sqlite3.connect(DB_PATH)
         self.conn.row_factory = sqlite3.Row
 
