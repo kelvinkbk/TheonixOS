@@ -1,0 +1,29 @@
+pkgname=theonix-app-manager
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Theonix OS Universal Application Compatibility Layer (GUI)"
+arch=('any')
+url="https://github.com/kelvinkbk/Theonix-OS"
+license=('MIT')
+depends=('python' 'python-pyqt6' 'theonix-uacl')
+source=("local-source::git+file://${PWD%/*/*}/.git") # Placeholder
+md5sums=('SKIP')
+
+prepare() {
+    if [ -d "$srcdir/../../../theonix-app-manager" ]; then
+        cp -r "$srcdir/../../../theonix-app-manager" "$srcdir/"
+    elif [ -d "$srcdir/local-source/theonix-app-manager" ]; then
+        cp -r "$srcdir/local-source/theonix-app-manager" "$srcdir/"
+    fi
+}
+
+package() {
+    cd "$srcdir/theonix-app-manager"
+    
+    # Install Python files to /opt/theonix-app-manager
+    install -d "$pkgdir/opt/theonix-app-manager"
+    install -Dm644 main.py "$pkgdir/opt/theonix-app-manager/main.py"
+    
+    # Wait, the .desktop file is provided by theonix-config currently!
+    # I'll leave the .desktop in theonix-config to avoid conflicts.
+}

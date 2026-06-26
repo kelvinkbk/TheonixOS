@@ -53,6 +53,17 @@ jobs:
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
             
+            # Build theonix-uacl
+            cd /workdir/packages/theonix-uacl
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            sudo pacman -U --noconfirm *.pkg.tar.zst
+            
+            # Build theonix-app-manager
+            cd /workdir/packages/theonix-app-manager
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            
             # Generate the repository database
             cd /workdir/repo/x86_64
             repo-add theonix.db.tar.gz *.pkg.tar.zst

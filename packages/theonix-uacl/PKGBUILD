@@ -1,0 +1,31 @@
+pkgname=theonix-uacl
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Theonix OS Universal Application Compatibility Layer (Backend)"
+arch=('x86_64')
+url="https://github.com/kelvinkbk/Theonix-OS"
+license=('MIT')
+depends=('wine' 'winetricks' 'debtap')
+makedepends=('cargo')
+source=("local-source::git+file://${PWD%/*/*}/.git") # Placeholder
+md5sums=('SKIP')
+
+prepare() {
+    if [ -d "$srcdir/../../../theonix-uacl" ]; then
+        cp -r "$srcdir/../../../theonix-uacl" "$srcdir/"
+    elif [ -d "$srcdir/local-source/theonix-uacl" ]; then
+        cp -r "$srcdir/local-source/theonix-uacl" "$srcdir/"
+    fi
+}
+
+build() {
+    cd "$srcdir/theonix-uacl"
+    # We must unset CARGO_TARGET_DIR so it builds inside our copied srcdir
+    unset CARGO_TARGET_DIR
+    cargo build --release
+}
+
+package() {
+    cd "$srcdir/theonix-uacl"
+    install -Dm755 target/release/theonix-uacl "$pkgdir/usr/bin/theonix-uacl"
+}
