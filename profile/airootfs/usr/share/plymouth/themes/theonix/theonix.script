@@ -1,13 +1,13 @@
 # Plymouth Boot Theme for Theonix OS
-# Premium animated boot screen with pulsing logo + progress dots
+# Uses only valid Plymouth Script API calls
 
 # ── Screen dimensions ──────────────────────────────────────────
 screen_width  = Window.GetWidth();
 screen_height = Window.GetHeight();
 
 # ── Background ─────────────────────────────────────────────────
-bg = Image("background.png");
-bg_sprite = Sprite(bg);
+bg_img    = Image("background.png");
+bg_sprite = Sprite(bg_img);
 bg_sprite.SetX(0);
 bg_sprite.SetY(0);
 bg_sprite.SetZ(-100);
@@ -17,24 +17,29 @@ logo_img = Image("logo.png");
 logo_w   = logo_img.GetWidth();
 logo_h   = logo_img.GetHeight();
 logo_x   = (screen_width  - logo_w) / 2;
-logo_y   = (screen_height - logo_h) / 2 - 60;
+logo_y   = (screen_height - logo_h) / 2 - 80;
 
 logo_sprite = Sprite(logo_img);
 logo_sprite.SetX(logo_x);
 logo_sprite.SetY(logo_y);
 logo_sprite.SetZ(10);
 
-# ── Spinner dots ───────────────────────────────────────────────
+# ── "THEONIX" text label ───────────────────────────────────────
+label_img    = Image.Text("THEONIX  OS", 0.85, 0.75, 0.95, 0.9);
+label_sprite = Sprite(label_img);
+label_sprite.SetX((screen_width - label_img.GetWidth()) / 2);
+label_sprite.SetY(logo_y + logo_h + 14);
+label_sprite.SetZ(11);
+
+# ── Dot spinner (5 dots, one sweeps left→right) ────────────────
 num_dots    = 5;
-dot_size    = 10;
-dot_spacing = 22;
-dot_y       = logo_y + logo_h + 48;
-dot_total_w = (num_dots - 1) * dot_spacing;
-dot_start_x = (screen_width - dot_total_w) / 2;
+dot_spacing = 20;
+dot_y       = logo_y + logo_h + 54;
+dot_start_x = (screen_width - (num_dots - 1) * dot_spacing) / 2;
 
 dot_sprites = [];
 for (i = 0; i < num_dots; i++) {
-    d = Image.Text("●", 1.0, 1.0, 1.0, 0.2);
+    d = Image.Text("•", 0.55, 0.25, 0.85, 0.25);
     s = Sprite(d);
     s.SetX(dot_start_x + i * dot_spacing - d.GetWidth() / 2);
     s.SetY(dot_y);
@@ -42,53 +47,43 @@ for (i = 0; i < num_dots; i++) {
     dot_sprites[i] = s;
 }
 
-# ── Progress bar ───────────────────────────────────────────────
-bar_width   = 260;
-bar_height  = 3;
-bar_x       = (screen_width - bar_width) / 2;
-bar_y       = dot_y + 36;
+# ── Progress bar using text blocks ────────────────────────────
+# We simulate a progress bar with a row of block chars
+bar_total    = 30;
+bar_y        = dot_y + 32;
+bar_x_start  = (screen_width - bar_total * 8) / 2;
 
-# Background track
-bar_bg_img  = Image.CreateFromFile("bar_bg.png");
-if (!bar_bg_img) {
-    # Draw a dim track manually
-    bar_bg_img = Image(bar_width, bar_height);
-    bar_bg_img.Scale(bar_width, bar_height);
-}
-bar_bg_spr  = Sprite();
-bar_bg_spr.SetImage(SpriteImage.Fill(bar_width, bar_height, 0.25, 0.25, 0.35, 1.0));
-bar_bg_spr.SetX(bar_x);
-bar_bg_spr.SetY(bar_y);
-bar_bg_spr.SetZ(15);
+bar_bg_chars = "";
+for (i = 0; i < bar_total; i++) { bar_bg_chars = bar_bg_chars + "─"; }
+bar_bg_img    = Image.Text(bar_bg_chars, 0.3, 0.2, 0.4, 0.8);
+bar_bg_sprite = Sprite(bar_bg_img);
+bar_bg_sprite.SetX((screen_width - bar_bg_img.GetWidth()) / 2);
+bar_bg_sprite.SetY(bar_y);
+bar_bg_sprite.SetZ(15);
 
-# Fill (grows with boot progress)
-bar_fill_w  = 0;
-bar_fill_spr = Sprite();
-bar_fill_spr.SetImage(SpriteImage.Fill(1, bar_height, 0.49, 0.21, 0.93, 1.0));
-bar_fill_spr.SetX(bar_x);
-bar_fill_spr.SetY(bar_y);
-bar_fill_spr.SetZ(16);
+bar_fill_sprite = Sprite();
+bar_fill_chars  = "";
+bar_filled      = 0;
 
 # ── Animation state ────────────────────────────────────────────
-frame        = 0;
-logo_opacity = 1.0;
-glow_dir     = -1;
-glow_speed   = 0.012;
-active_dot   = 0;
+frame      = 0;
+logo_op    = 1.0;
+glow_dir   = -1;
+active_dot = 0;
 
 fun refresh_callback() {
     frame++;
 
-    # Pulse logo gently
-    logo_opacity += glow_speed * glow_dir;
-    if (logo_opacity >= 1.0) { logo_opacity = 1.0; glow_dir = -1; }
-    if (logo_opacity <= 0.55) { logo_opacity = 0.55; glow_dir = 1; }
-    logo_sprite.SetOpacity(logo_opacity);
+    # Gently pulse the logo
+    logo_op = logo_op + 0.013 * glow_dir;
+    if (logo_op >= 1.0) { logo_op = 1.0; glow_dir = -1; }
+    if (logo_op <= 0.5)  { logo_op = 0.5;  glow_dir =  1; }
+    logo_sprite.SetOpacity(logo_op);
 
-    # Animate dots: one bright dot sweeps left → right every 8 frames
-    if (frame % 8 == 0) {
+    # Sweep one bright dot every 10 frames
+    if (frame % 10 == 0) {
         for (i = 0; i < num_dots; i++) {
-            dot_sprites[i].SetOpacity(0.18);
+            dot_sprites[i].SetOpacity(0.2);
         }
         active_dot = (active_dot + 1) % num_dots;
         dot_sprites[active_dot].SetOpacity(1.0);
@@ -96,10 +91,19 @@ fun refresh_callback() {
 }
 
 fun boot_progress_callback(duration, progress) {
-    # Grow the progress bar as boot advances (0.0 → 1.0)
-    bar_fill_w = Math.Int(bar_width * progress);
-    if (bar_fill_w < 1) { bar_fill_w = 1; }
-    bar_fill_spr.SetImage(SpriteImage.Fill(bar_fill_w, bar_height, 0.49, 0.21, 0.93, 1.0));
+    new_filled = Math.Int(bar_total * progress);
+    if (new_filled > bar_filled) {
+        bar_filled = new_filled;
+        bar_fill_chars = "";
+        for (i = 0; i < bar_filled; i++) { bar_fill_chars = bar_fill_chars + "━"; }
+        if (bar_fill_chars != "") {
+            fill_img = Image.Text(bar_fill_chars, 0.49, 0.21, 0.93, 1.0);
+            bar_fill_sprite.SetImage(fill_img);
+            bar_fill_sprite.SetX((screen_width - bar_bg_img.GetWidth()) / 2);
+            bar_fill_sprite.SetY(bar_y);
+            bar_fill_sprite.SetZ(16);
+        }
+    }
 }
 
 Plymouth.SetRefreshFunction(refresh_callback);
