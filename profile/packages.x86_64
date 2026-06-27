@@ -132,6 +132,7 @@ wayland
 plasma-meta
 sddm
 packagekit-qt6
+dolphin
 
 # UACL Dependencies
 wine
