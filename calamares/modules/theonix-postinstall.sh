@@ -39,10 +39,30 @@ Current=theonix
 SDDM_EOF
 echo "  SDDM theme set to: theonix"
 
-# ---- 4. Set Plymouth theme (non-fatal) --------------------------------------
+# ---- 4. Set Plymouth theme --------------------------------------------------
 if command -v plymouth-set-default-theme &>/dev/null; then
-    plymouth-set-default-theme theonix 2>/dev/null || \
-        echo "  Warning: Plymouth theme set failed (non-fatal)"
+    # Copy the Theonix Plymouth theme into the installed system
+    THEME_SRC="/usr/share/plymouth/themes/theonix"
+    if [ -d "$THEME_SRC" ]; then
+        plymouth-set-default-theme theonix 2>/dev/null && \
+            echo "  Plymouth theme set to: theonix" || \
+            echo "  Warning: Plymouth theme set failed (non-fatal)"
+        
+        # Add 'plymouth' hook to mkinitcpio and rebuild initramfs
+        # so the splash appears on actual boot, not just in the live session
+        MKINITCPIO_CONF="/etc/mkinitcpio.conf"
+        if [ -f "$MKINITCPIO_CONF" ] && ! grep -q "plymouth" "$MKINITCPIO_CONF"; then
+            sed -i 's/^HOOKS=(\(.*\)udev\(.*\))/HOOKS=(\1udev plymouth\2)/' \
+                "$MKINITCPIO_CONF" 2>/dev/null || true
+            echo "  Added plymouth hook to mkinitcpio.conf"
+        fi
+        mkinitcpio -P 2>/dev/null && echo "  initramfs rebuilt with Plymouth" || \
+            echo "  Warning: mkinitcpio failed (non-fatal)"
+    else
+        echo "  Warning: Theonix Plymouth theme not found, skipping"
+    fi
+else
+    echo "  Warning: plymouth-set-default-theme not available (non-fatal)"
 fi
 
 # ---- 5. Configure journald limits -------------------------------------------

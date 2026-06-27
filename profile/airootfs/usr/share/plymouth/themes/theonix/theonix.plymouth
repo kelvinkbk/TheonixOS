@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Theonix
+Description=A beautiful high-tech dark theme for Theonix OS
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/theonix
+ScriptFile=/usr/share/plymouth/themes/theonix/theonix.script

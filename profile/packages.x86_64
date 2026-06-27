@@ -134,6 +134,9 @@ sddm
 packagekit-qt6
 dolphin
 
+# Boot Splash
+plymouth
+
 # UACL Dependencies
 wine
 winetricks
