@@ -22,3 +22,14 @@ This document serves as a chronological record of the major features, fixes, and
 - **KDE Discover & System Settings:** Enabled out-of-the-box support for the KDE Discover App Store and the System Settings "Software Update" module, allowing users to update their OS with a single click.
 - **OTA Verification:** Successfully performed a complete end-to-end test of the update pipeline by bumping the `theonix-config` version via GitHub Actions and verifying its seamless deployment to a running VirtualBox installation.
 
+## Phase 6: Universal Application Compatibility Layer (UACL)
+- **Smart File Detection:** Built a Rust-based `SmartDetector` that reads raw magic bytes of any file to automatically identify its format (Windows PE `.exe`/`.msi`, AppImage, `.deb`, `.rpm`, ELF binary) without relying on file extensions.
+- **RuntimeManager:** Implemented isolated `WINEPREFIX` management per application in `~/.local/share/theonix-uacl/prefixes/`. Each app gets its own clean Wine environment so they never interfere with each other.
+- **DXVK & VKD3D Support:** Integrated automatic DirectX-to-Vulkan translation layer injection for better Windows app and game compatibility.
+- **Debian Package Converter:** Built a pipeline using `debtap` to silently convert `.deb` packages into native Arch `.pkg.tar.zst` packages and install them via `pacman` — no terminal needed.
+- **SQLite App Registry:** All installed foreign apps are recorded in `~/.config/theonix/uacl.db` with their name, format type, Wine prefix path, and runtime version.
+- **Theonix App Manager GUI:** Built a native PyQt6 dark-themed dashboard that reads the database and lets users view, launch, and uninstall all their Windows and foreign applications from a single interface.
+- **One-Click Install Dialog (Phase 6.3):** Replaced raw Wine windows with a beautiful frameless progress popup that shows animated step-by-step progress (Detecting → Creating environment → Checking dependencies → Launching) — users never see a terminal or Wine configuration screen.
+- **KDE MIME Integration:** Registered the UACL as the system-wide default handler for `.exe`, `.msi`, `.deb`, `.rpm`, and `.AppImage` files. Double-clicking any of these in Dolphin automatically routes them through the UACL launcher.
+- **Automated CI/CD Packaging:** Extended the GitHub Actions pipeline to compile the Rust backend, build `debtap` from the AUR, package the Python GUI, and publish everything to the custom `[theonix]` pacman repository.
+- **Real-World Testing:** Confirmed Notepad++ installs and runs via Wine. Rufus correctly fails (expected — hardware-level tools cannot be emulated by Wine). AppImage support confirmed operational.
