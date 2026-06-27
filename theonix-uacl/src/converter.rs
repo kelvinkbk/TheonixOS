@@ -10,24 +10,19 @@ impl PackageConverter {
     pub fn install_deb<P: AsRef<Path>>(deb_path: P) -> Result<()> {
         let deb_path = deb_path.as_ref();
         info!("Converting Debian package: {:?}", deb_path);
-        
-        // Ensure debtap is updated (could be cached in production)
-        // Command::new("debtap").arg("-u").status()?;
-        
+
         let status = Command::new("debtap")
-            .arg("-q") // quiet
+            .arg("-q")
             .arg(deb_path)
             .status()?;
-            
+
         if !status.success() {
             anyhow::bail!("Debtap conversion failed");
         }
-        
-        // Find the generated .pkg.tar.zst file
-        // This is a naive implementation; in production we'd parse the output or scan the dir
-        let file_stem = deb_path.file_stem().unwrap().to_string_lossy();
+
+        let file_stem = deb_path.file_stem().unwrap().to_string_lossy().to_string();
         let current_dir = std::env::current_dir()?;
-        
+
         for entry in std::fs::read_dir(current_dir)? {
             let entry = entry?;
             let path = entry.path();
@@ -35,43 +30,113 @@ impl PackageConverter {
                 if let Some(ext) = path.extension() {
                     if ext == "zst" && path.to_string_lossy().contains(&*file_stem) {
                         info!("Installing converted package: {:?}", path);
-                        let pacman_status = Command::new("sudo")
-                            .arg("pacman")
-                            .arg("-U")
-                            .arg("--noconfirm")
+                        Command::new("sudo")
+                            .args(["pacman", "-U", "--noconfirm"])
                             .arg(&path)
                             .status()?;
-                            
-                        if !pacman_status.success() {
-                            anyhow::bail!("Failed to install converted package");
-                        }
-                        
-                        // Cleanup
                         let _ = std::fs::remove_file(path);
                         break;
                     }
                 }
             }
         }
-        
+
         Ok(())
     }
 
-    /// Handles AppImage integration (make executable and run or integrate with appimaged)
+    /// Installs a Flatpak bundle file
+    pub fn install_flatpak<P: AsRef<Path>>(flatpak_path: P) -> Result<()> {
+        let path = flatpak_path.as_ref();
+        info!("Installing Flatpak bundle: {:?}", path);
+
+        let status = Command::new("flatpak")
+            .args(["install", "--noninteractive", "--user"])
+            .arg(path)
+            .status()?;
+
+        if !status.success() {
+            anyhow::bail!("Flatpak installation failed");
+        }
+
+        Ok(())
+    }
+
+    /// Installs a Snap package
+    pub fn install_snap<P: AsRef<Path>>(snap_path: P) -> Result<()> {
+        let path = snap_path.as_ref();
+        info!("Installing Snap package: {:?}", path);
+
+        let status = Command::new("sudo")
+            .args(["snap", "install", "--dangerous"])
+            .arg(path)
+            .status()?;
+
+        if !status.success() {
+            anyhow::bail!("Snap installation failed");
+        }
+
+        Ok(())
+    }
+
+    /// Handles ZIP and TAR archives: extracts, then scans for ELF or PE executables
+    pub fn handle_archive<P: AsRef<Path>>(archive_path: P) -> Result<()> {
+        let path = archive_path.as_ref();
+        let extract_dir = path.with_extension("");
+
+        std::fs::create_dir_all(&extract_dir)?;
+
+        let ext_str = path.to_string_lossy().to_lowercase();
+
+        if ext_str.ends_with(".zip") {
+            Command::new("unzip")
+                .arg("-o")
+                .arg(path)
+                .arg("-d")
+                .arg(&extract_dir)
+                .status()?;
+        } else {
+            Command::new("tar")
+                .arg("-xf")
+                .arg(path)
+                .arg("-C")
+                .arg(&extract_dir)
+                .status()?;
+        }
+
+        info!("Extracted archive to {:?}. Scanning for executables...", extract_dir);
+
+        // Look for ELF or shell scripts to run
+        for entry in std::fs::read_dir(&extract_dir)? {
+            let entry = entry?;
+            let p = entry.path();
+            if p.is_file() {
+                let name = p.file_name().unwrap().to_string_lossy().to_lowercase();
+                if name.ends_with(".sh") || name.ends_with(".exe") || name == "run" {
+                    use std::os::unix::fs::PermissionsExt;
+                    let mut perms = std::fs::metadata(&p)?.permissions();
+                    perms.set_mode(0o755);
+                    std::fs::set_permissions(&p, perms)?;
+                    Command::new(&p).spawn()?;
+                    break;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Marks an AppImage or ELF executable and launches it
     pub fn launch_appimage<P: AsRef<Path>>(appimage_path: P) -> Result<()> {
         let path = appimage_path.as_ref();
-        info!("Launching AppImage: {:?}", path);
-        
-        // Ensure it's executable
+        info!("Launching: {:?}", path);
+
         use std::os::unix::fs::PermissionsExt;
         let mut perms = std::fs::metadata(path)?.permissions();
         perms.set_mode(0o755);
         std::fs::set_permissions(path, perms)?;
-        
-        // Launch it
-        Command::new(path)
-            .spawn()?; // Spawn so it detaches from our launcher
-            
+
+        Command::new(path).spawn()?;
+
         Ok(())
     }
 }

@@ -4,14 +4,14 @@ mod runtime;
 mod converter;
 
 use clap::{Parser, Subcommand};
-use database::Database;
+use database::{Database, Application};
 use detector::{SmartDetector, FileFormat};
-use runtime::RuntimeManager;
+use runtime::{RuntimeManager, RuntimeProfile};
 use converter::PackageConverter;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about = "Theonix Universal Application Compatibility Layer")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -23,9 +23,17 @@ enum Commands {
     Run {
         #[arg(short, long)]
         file: String,
+        /// Override the runtime profile (gaming, office, legacy, portable, development)
+        #[arg(short, long, default_value = "auto")]
+        profile: String,
     },
     /// List installed applications
     List,
+    /// Uninstall an application by ID
+    Uninstall {
+        #[arg(short, long)]
+        id: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -36,7 +44,7 @@ fn main() -> anyhow::Result<()> {
         .unwrap_or_else(|| PathBuf::from("."))
         .join("theonix")
         .join("uacl.db");
-    
+
     if let Some(parent) = db_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
@@ -44,7 +52,7 @@ fn main() -> anyhow::Result<()> {
     let db = Database::new(db_path)?;
 
     match &cli.command {
-        Commands::Run { file } => {
+        Commands::Run { file, profile } => {
             let path = PathBuf::from(file);
             if !path.exists() {
                 anyhow::bail!("File does not exist: {}", file);
@@ -55,21 +63,44 @@ fn main() -> anyhow::Result<()> {
 
             match format {
                 FileFormat::WindowsPE => {
-                    println!("Windows executable detected. Intercepting and routing to Runtime Manager...");
+                    println!("Windows executable detected. Routing to Runtime Engine...");
                     let rm = RuntimeManager::new()?;
-                    
-                    // Build a clean app name from the filename
+
                     let app_name = path.file_stem().unwrap().to_string_lossy().to_string();
-                    // Use a sanitized version as the unique ID too
                     let app_id = app_name.to_lowercase().replace(' ', "_");
-                    
+
+                    // Phase 6.3: Scan PE import table for missing dependencies
+                    println!("Scanning for required dependencies...");
+                    let deps = SmartDetector::detect_pe_dependencies(&path)?;
+                    if !deps.is_empty() {
+                        println!("Auto-installing {} dependencies: {:?}", deps.len(), deps);
+                    } else {
+                        println!("No additional dependencies required.");
+                    }
+
+                    // Phase 6.2: Apply runtime profile
+                    let rt_profile = RuntimeProfile::from_str(profile);
+                    println!("Using runtime profile: {}", rt_profile.name());
+
                     let prefix_path = rm.create_wine_prefix(&app_id)?;
-                    
-                    // Run the executable
+
+                    // Auto install deps first
+                    if !deps.is_empty() {
+                        rm.auto_install_dependencies(&prefix_path, &deps)?;
+                    }
+
+                    // Apply profile (Windows version)
+                    rm.apply_profile(&prefix_path, &rt_profile)?;
+
+                    // Apply DXVK if gaming profile
+                    if rt_profile.uses_dxvk() {
+                        rm.install_dxvk(&prefix_path)?;
+                    }
+
                     rm.run_executable(&prefix_path, &path, &[])?;
 
-                    // Register the app in the database so it shows in App Manager
-                    let app = database::Application {
+                    // Phase 6.1: Register in database with full intelligence fields
+                    let app = Application {
                         id: app_id.clone(),
                         name: app_name,
                         original_file_path: path.to_string_lossy().to_string(),
@@ -77,41 +108,87 @@ fn main() -> anyhow::Result<()> {
                         format_type: "WindowsPE".to_string(),
                         prefix_path: Some(prefix_path.to_string_lossy().to_string()),
                         runtime_version: Some("wine".to_string()),
-                        uses_dxvk: false,
+                        uses_dxvk: rt_profile.uses_dxvk(),
                         uses_vkd3d: false,
                         desktop_shortcut_path: None,
                         icon_path: None,
+                        compatibility_rating: 0,
+                        launch_count: 1,
+                        last_launch: None,
+                        known_issues: None,
+                        runtime_profile: Some(rt_profile.name().to_string()),
+                        recommended_runtime: Some("wine".to_string()),
+                        gpu_backend: if rt_profile.uses_dxvk() {
+                            Some("dxvk".to_string())
+                        } else {
+                            Some("none".to_string())
+                        },
+                        sandbox_enabled: true,
                     };
-                    // Ignore error if already exists (re-run of same app)
+
                     let _ = db.insert_application(&app);
+                    db.record_launch(&app_id)?;
                     println!("Registered '{}' in Theonix App Manager.", app_id);
                 }
-                FileFormat::AppImage => {
-                    println!("AppImage detected. Integrating into desktop...");
+
+                FileFormat::AppImage | FileFormat::ELF => {
+                    println!("AppImage/ELF detected. Launching...");
                     PackageConverter::launch_appimage(&path)?;
                 }
+
                 FileFormat::DebianPackage => {
-                    println!("Debian package detected. Routing to debtap conversion pipeline...");
+                    println!("Debian package detected. Converting to native package...");
                     PackageConverter::install_deb(&path)?;
                 }
+
+                FileFormat::FlatpakBundle => {
+                    println!("Flatpak bundle detected. Installing via flatpak...");
+                    PackageConverter::install_flatpak(&path)?;
+                }
+
+                FileFormat::SnapPackage => {
+                    println!("Snap package detected. Installing via snapd...");
+                    PackageConverter::install_snap(&path)?;
+                }
+
+                FileFormat::ZipArchive | FileFormat::TarArchive => {
+                    println!("Archive detected. Extracting and scanning for executables...");
+                    PackageConverter::handle_archive(&path)?;
+                }
+
                 FileFormat::RpmPackage => {
-                    println!("RPM package detected. Routing to debtap/alien pipeline...");
-                    println!("Error: RPM conversion not fully implemented yet. Please use debtap manually.");
+                    println!("RPM package detected. Routing to debtap pipeline...");
+                    println!("Note: RPM support coming in Phase 6.5 update.");
                 }
-                FileFormat::ELF => {
-                    println!("Native ELF binary detected. Marking as executable and running...");
-                    PackageConverter::launch_appimage(&path)?; // Works for ELF too
-                }
+
                 FileFormat::Unknown => {
-                    println!("Unknown format. Attempting standard execution...");
+                    println!("Unknown format. Cannot process this file.");
                 }
             }
         }
+
         Commands::List => {
             let apps = db.get_applications()?;
-            for app in apps {
-                println!("{:?}", app);
+            if apps.is_empty() {
+                println!("No applications installed yet.");
+            } else {
+                println!("{:<20} {:<12} {:<10} {:<8} {}", "NAME", "FORMAT", "PROFILE", "LAUNCHES", "RATING");
+                println!("{}", "-".repeat(70));
+                for app in apps {
+                    println!("{:<20} {:<12} {:<10} {:<8} {}★",
+                        app.name,
+                        app.format_type,
+                        app.runtime_profile.unwrap_or_else(|| "auto".to_string()),
+                        app.launch_count,
+                        app.compatibility_rating,
+                    );
+                }
             }
+        }
+
+        Commands::Uninstall { id } => {
+            db.delete_application(id)?;
+            println!("Removed '{}' from Theonix App Manager.", id);
         }
     }
 

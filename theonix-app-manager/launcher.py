@@ -11,8 +11,9 @@ from PyQt6.QtGui import QFont, QPixmap, QColor, QPainter, QPainterPath
 
 STEPS_EXE = [
     ("🔍", "Detecting application type..."),
+    ("📋", "Scanning for required dependencies..."),
     ("⚙️", "Creating isolated environment..."),
-    ("📦", "Checking runtime dependencies..."),
+    ("📦", "Installing missing dependencies..."),
     ("🚀", "Launching application..."),
 ]
 
@@ -27,6 +28,12 @@ STEPS_APPIMAGE = [
     ("🔍", "Detecting AppImage format..."),
     ("🔒", "Marking executable..."),
     ("🚀", "Launching application..."),
+]
+
+STEPS_FLATPAK = [
+    ("🔍", "Detecting Flatpak bundle..."),
+    ("📦", "Installing Flatpak package..."),
+    ("✅", "Installation complete!"),
 ]
 
 
