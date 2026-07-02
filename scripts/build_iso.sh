@@ -21,6 +21,10 @@ echo "Copying clean releng profile..."
 rm -rf "$PROFILE_DIR"
 cp -r /usr/share/archiso/configs/releng/ "$PROFILE_DIR"
 
+echo "Injecting generated mirrorlist into live environment..."
+mkdir -p "$PROFILE_DIR/airootfs/etc/pacman.d"
+cp /etc/pacman.d/mirrorlist "$PROFILE_DIR/airootfs/etc/pacman.d/mirrorlist"
+
 echo "Overlaying custom profile configurations..."
 cp -aT /workdir/profile/ "$PROFILE_DIR"
 
@@ -215,7 +219,7 @@ chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-installer" 2>/dev/null || 
 chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-recovery" 2>/dev/null || true
 
 echo "Generating shadow/gshadow for live ISO..."
-/workdir/scripts/generate_shadow.sh "$PROFILE_DIR"
+bash /workdir/scripts/generate_shadow.sh "$PROFILE_DIR"
 
 echo "Starting ISO build..."
 mkarchiso -v -w "$WORKDIR" -o "$OUTDIR" "$PROFILE_DIR" || { echo "mkarchiso failed!"; exit 1; }
