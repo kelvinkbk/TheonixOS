@@ -1,6 +1,6 @@
 pkgname=theonix-config
 pkgver=0.1.0
-pkgrel=7
+pkgrel=8
 pkgdesc="Theonix OS configuration, branding, and helper scripts"
 arch=('any')
 url="https://github.com/kelvinkbk/Theonix-OS"
@@ -34,6 +34,8 @@ package() {
     # Install KDE skel config (sets default wallpaper for new users)
     install -Dm644 etc/skel/.config/plasma-wallpaper.conf \
         "$pkgdir/etc/skel/.config/plasma-wallpaper.conf"
+    install -Dm644 etc/skel/.config/mimeapps.list \
+        "$pkgdir/etc/skel/.config/mimeapps.list"
 
     # Desktop MIME handlers are installed by their respective packages
 
