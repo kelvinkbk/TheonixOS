@@ -13,13 +13,18 @@ on:
 jobs:
   build-repo:
     runs-on: ubuntu-latest
-    
-    # Prevent concurrent deployments from deadlocking the Pages queue
+
+    # Required for GitHub Pages - links job to the Pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Cancel any in-progress deployment so new pushes don't get stuck in queue
     concurrency:
       group: "pages"
-      cancel-in-progress: false
-    
-    # Needs permissions to deploy to GitHub Pages (or a branch)
+      cancel-in-progress: true
+
+    # Needs permissions to deploy to GitHub Pages
     permissions:
       contents: write
       pages: write
