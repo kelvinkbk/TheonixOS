@@ -85,6 +85,9 @@ jobs:
             cd /workdir/repo/x86_64
             repo-add theonix.db.tar.gz *.pkg.tar.zst
 
+      - name: Fix file permissions after Docker build
+        run: sudo chown -R $USER:$USER ./repo || true
+
       - name: Deploy repo to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
