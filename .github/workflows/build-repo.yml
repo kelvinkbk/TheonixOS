@@ -14,6 +14,11 @@ jobs:
   build-repo:
     runs-on: ubuntu-latest
     
+    # Prevent concurrent deployments from deadlocking the Pages queue
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    
     # Needs permissions to deploy to GitHub Pages (or a branch)
     permissions:
       contents: write
