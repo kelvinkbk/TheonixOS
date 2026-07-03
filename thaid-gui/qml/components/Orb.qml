@@ -59,6 +59,16 @@ Item {
                 }
             }
         }
+        
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                if (typeof thaidState !== "undefined") {
+                    thaidState.toggleListening()
+                }
+            }
+        }
     }
 
     // Mathematical Engine (matches the HTML setInterval exactly)

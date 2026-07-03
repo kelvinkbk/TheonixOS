@@ -35,40 +35,4 @@ Window {
         anchors.centerIn: parent
     }
 
-    // Simple test controls
-    Row {
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 20
-        spacing: 10
-
-        Button {
-            text: "Idle"
-            onClicked: thaidState.setState("idle")
-        }
-        Button {
-            text: "Listen"
-            onClicked: thaidState.setState("listening")
-        }
-        Button {
-            text: "Think"
-            onClicked: thaidState.setState("thinking")
-        }
-        Button {
-            text: "Weather"
-            onClicked: thaidState.setState("weather")
-        }
-        
-        TextField {
-            id: promptInput
-            placeholderText: "Ask THAID something..."
-            width: 200
-            onAccepted: {
-                if (text.trim() !== "") {
-                    thaidState.submitQuery(text)
-                    text = "" // clear input
-                }
-            }
-        }
-    }
 }

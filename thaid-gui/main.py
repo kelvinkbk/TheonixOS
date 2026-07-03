@@ -12,6 +12,8 @@ class ThaidState(QObject):
     def __init__(self):
         super().__init__()
         self._state = "idle" # States: idle, listening, thinking, speaking, weather, chat
+        self._recording = False
+        self._record_process = None
         
         # Connect to Thaid DBus service
         self.bus = QDBusConnection.sessionBus()
@@ -39,6 +41,78 @@ class ThaidState(QObject):
     def setState(self, new_state):
         self.currentState = new_state
 
+    @pyqtSlot()
+    def toggleListening(self):
+        """Called from QML when the Orb is clicked"""
+        if self._recording:
+            self.stopListening()
+        else:
+            self.startListening()
+
+    def startListening(self):
+        self.setState("listening")
+        self._recording = True
+        import subprocess
+        # Record audio at 16kHz, mono, 16-bit to match whisper-cli requirements
+        self._record_process = subprocess.Popen([
+            "arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"
+        ])
+
+    def stopListening(self):
+        self._recording = False
+        if self._record_process:
+            self._record_process.terminate()
+            self._record_process.wait()
+            self._record_process = None
+            
+        self.setState("thinking")
+        
+        # Start DBus transcription in background
+        def _process_voice():
+            from PyQt6.QtDBus import QDBus, QDBusMessage
+            import subprocess
+            
+            # 1. Transcribe (STT)
+            msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
+            msg_stt << "/tmp/thaid_query.wav"
+            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 300000)
+            if reply_stt.type() != QDBusMessage.MessageType.ReplyMessage:
+                self._emit_response("STT Error: " + reply_stt.errorMessage())
+                return
+            
+            text = reply_stt.arguments()[0]
+            if not text.strip():
+                self._emit_response("I didn't catch that.")
+                return
+                
+            # 2. Query LLM
+            msg_query = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Query")
+            msg_query << text << {}
+            reply_query = self.bus.call(msg_query, QDBus.CallMode.Block, 300000)
+            if reply_query.type() != QDBusMessage.MessageType.ReplyMessage:
+                self._emit_response("AI Error: " + reply_query.errorMessage())
+                return
+                
+            ai_response = reply_query.arguments()[0]
+            
+            # 3. Synthesize TTS
+            # Emit text first so UI updates while TTS generates
+            self.responseReceived.emit(ai_response)
+            
+            msg_tts = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Synthesize")
+            msg_tts << ai_response << "/tmp/thaid_response.wav"
+            reply_tts = self.bus.call(msg_tts, QDBus.CallMode.Block, 300000)
+            
+            if reply_tts.type() == QDBusMessage.MessageType.ReplyMessage:
+                self.setState("speaking")
+                # Play audio synchronously
+                subprocess.run(["aplay", "-q", "/tmp/thaid_response.wav"])
+                
+            self.setState("chat")
+            
+        import threading
+        threading.Thread(target=_process_voice, daemon=True).start()
+
     @pyqtSlot(str)
     def submitQuery(self, prompt):
         """Called from QML to send a text query to the Thaid DBus daemon"""
@@ -53,7 +127,7 @@ class ThaidState(QObject):
             
         # Use a background thread to make the synchronous DBus call to prevent blocking the QML UI
         def _do_query():
-            from PyQt6.QtDBus import QDBus
+            from PyQt6.QtDBus import QDBus, QDBusMessage
             
             # Create the DBus message manually to force a strict timeout
             msg = QDBusMessage.createMethodCall(
