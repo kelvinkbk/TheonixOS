@@ -21,6 +21,9 @@ class ThaidState(QObject):
             "org.theonix.AI", 
             self.bus
         )
+        
+        # Increase DBus timeout to 120 seconds (120000 ms) to allow for slow Ollama generation in VMs
+        self.ai_interface.setTimeout(120000)
 
     @pyqtProperty(str, notify=stateChanged)
     def currentState(self):
