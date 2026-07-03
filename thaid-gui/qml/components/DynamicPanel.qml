@@ -54,7 +54,7 @@ Item {
         anchors.margins: 20
         opacity: panelContainer.aiState === "weather" ? 1.0 : 0.0
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 300; delay: opacity === 1.0 ? 300 : 0 } }
+        Behavior on opacity { NumberAnimation { duration: 300 } }
 
         Row {
             anchors.centerIn: parent
@@ -76,7 +76,7 @@ Item {
         anchors.leftMargin: 80 // Leave room for orb
         opacity: panelContainer.aiState === "chat" ? 1.0 : 0.0
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 300; delay: opacity === 1.0 ? 300 : 0 } }
+        Behavior on opacity { NumberAnimation { duration: 300 } }
 
         Text {
             anchors.centerIn: parent
