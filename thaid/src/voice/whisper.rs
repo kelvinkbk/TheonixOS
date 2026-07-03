@@ -55,8 +55,8 @@ impl WhisperTranscriber {
             anyhow::bail!("whisper-cli failed: {stderr}");
         }
 
-        // whisper-cli writes output to <input>.txt
-        let txt_path = audio_path.with_extension("txt");
+        // whisper-cli writes output to <input>.wav.txt
+        let txt_path = PathBuf::from(format!("{}.txt", audio_path.display()));
         let text = tokio::fs::read_to_string(&txt_path)
             .await
             .context("Failed to read whisper output")?;
