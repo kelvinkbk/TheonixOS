@@ -112,6 +112,17 @@ Item {
                 }
             }
         }
+        
+        // Click to close the panel when done reading
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                if (typeof thaidState !== "undefined") {
+                    thaidState.setState("idle")
+                }
+            }
+        }
     }
 
     // --- State Machine ---
