@@ -93,13 +93,19 @@ Item {
                 }
             } 
             else if (state === "listening") {
-                particleEngine.interval = 400;
+                // Update much faster for real-time audio visualization!
+                particleEngine.interval = 30; 
+                var audioLevel = typeof thaidState !== "undefined" ? thaidState.audioLevel : 0.1;
+                // Base spread + audio level multiplier
+                var spread = 12 + (audioLevel * 60); 
+                
                 for (var i = 0; i < particleRepeater.count; i++) {
                     var p = particleRepeater.itemAt(i);
-                    p.tx = Math.random() * 24 - 12;
-                    p.ty = -10 + (i % 5);
-                    p.tScale = 1.5;
-                    p.opacity = 0.9;
+                    // Make them bounce to the voice!
+                    p.tx = (Math.random() - 0.5) * spread;
+                    p.ty = (Math.random() - 0.5) * spread;
+                    p.tScale = 1.0 + (audioLevel * 3.0);
+                    p.opacity = 0.5 + (audioLevel * 0.5);
                 }
             } 
             else if (state === "thinking") {

@@ -8,12 +8,14 @@ from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage, QDBusPen
 class ThaidState(QObject):
     stateChanged = pyqtSignal()
     responseReceived = pyqtSignal(str, arguments=['response'])
+    audioLevelChanged = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self._state = "idle" # States: idle, listening, thinking, speaking, weather, chat
         self._recording = False
         self._record_process = None
+        self._audio_level = 0.0
         
         # Connect to Thaid DBus service
         self.bus = QDBusConnection.sessionBus()
@@ -37,6 +39,15 @@ class ThaidState(QObject):
             self._state = val
             self.stateChanged.emit()
 
+    @pyqtProperty(float, notify=audioLevelChanged)
+    def audioLevel(self):
+        return self._audio_level
+
+    @audioLevel.setter
+    def audioLevel(self, val):
+        self._audio_level = val
+        self.audioLevelChanged.emit()
+
     @pyqtSlot(str)
     def setState(self, new_state):
         self.currentState = new_state
@@ -54,9 +65,32 @@ class ThaidState(QObject):
         self._recording = True
         import subprocess
         # Record audio at 16kHz, mono, 16-bit to match whisper-cli requirements
-        self._record_process = subprocess.Popen([
-            "arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"
-        ])
+        # Use -V mono to output a VU meter on stderr
+        self._record_process = subprocess.Popen(
+            ["arecord", "-V", "mono", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"],
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Background thread to monitor real-time microphone volume for the QML Orb
+        def _monitor_volume():
+            import re
+            buffer = ""
+            while self._record_process and self._record_process.poll() is None:
+                char = self._record_process.stderr.read(1)
+                if not char:
+                    break
+                if char == '\r' or char == '\n':
+                    match = re.search(r'(\d+)%', buffer)
+                    if match:
+                        self.audioLevel = float(match.group(1)) / 100.0
+                    buffer = ""
+                else:
+                    buffer += char
+            self.audioLevel = 0.0
+            
+        import threading
+        threading.Thread(target=_monitor_volume, daemon=True).start()
 
     def stopListening(self):
         self._recording = False
