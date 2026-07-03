@@ -49,7 +49,7 @@ impl Default for ThaidConfig {
 
         Self {
             ollama_url: "http://127.0.0.1:11434".to_string(),
-            default_model: "llama3:8b".to_string(),
+            default_model: "qwen2.5:0.5b".to_string(),
             idle_timeout_secs: 600, // 10 minutes
             memory_db_path: data_dir.join("memory.db"),
             memory_max_turns: 100,
