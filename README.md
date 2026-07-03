@@ -133,32 +133,26 @@ macOS, Windows 11, GNOME, KDE Plasma
 
 ## 6. Implementation Plan
 
-### Phase 1 — Research (2 Weeks)
-- **Deliverables**: Distribution Name, Logo, Architecture Decisions, UI Mockups
+### Phase 1 — Core OS Infrastructure & Build Pipeline
+- **Tasks**: Setup automated ISO generation with GitHub Actions, establish custom Pacman repository, and harden mirrors for stability.
 
-### Phase 2 — Base OS (4 Weeks)
-- **Tasks**: Setup Arch Base, Configure Kernel, Build ISO, Configure Installer
-- **Deliverable**: Bootable ISO
+### Phase 2 — System Branding & Configuration
+- **Tasks**: Create the `theonix-config` package to manage custom branding (logos, themes), implement helper scripts, and resolve installer file conflicts.
 
-### Phase 3 — Desktop Environment (6 Weeks)
-- **Tasks**: Create Desktop Shell, Theme Engine, Window Manager, Notifications
-- **Deliverable**: Functional Desktop
+### Phase 3 — The Installer Experience
+- **Tasks**: Customize Calamares for Theonix-specific layouts, ensure Wayland compatibility for the installer GUI via `pkexec`, and inject custom repository configs.
 
-### Phase 4 — AI Integration (4 Weeks)
-- **Tasks**: Local AI Models, Voice Assistant, Automation Engine
-- **Deliverable**: Built-in AI Assistant
+### Phase 4 — Over-The-Air (OTA) Updates & UI
+- **Tasks**: Bridge Pacman with KDE Discover and System Settings via PackageKit, enabling one-click seamless graphical updates.
 
-### Phase 5 — Security (2 Weeks)
-- **Tasks**: AppArmor, Secure Boot, Package Verification
-- **Deliverable**: Security Hardened OS
+### Phase 5 — AI Integration (Voice Assistant)
+- **Tasks**: Develop the completely offline THAID AI Assistant, integrating Ollama (LLM), Whisper (STT), and Piper (TTS) with a custom D-Bus Rust daemon and QML UI.
 
-### Phase 6 — Beta Release (4 Weeks)
-- **Tasks**: Bug Testing, Performance Testing, Documentation
-- **Deliverable**: Theonix OS Beta
+### Phase 6 — Universal Application Compatibility Layer (UACL)
+- **Tasks**: Build a translation layer that automatically handles Windows `.exe`/`.msi` files (via isolated Wine prefixes), `.deb`/`.rpm` conversions, and AppImages through a unified native App Manager GUI.
 
-### Phase 7 — Stable Release (2 Weeks)
-- **Release Targets**: ISO Download, Official Website, Documentation Portal, Community Forum
-- **Versioning**: Theonix OS 1.0, Theonix OS 1.5, Theonix OS 2.0
+### Phase 7 — Stable Release & Community
+- **Release Targets**: ISO Download, Official Website, Documentation Portal, Community Forums, and Theonix OS 1.0 Release.
 
 ---
 
