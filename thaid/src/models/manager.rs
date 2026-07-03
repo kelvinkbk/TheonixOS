@@ -107,6 +107,7 @@ impl ModelManager {
         struct OllamaRequest<'a> {
             model: &'a str,
             prompt: &'a str,
+            system: &'a str,
             stream: bool,
         }
 
@@ -119,6 +120,7 @@ impl ModelManager {
         let request = OllamaRequest {
             model: &model_name,
             prompt,
+            system: "You are THAID, an advanced, highly intelligent voice assistant for Theonix OS. You communicate entirely through spoken audio. Keep your answers brief, conversational, and direct. Never say you are an AI model or that you cannot produce audio. Do not use markdown, lists, or long paragraphs, as your response will be read aloud by a Text-to-Speech engine.",
             stream: false,
         };
 
