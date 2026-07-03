@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Effects
+import QtQuick.Particles
 
 Item {
     id: orbContainer
@@ -8,107 +8,116 @@ Item {
 
     // Base properties based on state
     property int baseSize: 40
-    property int expandedSize: 50
+    property int expandedSize: 48
     property int currentSize: baseSize
     
     // Bind the global DBus state
     property string aiState: typeof thaidState !== "undefined" ? thaidState.currentState : "idle"
 
-    // The Glass Orb
+    // Minimalist Dark Orb Base
     Rectangle {
         id: orbBackground
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+        anchors.fill: parent
         radius: width / 2
         
-        // Glassmorphism background
-        color: Qt.rgba(11/255, 15/255, 23/255, 0.6) // #0B0F17 with alpha
-        border.color: Qt.rgba(255/255, 255/255, 255/255, 0.1)
+        color: "#080808" // Deep minimalist dark
+        border.color: "#222222" // Very subtle border
         border.width: 1
-
-        // Glow effect inner elements
-        Rectangle {
-            id: innerGlow
-            anchors.centerIn: parent
-            width: parent.width * 0.8
-            height: parent.height * 0.8
-            radius: width / 2
-            
-            // Soft gradient glow
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: "#00f0ff" } // Cyan
-                GradientStop { position: 1.0; color: "#8a2be2" } // Purple
-            }
-            opacity: 0.4
-            
-            // Spinning animation for Thinking state
-            RotationAnimation on rotation {
-                id: thinkingRotation
-                loops: Animation.Infinite
-                from: 0
-                to: 360
-                duration: 1500
-                running: orbContainer.aiState === "thinking"
-            }
-        }
         
-        // Breathing animation for Idle state
-        SequentialAnimation on scale {
-            id: breathingAnimation
-            loops: Animation.Infinite
-            running: orbContainer.aiState === "idle"
+        // Particle System for the "Unique Minimalist" animation
+        ParticleSystem {
+            id: particleSystem
+            anchors.fill: parent
             
-            NumberAnimation { to: 1.05; duration: 2000; easing.type: Easing.InOutQuad }
-            NumberAnimation { to: 0.95; duration: 2000; easing.type: Easing.InOutQuad }
-        }
-        
-        // Rippling for Speaking state
-        SequentialAnimation on scale {
-            id: speakingAnimation
-            loops: Animation.Infinite
-            running: orbContainer.aiState === "speaking"
+            ItemParticle {
+                id: particle
+                delegate: Rectangle {
+                    width: 2
+                    height: 2
+                    radius: 1
+                    color: "white" 
+                    opacity: 0.7
+                }
+            }
             
-            NumberAnimation { to: 1.15; duration: 300; easing.type: Easing.OutElastic }
-            NumberAnimation { to: 0.95; duration: 400; easing.type: Easing.InOutQuad }
+            // Emitter handles particle generation
+            Emitter {
+                id: emitter
+                anchors.centerIn: parent
+                width: parent.width * 0.7
+                height: parent.height * 0.7
+                
+                // Change emission rate based on state
+                emitRate: {
+                    if (orbContainer.aiState === "idle") return 8;
+                    if (orbContainer.aiState === "listening") return 25;
+                    if (orbContainer.aiState === "thinking") return 45;
+                    if (orbContainer.aiState === "speaking") return 30;
+                    return 8;
+                }
+                
+                lifeSpan: orbContainer.aiState === "thinking" ? 800 : 1500
+                lifeSpanVariation: 500
+                
+                // Velocity changes for different effects
+                velocity: AngleDirection {
+                    // Listening: float upwards. Speaking: explode outward. Thinking/Idle: omnidirectional
+                    angle: orbContainer.aiState === "listening" ? 270 : 0
+                    angleVariation: orbContainer.aiState === "listening" ? 45 : 360
+                    
+                    magnitude: {
+                        if (orbContainer.aiState === "idle") return 2;
+                        if (orbContainer.aiState === "listening") return 8;
+                        if (orbContainer.aiState === "thinking") return 15;
+                        if (orbContainer.aiState === "speaking") return 12;
+                        return 2;
+                    }
+                    magnitudeVariation: 3
+                }
+            }
+            
+            // Adds organic turbulence (swirling) to the particles
+            Wander {
+                anchors.fill: parent
+                affectedParameter: Wander.Position
+                pace: orbContainer.aiState === "thinking" ? 60 : 10
+                yVariance: 15
+                xVariance: 15
+            }
         }
     }
 
-    // State Transitions
+    // State sizing transitions
     states: [
         State {
             name: "idle"
             when: orbContainer.aiState === "idle"
             PropertyChanges { target: orbContainer; currentSize: baseSize }
-            PropertyChanges { target: innerGlow; opacity: 0.4; scale: 1.0 }
         },
         State {
             name: "listening"
             when: orbContainer.aiState === "listening"
             PropertyChanges { target: orbContainer; currentSize: expandedSize }
-            PropertyChanges { target: innerGlow; opacity: 0.8; scale: 0.8 }
         },
         State {
             name: "thinking"
             when: orbContainer.aiState === "thinking"
             PropertyChanges { target: orbContainer; currentSize: baseSize }
-            PropertyChanges { target: innerGlow; opacity: 0.9; scale: 0.6 }
         },
         State {
             name: "speaking"
             when: orbContainer.aiState === "speaking"
             PropertyChanges { target: orbContainer; currentSize: expandedSize }
-            PropertyChanges { target: innerGlow; opacity: 1.0; scale: 1.0 }
         }
     ]
 
     transitions: [
         Transition {
-            // Smooth spring physics for size morphing
+            // Very smooth, high-quality spring physics for resizing
             NumberAnimation { 
-                properties: "currentSize,opacity,scale"
-                duration: 400
-                easing.type: Easing.OutBack
+                properties: "currentSize"
+                duration: 600
+                easing.type: Easing.OutExpo
             }
         }
     ]
