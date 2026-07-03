@@ -35,13 +35,12 @@ Window {
         anchors.centerIn: parent
     }
 
-    // Simple test controls (these wouldn't be in the final UI, but are here for development)
+    // Simple test controls
     Row {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin: 20
         spacing: 10
-        visible: true // Set to false to hide debug controls
 
         Button {
             text: "Idle"
@@ -56,8 +55,12 @@ Window {
             onClicked: thaidState.setState("thinking")
         }
         Button {
-            text: "Speak"
-            onClicked: thaidState.setState("speaking")
+            text: "Weather"
+            onClicked: thaidState.setState("weather")
+        }
+        Button {
+            text: "Chat"
+            onClicked: thaidState.setState("chat")
         }
     }
 }

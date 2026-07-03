@@ -3,34 +3,34 @@ import QtQuick.Effects
 
 Item {
     id: panelContainer
-    width: expanded ? panelWidth : orbComponent.width
-    height: expanded ? panelHeight : orbComponent.height
+    
+    // Bind to the global DBus state
+    property string aiState: typeof thaidState !== "undefined" ? thaidState.currentState : "idle"
 
-    // Expansion State
-    property bool expanded: false
-    property int panelWidth: 300
-    property int panelHeight: 150
+    // Default sizing based on state
+    width: targetWidth
+    height: targetHeight
+    
+    property int targetWidth: 40
+    property int targetHeight: 40
+    property int targetRadius: 20
+    property int orbXOffset: 0
+    property real orbScale: 1.0
 
-    // The Glassmorphism Base
+    // The Glassmorphism Base (The Void styling)
     Rectangle {
         id: panelBackground
         anchors.fill: parent
-        radius: expanded ? 24 : width / 2
+        radius: targetRadius
         
-        color: Qt.rgba(11/255, 15/255, 23/255, 0.75) // #0B0F17 with blur alpha
-        border.color: Qt.rgba(255/255, 255/255, 255/255, 0.15)
+        color: "#000000" // Pure black void
+        border.color: "#1a1a1a"
         border.width: 1
 
         // Smooth physics-based spring animation for expansion
-        Behavior on width {
-            NumberAnimation { duration: 500; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 }
-        }
-        Behavior on height {
-            NumberAnimation { duration: 500; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 }
-        }
-        Behavior on radius {
-            NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
-        }
+        Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
+        Behavior on height { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
+        Behavior on radius { NumberAnimation { duration: 400; easing.type: Easing.InOutQuad } }
     }
 
     // Shadow effect for depth
@@ -39,52 +39,103 @@ Item {
         anchors.fill: panelBackground
         shadowEnabled: true
         shadowColor: "black"
-        shadowOpacity: 0.4
-        shadowBlur: 20
-        shadowVerticalOffset: 5
+        shadowOpacity: 0.8
+        shadowBlur: 30
+        shadowVerticalOffset: 10
         z: -1
     }
 
-    // Content area inside the panel (fades in when expanded)
+    // --- Dynamic Content Containers ---
+
+    // Weather Card Content
     Item {
-        id: panelContent
+        id: contentWeather
         anchors.fill: parent
         anchors.margins: 20
-        opacity: expanded ? 1.0 : 0.0
+        opacity: panelContainer.aiState === "weather" ? 1.0 : 0.0
         visible: opacity > 0
-        
-        Behavior on opacity {
-            NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
-        }
+        Behavior on opacity { NumberAnimation { duration: 300; delay: opacity === 1.0 ? 300 : 0 } }
 
-        // Placeholder content (Will be replaced by specific Cards like WeatherCard)
-        Text {
+        Row {
             anchors.centerIn: parent
-            text: "🌤 Jaipur\n32°C\nFeels like 35°C"
-            color: "white"
-            font.pixelSize: 16
-            horizontalAlignment: Text.AlignHCenter
-            lineHeight: 1.5
+            spacing: 80
+            
+            Column {
+                Text { text: "Jaipur"; color: "#888"; font.pixelSize: 14; font.letterSpacing: 1 }
+                Text { text: "32°"; color: "white"; font.pixelSize: 32; font.weight: Font.Light }
+            }
+            Text { text: "🌤️"; font.pixelSize: 40 }
         }
     }
 
-    // The Orb sits perfectly centered in the panel when collapsed, 
-    // and hides/moves when the panel expands.
+    // Chat Card Content
+    Item {
+        id: contentChat
+        anchors.fill: parent
+        anchors.margins: 20
+        anchors.leftMargin: 80 // Leave room for orb
+        opacity: panelContainer.aiState === "chat" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 300; delay: opacity === 1.0 ? 300 : 0 } }
+
+        Text {
+            anchors.centerIn: parent
+            width: parent.width
+            text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
+            color: "#ccc"
+            font.pixelSize: 15
+            wrapMode: Text.WordWrap
+            font.weight: Font.Light
+            lineHeight: 1.4
+        }
+    }
+
+    // The Floating Orb
     Orb {
         id: orbComponent
         anchors.centerIn: parent
-        opacity: expanded ? 0.0 : 1.0
         
-        Behavior on opacity {
-            NumberAnimation { duration: 200 }
-        }
+        // When expanded, the orb shifts to the side
+        transform: Translate { x: orbXOffset }
+        scale: orbScale
+        
+        Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
+        
+        // This is crucial: the orb needs to visually slide left when the panel expands right
+        Behavior on transform { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
     }
 
-    // Toggle expansion for testing
-    MouseArea {
-        anchors.fill: parent
-        onDoubleClicked: {
-            panelContainer.expanded = !panelContainer.expanded
+    // --- State Machine ---
+    states: [
+        State {
+            name: "idle"
+            when: panelContainer.aiState === "idle"
+            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0 }
+        },
+        State {
+            name: "listening"
+            when: panelContainer.aiState === "listening"
+            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0 } // scale is handled in Orb.qml, but container can scale too
+        },
+        State {
+            name: "thinking"
+            when: panelContainer.aiState === "thinking"
+            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0 }
+        },
+        State {
+            name: "speaking"
+            when: panelContainer.aiState === "speaking"
+            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0 }
+        },
+        State {
+            name: "weather"
+            when: panelContainer.aiState === "weather"
+            PropertyChanges { target: panelContainer; targetWidth: 240; targetHeight: 100; targetRadius: 24; orbXOffset: -80; orbScale: 0.6 }
+        },
+        State {
+            name: "chat"
+            when: panelContainer.aiState === "chat"
+            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 120; targetRadius: 24; orbXOffset: -140; orbScale: 0.6 }
         }
-    }
+    ]
 }
