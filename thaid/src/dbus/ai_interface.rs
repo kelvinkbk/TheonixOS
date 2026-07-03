@@ -106,6 +106,11 @@ impl AIInterface {
             let mut memory = self.memory.write().await;
             if let Err(e) = memory.append_turn(&sid, &prompt, &response).await {
                 warn!(error = %e, "Failed to save conversation turn to memory");
+            } else if let Err(e) = memory
+                .enforce_limits(&sid, self.config.memory_max_turns)
+                .await
+            {
+                warn!(error = %e, "Failed to enforce conversation memory limits");
             }
         }
 

@@ -151,14 +151,7 @@ class ThaidState(QObject):
     def submitQuery(self, prompt):
         """Called from QML to send a text query to the Thaid DBus daemon"""
         self.setState("thinking")
-        
-        import threading
-        
-        if not self.ai_interface.isValid():
-            print("Warning: org.theonix.AI DBus service is not running. Simulating response.")
-            threading.Timer(2.0, lambda: self._emit_response(f"Mock response for: {prompt}")).start()
-            return
-            
+
         # Use a background thread to make the synchronous DBus call to prevent blocking the QML UI
         def _do_query():
             from PyQt6.QtDBus import QDBus, QDBusMessage
@@ -181,6 +174,7 @@ class ThaidState(QObject):
             else:
                 self._emit_response("Error connecting to AI backend: " + reply.errorMessage())
                 
+        import threading
         threading.Thread(target=_do_query, daemon=True).start()
             
     def _emit_response(self, text):

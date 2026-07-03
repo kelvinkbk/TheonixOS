@@ -84,76 +84,77 @@ Item {
     // Mathematical Engine (matches the HTML setInterval exactly)
     property real vortexAngle: 0
 
+    function updateParticles() {
+        var state = orbContainer.aiState;
+
+        if (state === "idle" || state === "weather" || state === "chat") {
+            particleEngine.interval = 1000;
+            for (var i = 0; i < particleRepeater.count; i++) {
+                var p = particleRepeater.itemAt(i);
+                p.tx = Math.random() * 16 - 8;
+                p.ty = Math.random() * 16 - 8;
+                p.tScale = 1.0;
+                p.opacity = 0.4;
+            }
+        }
+        else if (state === "listening") {
+            particleEngine.interval = 30;
+            var audioLevel = typeof thaidState !== "undefined" ? thaidState.audioLevel : 0.1;
+            var spread = 12 + (audioLevel * 60);
+
+            for (var i = 0; i < particleRepeater.count; i++) {
+                var p = particleRepeater.itemAt(i);
+                p.tx = (Math.random() - 0.5) * spread;
+                p.ty = (Math.random() - 0.5) * spread;
+                p.tScale = 1.0 + (audioLevel * 3.0);
+                p.opacity = 0.5 + (audioLevel * 0.5);
+            }
+        }
+        else if (state === "thinking") {
+            particleEngine.interval = 30;
+            orbContainer.vortexAngle += 0.08;
+            for (var i = 0; i < particleRepeater.count; i++) {
+                var p = particleRepeater.itemAt(i);
+                var baseRadius = 6 + (i % 3) * 5;
+                var phase = i * ((Math.PI * 2) / particleRepeater.count);
+                var r = baseRadius + Math.sin(orbContainer.vortexAngle * 4 + phase) * 3;
+                var speedMulti = 1 + (i % 2) * 0.5;
+                var direction = (i % 2 === 0) ? 1 : -1;
+                var a = (orbContainer.vortexAngle * speedMulti * direction) + phase;
+
+                p.tx = Math.cos(a) * r;
+                p.ty = Math.sin(a) * r;
+                p.tScale = 0.8;
+                p.opacity = 1.0;
+            }
+        }
+        else if (state === "speaking") {
+            particleEngine.interval = 200;
+            for (var i = 0; i < particleRepeater.count; i++) {
+                var p = particleRepeater.itemAt(i);
+                var explode = Math.random() > 0.5 ? 18 : 5;
+                var a = Math.random() * Math.PI * 2;
+                p.tx = Math.cos(a) * explode;
+                p.ty = Math.sin(a) * explode;
+                p.tScale = 1.0;
+                p.opacity = 0.9;
+            }
+        }
+    }
+
     Timer {
         id: particleEngine
         interval: 100 // default update rate
         running: true
         repeat: true
         onTriggered: {
-            var state = orbContainer.aiState;
-            
-            if (state === "idle" || state === "weather" || state === "chat") {
-                particleEngine.interval = 1000;
-                for (var i = 0; i < particleRepeater.count; i++) {
-                    var p = particleRepeater.itemAt(i);
-                    p.tx = Math.random() * 16 - 8;
-                    p.ty = Math.random() * 16 - 8;
-                    p.tScale = 1.0;
-                    p.opacity = 0.4;
-                }
-            } 
-            else if (state === "listening") {
-                // Update much faster for real-time audio visualization!
-                particleEngine.interval = 30; 
-                var audioLevel = typeof thaidState !== "undefined" ? thaidState.audioLevel : 0.1;
-                // Base spread + audio level multiplier
-                var spread = 12 + (audioLevel * 60); 
-                
-                for (var i = 0; i < particleRepeater.count; i++) {
-                    var p = particleRepeater.itemAt(i);
-                    // Make them bounce to the voice!
-                    p.tx = (Math.random() - 0.5) * spread;
-                    p.ty = (Math.random() - 0.5) * spread;
-                    p.tScale = 1.0 + (audioLevel * 3.0);
-                    p.opacity = 0.5 + (audioLevel * 0.5);
-                }
-            } 
-            else if (state === "thinking") {
-                particleEngine.interval = 30;
-                orbContainer.vortexAngle += 0.08;
-                for (var i = 0; i < particleRepeater.count; i++) {
-                    var p = particleRepeater.itemAt(i);
-                    var baseRadius = 6 + (i % 3) * 5; 
-                    var phase = i * ((Math.PI * 2) / particleRepeater.count);
-                    var r = baseRadius + Math.sin(orbContainer.vortexAngle * 4 + phase) * 3;
-                    var speedMulti = 1 + (i % 2) * 0.5;
-                    var direction = (i % 2 === 0) ? 1 : -1;
-                    var a = (orbContainer.vortexAngle * speedMulti * direction) + phase;
-                    
-                    p.tx = Math.cos(a) * r;
-                    p.ty = Math.sin(a) * r;
-                    p.tScale = 0.8;
-                    p.opacity = 1.0;
-                }
-            }
-            else if (state === "speaking") {
-                particleEngine.interval = 200;
-                for (var i = 0; i < particleRepeater.count; i++) {
-                    var p = particleRepeater.itemAt(i);
-                    var explode = Math.random() > 0.5 ? 18 : 5;
-                    var a = Math.random() * Math.PI * 2;
-                    p.tx = Math.cos(a) * explode;
-                    p.ty = Math.sin(a) * explode;
-                    p.tScale = 1.0;
-                    p.opacity = 0.9;
-                }
-            }
+            updateParticles()
         }
     }
 
     // Force animation tick on state change
     onAiStateChanged: {
-        particleEngine.triggered()
+        updateParticles()
     }
 
     // State sizing transitions

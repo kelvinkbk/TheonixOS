@@ -19,20 +19,7 @@ impl PiperTts {
     /// Convert text to speech and save to output_path (WAV).
     pub async fn synthesize(&self, text: &str, output_path: &PathBuf) -> Result<()> {
         if !self.voice_model_path.exists() {
-            tracing::warn!(
-                "Piper voice model not found at {}. Falling back to mock TTS.",
-                self.voice_model_path.display()
-            );
-            // Wait 2 seconds to simulate processing time
-            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-            // Write a tiny valid 44-byte WAV header so `aplay` in Python doesn't crash
-            let dummy_wav: [u8; 44] = [
-                0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
-                0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x80, 0x3e, 0x00, 0x00, 0x00, 0x7d, 0x00, 0x00,
-                0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x00, 0x00, 0x00, 0x00,
-            ];
-            tokio::fs::write(output_path, &dummy_wav).await?;
-            return Ok(());
+            anyhow::bail!("Piper voice model not found at {}", self.voice_model_path.display());
         }
 
         info!(chars = text.len(), "Synthesizing speech");
