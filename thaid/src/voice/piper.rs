@@ -37,15 +37,24 @@ impl PiperTts {
 
         info!(chars = text.len(), "Synthesizing speech");
 
-        let output = Command::new("piper")
+        let mut child = Command::new("piper")
             .arg("--model")
             .arg(&self.voice_model_path)
             .arg("--output_file")
             .arg(output_path)
             .stdin(std::process::Stdio::piped())
-            .output()
-            .await
-            .context("Failed to run piper — is piper-tts installed?")?;
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .context("Failed to spawn piper — is piper-tts installed?")?;
+
+        // Write the text to Piper's standard input
+        if let Some(mut stdin) = child.stdin.take() {
+            use tokio::io::AsyncWriteExt;
+            stdin.write_all(text.as_bytes()).await?;
+        }
+
+        let output = child.wait_with_output().await?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
