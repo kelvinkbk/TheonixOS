@@ -93,15 +93,20 @@ Item {
                 }
             } 
             else if (state === "thinking") {
-                particleEngine.interval = 50;
-                orbContainer.vortexAngle += 0.25;
+                particleEngine.interval = 30;
+                orbContainer.vortexAngle += 0.08;
                 for (var i = 0; i < particleRepeater.count; i++) {
                     var p = particleRepeater.itemAt(i);
-                    var r = 10 + Math.random() * 6;
-                    var a = orbContainer.vortexAngle + (i * 0.3);
+                    var baseRadius = 6 + (i % 3) * 5; 
+                    var phase = i * ((Math.PI * 2) / particleRepeater.count);
+                    var r = baseRadius + Math.sin(orbContainer.vortexAngle * 4 + phase) * 3;
+                    var speedMulti = 1 + (i % 2) * 0.5;
+                    var direction = (i % 2 === 0) ? 1 : -1;
+                    var a = (orbContainer.vortexAngle * speedMulti * direction) + phase;
+                    
                     p.tx = Math.cos(a) * r;
                     p.ty = Math.sin(a) * r;
-                    p.tScale = 1.0;
+                    p.tScale = 0.8;
                     p.opacity = 1.0;
                 }
             }
