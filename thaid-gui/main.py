@@ -110,6 +110,9 @@ class ThaidState(QObject):
                 
             self.setState("chat")
             
+            # Auto-hide back to the idle orb after 5 seconds
+            threading.Timer(5.0, lambda: self.setState("idle") if self.currentState == "chat" else None).start()
+            
         import threading
         threading.Thread(target=_process_voice, daemon=True).start()
 
