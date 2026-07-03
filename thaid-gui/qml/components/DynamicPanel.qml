@@ -47,6 +47,21 @@ Item {
 
     // --- Dynamic Content Containers ---
 
+    // The Floating Orb (Rendered first so it stays in the background behind text)
+    Orb {
+        id: orbComponent
+        anchors.centerIn: parent
+        
+        // When expanded, the orb shifts to the side
+        transform: Translate { x: orbXOffset }
+        scale: orbScale
+        opacity: orbOpacity
+        
+        Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
+        Behavior on transform { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
+        Behavior on opacity { NumberAnimation { duration: 400 } }
+    }
+
     // Weather Card Content
     Item {
         id: contentWeather
@@ -58,7 +73,7 @@ Item {
 
         Row {
             anchors.centerIn: parent
-            spacing: 80
+            spacing: 50 // reduced spacing to fit better
             
             Column {
                 Text { text: "Jaipur"; color: "#888"; font.pixelSize: 14; font.letterSpacing: 1 }
@@ -90,52 +105,39 @@ Item {
         }
     }
 
-    // The Floating Orb
-    Orb {
-        id: orbComponent
-        anchors.centerIn: parent
-        
-        // When expanded, the orb shifts to the side
-        transform: Translate { x: orbXOffset }
-        scale: orbScale
-        
-        Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
-        
-        // This is crucial: the orb needs to visually slide left when the panel expands right
-        Behavior on transform { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
-    }
-
     // --- State Machine ---
+    property real orbOpacity: 1.0
+
     states: [
         State {
             name: "idle"
             when: panelContainer.aiState === "idle"
-            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
         },
         State {
             name: "listening"
             when: panelContainer.aiState === "listening"
-            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0 } // scale is handled in Orb.qml, but container can scale too
+            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
         },
         State {
             name: "thinking"
             when: panelContainer.aiState === "thinking"
-            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
         },
         State {
             name: "speaking"
             when: panelContainer.aiState === "speaking"
-            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
         },
         State {
             name: "weather"
             when: panelContainer.aiState === "weather"
-            PropertyChanges { target: panelContainer; targetWidth: 240; targetHeight: 100; targetRadius: 24; orbXOffset: -80; orbScale: 0.6 }
+            PropertyChanges { target: panelContainer; targetWidth: 240; targetHeight: 100; targetRadius: 24; orbXOffset: -80; orbScale: 0.6; orbOpacity: 0.2 } // Faded behind text
         },
         State {
             name: "chat"
             when: panelContainer.aiState === "chat"
-            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 120; targetRadius: 24; orbXOffset: -140; orbScale: 0.6 }
+            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 120; targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
         }
     ]
 }
