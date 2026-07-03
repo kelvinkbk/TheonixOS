@@ -53,8 +53,18 @@ class ThaidState(QObject):
             
         # Use a background thread to make the synchronous DBus call to prevent blocking the QML UI
         def _do_query():
-            # Call the Rust DBus 'Query' method synchronously (zbus uses PascalCase)
-            reply = self.ai_interface.call("Query", prompt, {})
+            # Create the DBus message manually to force a strict timeout
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.AI", 
+                "/org/theonix/AI", 
+                "org.theonix.AI", 
+                "Query"
+            )
+            msg << prompt << {}
+            
+            # Send the call synchronously with a 5-minute timeout (300,000 ms)
+            reply = self.bus.call(msg, QDBusConnection.CallMode.Block, 300000)
+            
             if reply.type() == QDBusMessage.MessageType.ReplyMessage:
                 result = reply.arguments()[0]
                 self._emit_response(result)
