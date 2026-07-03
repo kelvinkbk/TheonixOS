@@ -41,24 +41,24 @@ class ThaidState(QObject):
         """Called from QML to send a text query to the Thaid DBus daemon"""
         self.setState("thinking")
         
+        import threading
+        
         if not self.ai_interface.isValid():
             print("Warning: org.theonix.AI DBus service is not running. Simulating response.")
-            import threading
             threading.Timer(2.0, lambda: self._emit_response(f"Mock response for: {prompt}")).start()
             return
             
-        # Call the Rust DBus 'query' method (expects String and a Dict)
-        pending = self.ai_interface.asyncCall("query", prompt, {})
-        self.watcher = QDBusPendingCallWatcher(pending)
-        self.watcher.finished.connect(self._on_dbus_finished)
-        
-    def _on_dbus_finished(self, watcher):
-        reply = QDBusMessage(watcher.reply())
-        if reply.type() == QDBusMessage.MessageType.ReplyMessage:
-            result = reply.arguments()[0]
-            self._emit_response(result)
-        else:
-            self._emit_response("Error connecting to AI backend: " + reply.errorMessage())
+        # Use a background thread to make the synchronous DBus call to prevent blocking the QML UI
+        def _do_query():
+            # Call the Rust DBus 'query' method synchronously (expects String and a Dict)
+            reply = self.ai_interface.call("query", prompt, {})
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage:
+                result = reply.arguments()[0]
+                self._emit_response(result)
+            else:
+                self._emit_response("Error connecting to AI backend: " + reply.errorMessage())
+                
+        threading.Thread(target=_do_query, daemon=True).start()
             
     def _emit_response(self, text):
         self.setState("chat")
