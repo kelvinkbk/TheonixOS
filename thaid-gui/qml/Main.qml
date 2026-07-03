@@ -58,9 +58,17 @@ Window {
             text: "Weather"
             onClicked: thaidState.setState("weather")
         }
-        Button {
-            text: "Chat"
-            onClicked: thaidState.setState("chat")
+        
+        TextField {
+            id: promptInput
+            placeholderText: "Ask THAID something..."
+            width: 200
+            onAccepted: {
+                if (text.trim() !== "") {
+                    thaidState.submitQuery(text)
+                    text = "" // clear input
+                }
+            }
         }
     }
 }

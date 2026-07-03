@@ -94,6 +94,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 300 } }
 
         Text {
+            id: chatText
             anchors.centerIn: parent
             width: parent.width
             text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
@@ -102,6 +103,14 @@ Item {
             wrapMode: Text.WordWrap
             font.weight: Font.Light
             lineHeight: 1.4
+            
+            // Listen to the python/DBus backend for real responses
+            Connections {
+                target: typeof thaidState !== "undefined" ? thaidState : null
+                function onResponseReceived(response) {
+                    chatText.text = "\"" + response + "\""
+                }
+            }
         }
     }
 

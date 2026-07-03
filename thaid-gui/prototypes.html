@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THAID UI Prototypes</title>
+    <style>
+        body {
+            background-color: #0b0f17;
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .gallery {
+            display: flex;
+            gap: 60px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .prototype-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 200px;
+        }
+
+        .prototype-title {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Base Orb Constraints */
+        .orb-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+
+        /* =========================================
+           DESIGN 1: The Void (Minimalist Matrix)
+           ========================================= */
+        #orb1 {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #050505;
+            border: 1px solid #333;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+        }
+
+        .void-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+        }
+
+        /* =========================================
+           DESIGN 2: Neon Liquid (Cyberpunk Glass)
+           ========================================= */
+        #orb2 {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(11, 15, 23, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #orb2::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 150%; height: 150%;
+            background: conic-gradient(from 0deg, transparent 0%, #00f0ff 25%, #8a2be2 50%, transparent 100%);
+            transform: translate(-50%, -50%);
+            animation: spin 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #orb2::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            background: #0b0f17;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .liquid-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00f0ff 0%, transparent 70%);
+            z-index: 2;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } }
+
+
+        /* =========================================
+           DESIGN 3: Quantum Ring (Holographic)
+           ========================================= */
+        #orb3 {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            position: relative;
+            transition: all 0.4s ease;
+            animation: slowSpin 10s linear infinite;
+        }
+
+        .ring-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px; height: 10px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white, 0 0 20px #00f0ff;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slowSpin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <h1>THAID: UI Concepts</h1>
+    <p style="color: #666; margin-bottom: 40px;">Open this file in your Windows browser to test animations natively.</p>
+
+    <div class="gallery">
+        
+        <!-- DESIGN 1 -->
+        <div class="prototype-container">
+            <div class="prototype-title">The Void (Minimalist)</div>
+            <div class="orb-wrapper" id="wrapper1">
+                <div id="orb1"></div>
+            </div>
+            <div style="font-size:12px; color:#555; text-align:center; height: 40px;">Deep black base. Particles emerge and swirl.</div>
+        </div>
+
+        <!-- DESIGN 2 -->
+        <div class="prototype-container">
+            <div class="prototype-title">Neon Liquid (Cyber)</div>
+            <div class="orb-wrapper" id="wrapper2">
+                <div id="orb2">
+                    <div class="liquid-core" id="core2"></div>
+                </div>
+            </div>
+            <div style="font-size:12px; color:#555; text-align:center; height: 40px;">Glassmorphism with glowing neon edges & pulsing core.</div>
+        </div>
+
+        <!-- DESIGN 3 -->
+        <div class="prototype-container">
+            <div class="prototype-title">Quantum Ring</div>
+            <div class="orb-wrapper" id="wrapper3">
+                <div id="orb3">
+                    <div class="ring-core" id="core3"></div>
+                </div>
+            </div>
+            <div style="font-size:12px; color:#555; text-align:center; height: 40px;">Holographic dashed ring with floating energy core.</div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button onclick="setState('idle')">Idle</button>
+        <button onclick="setState('listening')">Listening</button>
+        <button onclick="setState('thinking')">Thinking</button>
+        <button onclick="setState('speaking')">Speaking</button>
+    </div>
+
+    <script>
+        // Init Void Particles
+        const orb1 = document.getElementById('orb1');
+        const particles = [];
+        for(let i=0; i<15; i++) {
+            const p = document.createElement('div');
+            p.className = 'void-particle';
+            p.style.width = (Math.random() * 2 + 1) + 'px';
+            p.style.height = p.style.width;
+            p.style.left = '50%';
+            p.style.top = '50%';
+            orb1.appendChild(p);
+            particles.push(p);
+        }
+
+        let voidInterval;
+
+        function updateVoidParticles(state) {
+            clearInterval(voidInterval);
+            
+            if (state === 'idle') {
+                voidInterval = setInterval(() => {
+                    particles.forEach(p => {
+                        p.style.transform = `translate(${Math.random()*20-10}px, ${Math.random()*20-10}px)`;
+                        p.style.opacity = '0.3';
+                    });
+                }, 1000);
+            } else if (state === 'listening') {
+                voidInterval = setInterval(() => {
+                    particles.forEach((p, i) => {
+                        p.style.transform = `translate(${Math.random()*30-15}px, ${-15 + (i%5)}px)`;
+                        p.style.opacity = '0.8';
+                    });
+                }, 400);
+            } else if (state === 'thinking') {
+                let angle = 0;
+                voidInterval = setInterval(() => {
+                    angle += 0.2;
+                    particles.forEach((p, i) => {
+                        const r = 12 + Math.random()*5;
+                        const a = angle + (i * 0.4);
+                        p.style.transform = `translate(${Math.cos(a)*r}px, ${Math.sin(a)*r}px)`;
+                        p.style.opacity = '1';
+                    });
+                }, 50);
+            } else if (state === 'speaking') {
+                voidInterval = setInterval(() => {
+                    particles.forEach((p) => {
+                        const explode = Math.random() > 0.5 ? 18 : 5;
+                        const a = Math.random() * Math.PI * 2;
+                        p.style.transform = `translate(${Math.cos(a)*explode}px, ${Math.sin(a)*explode}px)`;
+                        p.style.opacity = '0.9';
+                    });
+                }, 200);
+            }
+        }
+
+        function setState(state) {
+            // ==== DESIGN 1 (Void) ====
+            const w1 = document.getElementById('wrapper1');
+            if(state === 'idle') { w1.style.transform = 'scale(1)'; orb1.style.borderColor = '#333'; }
+            if(state === 'listening') { w1.style.transform = 'scale(1.2)'; orb1.style.borderColor = '#555'; }
+            if(state === 'thinking') { w1.style.transform = 'scale(0.9)'; orb1.style.borderColor = '#fff'; }
+            if(state === 'speaking') { w1.style.transform = 'scale(1.15)'; orb1.style.borderColor = '#888'; }
+            updateVoidParticles(state);
+
+            // ==== DESIGN 2 (Liquid) ====
+            const w2 = document.getElementById('wrapper2');
+            const o2 = document.getElementById('orb2');
+            const c2 = document.getElementById('core2');
+            
+            if(state === 'idle') { 
+                w2.style.transform = 'scale(1)'; 
+                o2.style.boxShadow = '0 0 10px rgba(0, 240, 255, 0.1)';
+                c2.style.background = 'radial-gradient(circle, #00f0ff 0%, transparent 70%)';
+                c2.style.transform = 'translate(-50%, -50%) scale(1)';
+                o2.style.setProperty('--opacity', '0');
+            }
+            if(state === 'listening') { 
+                w2.style.transform = 'scale(1.2)'; 
+                o2.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.4)';
+                c2.style.background = 'radial-gradient(circle, #8a2be2 0%, transparent 80%)';
+            }
+            if(state === 'thinking') { 
+                w2.style.transform = 'scale(1)'; 
+                // Using a hack to trigger the pseudo element opacity via CSS classes in a real app, 
+                // but here we just change the border to show the spinning gradient effect
+                o2.style.border = '2px solid #8a2be2';
+                c2.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            } else {
+                o2.style.border = '1px solid rgba(0, 240, 255, 0.3)';
+            }
+            if(state === 'speaking') { 
+                w2.style.transform = 'scale(1.15)'; 
+                c2.style.background = 'radial-gradient(circle, white 0%, transparent 90%)';
+                c2.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            }
+
+            // ==== DESIGN 3 (Quantum Ring) ====
+            const w3 = document.getElementById('wrapper3');
+            const o3 = document.getElementById('orb3');
+            const c3 = document.getElementById('core3');
+
+            if(state === 'idle') { 
+                w3.style.transform = 'scale(1)'; 
+                o3.style.borderColor = 'rgba(255,255,255,0.2)';
+                o3.style.borderStyle = 'dashed';
+                c3.style.width = '10px'; c3.style.height = '10px';
+                c3.style.borderRadius = '50%';
+            }
+            if(state === 'listening') { 
+                w3.style.transform = 'scale(1.3)'; 
+                o3.style.borderColor = 'rgba(0, 240, 255, 0.8)';
+                o3.style.borderStyle = 'solid';
+                c3.style.width = '4px'; c3.style.height = '20px';
+                c3.style.borderRadius = '2px';
+            }
+            if(state === 'thinking') { 
+                w3.style.transform = 'scale(0.8)'; 
+                o3.style.borderColor = '#8a2be2';
+                o3.style.borderStyle = 'dashed';
+                c3.style.width = '15px'; c3.style.height = '15px';
+            }
+            if(state === 'speaking') { 
+                w3.style.transform = 'scale(1.1)'; 
+                o3.style.borderColor = 'white';
+                o3.style.borderStyle = 'dotted';
+                c3.style.width = '20px'; c3.style.height = '4px';
+                c3.style.borderRadius = '2px';
+            }
+        }
+
+        // Init
+        setState('idle');
+
+    </script>
+</body>
+</html>

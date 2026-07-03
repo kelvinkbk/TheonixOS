@@ -3,13 +3,24 @@ import os
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtProperty, pyqtSlot
+from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage, QDBusPendingCallWatcher
 
 class ThaidState(QObject):
     stateChanged = pyqtSignal()
+    responseReceived = pyqtSignal(str, arguments=['response'])
 
     def __init__(self):
         super().__init__()
-        self._state = "idle" # States: idle, listening, thinking, speaking
+        self._state = "idle" # States: idle, listening, thinking, speaking, weather, chat
+        
+        # Connect to Thaid DBus service
+        self.bus = QDBusConnection.sessionBus()
+        self.ai_interface = QDBusInterface(
+            "org.theonix.AI", 
+            "/org/theonix/AI", 
+            "org.theonix.AI", 
+            self.bus
+        )
 
     @pyqtProperty(str, notify=stateChanged)
     def currentState(self):
@@ -24,6 +35,34 @@ class ThaidState(QObject):
     @pyqtSlot(str)
     def setState(self, new_state):
         self.currentState = new_state
+
+    @pyqtSlot(str)
+    def submitQuery(self, prompt):
+        """Called from QML to send a text query to the Thaid DBus daemon"""
+        self.setState("thinking")
+        
+        if not self.ai_interface.isValid():
+            print("Warning: org.theonix.AI DBus service is not running. Simulating response.")
+            import threading
+            threading.Timer(2.0, lambda: self._emit_response(f"Mock response for: {prompt}")).start()
+            return
+            
+        # Call the Rust DBus 'query' method (expects String and a Dict)
+        pending = self.ai_interface.asyncCall("query", prompt, {})
+        self.watcher = QDBusPendingCallWatcher(pending)
+        self.watcher.finished.connect(self._on_dbus_finished)
+        
+    def _on_dbus_finished(self, watcher):
+        reply = QDBusMessage(watcher.reply())
+        if reply.type() == QDBusMessage.MessageType.ReplyMessage:
+            result = reply.arguments()[0]
+            self._emit_response(result)
+        else:
+            self._emit_response("Error connecting to AI backend: " + reply.errorMessage())
+            
+    def _emit_response(self, text):
+        self.setState("chat")
+        self.responseReceived.emit(text)
 
 def main():
     # Force Wayland, but allow fallback to X11/windows for testing

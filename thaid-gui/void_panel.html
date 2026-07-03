@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THAID - The Void</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* The Void Panel (Dynamic Island) */
+        .dynamic-panel {
+            position: absolute;
+            top: 100px;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: #000000;
+            border: 1px solid #1a1a1a;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.6s cubic-bezier(0.2, 1.2, 0.3, 1); /* Spring physics */
+            overflow: hidden;
+        }
+
+        /* The Orb / Particle Container */
+        .orb-container {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+
+        .void-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+            filter: blur(0.5px);
+        }
+
+        /* Content Container (hidden by default) */
+        .panel-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .panel-content.active {
+            opacity: 1;
+            pointer-events: all;
+            transition: opacity 0.5s ease 0.2s; /* Delayed fade in */
+        }
+
+        /* Specific Card Styles */
+        .weather-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .weather-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .weather-temp {
+            font-size: 32px;
+            font-weight: 200;
+            margin: 0;
+        }
+        
+        .weather-loc {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-card {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-text {
+            color: #ccc;
+            font-size: 15px;
+            line-height: 1.4;
+            font-weight: 300;
+        }
+
+    </style>
+</head>
+<body>
+
+    <p style="color: #444; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;">THAID: The Void - Dynamic Panel Demo</p>
+
+    <!-- The Expandable Panel -->
+    <div class="dynamic-panel" id="dynamicPanel">
+        
+        <!-- The Floating Orb inside the panel -->
+        <div class="orb-container" id="orbContainer"></div>
+
+        <!-- Content: Weather -->
+        <div class="panel-content" id="contentWeather">
+            <div class="weather-card">
+                <div class="weather-info">
+                    <span class="weather-loc">Jaipur</span>
+                    <h2 class="weather-temp">32°</h2>
+                </div>
+                <div style="font-size: 40px;">🌤️</div>
+            </div>
+        </div>
+
+        <!-- Content: Chat -->
+        <div class="panel-content" id="contentChat">
+            <div class="chat-card">
+                <div class="chat-text">"I have updated the system configuration for Wayland. Would you like me to apply it now?"</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls to test states -->
+    <div class="controls">
+        <button onclick="setMode('idle')">Collapse (Idle)</button>
+        <button onclick="setMode('listening')">Listening</button>
+        <button onclick="setMode('thinking')">Thinking</button>
+        <div style="width: 20px;"></div>
+        <button onclick="setMode('weather')">Show Weather</button>
+        <button onclick="setMode('chat')">Show Chat</button>
+    </div>
+
+    <script>
+        const orbContainer = document.getElementById('orbContainer');
+        const dynamicPanel = document.getElementById('dynamicPanel');
+        const contentWeather = document.getElementById('contentWeather');
+        const contentChat = document.getElementById('contentChat');
+        
+        const particles = [];
+        let particleInterval;
+
+        // Initialize Particles
+        for(let i=0; i<20; i++) {
+            const p = document.createElement('div');
+            p.className = 'void-particle';
+            p.style.width = (Math.random() * 2 + 1) + 'px';
+            p.style.height = p.style.width;
+            p.style.left = '50%';
+            p.style.top = '50%';
+            orbContainer.appendChild(p);
+            particles.push(p);
+        }
+
+        // Particle Physics Engine
+        function runParticles(state) {
+            clearInterval(particleInterval);
+            
+            if (state === 'idle' || state === 'weather' || state === 'chat') {
+                // Gentle drift
+                particleInterval = setInterval(() => {
+                    particles.forEach(p => {
+                        p.style.transform = `translate(${Math.random()*16-8}px, ${Math.random()*16-8}px)`;
+                        p.style.opacity = '0.4';
+                    });
+                }, 1000);
+            } else if (state === 'listening') {
+                // Pulse and drift up slightly
+                particleInterval = setInterval(() => {
+                    particles.forEach((p, i) => {
+                        p.style.transform = `translate(${Math.random()*24-12}px, ${-10 + (i%5)}px) scale(1.5)`;
+                        p.style.opacity = '0.9';
+                    });
+                }, 400);
+            } else if (state === 'thinking') {
+                // Highly complex, smooth "neural" orbit
+                let angle = 0;
+                particleInterval = setInterval(() => {
+                    angle += 0.08;
+                    particles.forEach((p, i) => {
+                        // Create 3 concentric orbital rings
+                        const baseRadius = 6 + (i % 3) * 5; 
+                        const phase = i * ((Math.PI * 2) / particles.length);
+                        
+                        // Add a smooth breathing/pulsing effect to the radius
+                        const r = baseRadius + Math.sin(angle * 4 + phase) * 3;
+                        
+                        // Half orbit clockwise, half orbit counter-clockwise at different speeds
+                        const speedMulti = 1 + (i % 2) * 0.5;
+                        const direction = (i % 2 === 0) ? 1 : -1;
+                        const a = (angle * speedMulti * direction) + phase;
+                        
+                        p.style.transform = `translate(${Math.cos(a)*r}px, ${Math.sin(a)*r}px) scale(0.8)`;
+                        p.style.opacity = '1';
+                    });
+                }, 30); // Faster update rate (30ms) for ultra-smooth rendering
+            }
+        }
+
+        // State Machine
+        function setMode(mode) {
+            // Hide all content first
+            contentWeather.classList.remove('active');
+            contentChat.classList.remove('active');
+
+            if (mode === 'idle') {
+                dynamicPanel.style.width = '40px';
+                dynamicPanel.style.height = '40px';
+                dynamicPanel.style.borderRadius = '20px';
+                orbContainer.style.transform = 'scale(1) translateX(0)';
+                orbContainer.style.opacity = '1';
+                runParticles('idle');
+            } 
+            else if (mode === 'listening') {
+                dynamicPanel.style.width = '50px';
+                dynamicPanel.style.height = '50px';
+                dynamicPanel.style.borderRadius = '25px';
+                orbContainer.style.transform = 'scale(1.2) translateX(0)';
+                orbContainer.style.opacity = '1';
+                runParticles('listening');
+            }
+            else if (mode === 'thinking') {
+                dynamicPanel.style.width = '40px';
+                dynamicPanel.style.height = '40px';
+                dynamicPanel.style.borderRadius = '20px';
+                orbContainer.style.transform = 'scale(0.8) translateX(0)';
+                orbContainer.style.opacity = '1';
+                runParticles('thinking');
+            }
+            else if (mode === 'weather') {
+                dynamicPanel.style.width = '240px';
+                dynamicPanel.style.height = '100px';
+                dynamicPanel.style.borderRadius = '24px';
+                // Move orb to the left edge inside the panel
+                orbContainer.style.transform = 'scale(0.6) translateX(-90px)';
+                orbContainer.style.opacity = '0.5';
+                contentWeather.classList.add('active');
+                runParticles('weather');
+            }
+            else if (mode === 'chat') {
+                dynamicPanel.style.width = '340px';
+                dynamicPanel.style.height = '120px';
+                dynamicPanel.style.borderRadius = '24px';
+                // Move orb to the left edge inside the panel
+                orbContainer.style.transform = 'scale(0.6) translateX(-140px)';
+                orbContainer.style.opacity = '0.8';
+                contentChat.classList.add('active');
+                // Run listening particle animation inside the panel
+                runParticles('listening');
+            }
+        }
+
+        // Start
+        setMode('idle');
+
+    </script>
+</body>
+</html>
