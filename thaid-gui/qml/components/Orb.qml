@@ -52,10 +52,20 @@ Item {
                     scale: tScale
 
                     // Smooth transitions matching the HTML CSS transitions
-                    Behavior on tx { NumberAnimation { duration: orbContainer.aiState === "thinking" ? 100 : 500; easing.type: Easing.Linear } }
-                    Behavior on ty { NumberAnimation { duration: orbContainer.aiState === "thinking" ? 100 : 500; easing.type: Easing.Linear } }
-                    Behavior on tScale { NumberAnimation { duration: 500; easing.type: Easing.OutQuad } }
-                    Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.OutQuad } }
+                    Behavior on tx { 
+                        NumberAnimation { 
+                            duration: orbContainer.aiState === "thinking" ? 100 : (orbContainer.aiState === "listening" ? 50 : 500)
+                            easing.type: Easing.Linear 
+                        } 
+                    }
+                    Behavior on ty { 
+                        NumberAnimation { 
+                            duration: orbContainer.aiState === "thinking" ? 100 : (orbContainer.aiState === "listening" ? 50 : 500)
+                            easing.type: Easing.Linear 
+                        } 
+                    }
+                    Behavior on tScale { NumberAnimation { duration: orbContainer.aiState === "listening" ? 50 : 500; easing.type: Easing.OutQuad } }
+                    Behavior on opacity { NumberAnimation { duration: orbContainer.aiState === "listening" ? 50 : 500; easing.type: Easing.OutQuad } }
                 }
             }
         }
