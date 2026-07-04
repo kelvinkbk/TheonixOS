@@ -104,9 +104,9 @@ impl ConversationStore {
         Ok(())
     }
 
-    /// Build a context-aware prompt by prepending recent conversation history.
-    /// Returns a formatted string suitable for sending to Ollama.
-    pub async fn build_context_prompt(&self, session_id: &str, new_prompt: &str) -> Result<String> {
+    /// Retrieve the recent conversation history as raw (role, content) tuples.
+    /// Returns a Vec of (String, String) suitable for building JSON messages.
+    pub async fn get_history(&self, session_id: &str) -> Result<Vec<(String, String)>> {
         let conn = self.conn.lock().unwrap();
 
         // Get the last N turns (most recent first, then reverse)
@@ -122,22 +122,8 @@ impl ConversationStore {
             .filter_map(|r| r.ok())
             .collect();
 
-        if turns.is_empty() {
-            return Ok(new_prompt.to_string());
-        }
-
-        // Build context string (oldest first)
-        let mut context = String::new();
-        for (role, content) in turns.iter().rev() {
-            match role.as_str() {
-                "user" => context.push_str(&format!("User: {content}\n")),
-                "assistant" => context.push_str(&format!("Assistant: {content}\n")),
-                _ => {}
-            }
-        }
-        context.push_str(&format!("User: {new_prompt}\nAssistant:"));
-
-        Ok(context)
+        // Reverse so oldest is first
+        Ok(turns.into_iter().rev().collect())
     }
 
     /// Delete a session and all its turns.

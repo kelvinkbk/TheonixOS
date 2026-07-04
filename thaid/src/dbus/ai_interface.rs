@@ -77,24 +77,18 @@ impl AIInterface {
             .and_then(|v| <&str>::try_from(v).ok())
             .map(|s| s.to_string());
 
-        // Build prompt with conversation history if session provided
-        let full_prompt = if let Some(ref sid) = session_id {
+        // Retrieve conversation history if session provided
+        let history = if let Some(ref sid) = session_id {
             let memory = self.memory.read().await;
-            match memory.build_context_prompt(sid, &prompt).await {
-                Ok(ctx_prompt) => ctx_prompt,
-                Err(e) => {
-                    warn!(error = %e, "Failed to load conversation history — using bare prompt");
-                    prompt.clone()
-                }
-            }
+            memory.get_history(sid).await.unwrap_or_default()
         } else {
-            prompt.clone()
+            vec![]
         };
 
         // Send to model manager (loads model lazily)
         let response = self
             .model_manager
-            .query(&full_prompt, model_override.as_deref())
+            .chat(&history, &prompt, model_override.as_deref())
             .await
             .map_err(|e| {
                 error!(error = %e, "Model query failed");

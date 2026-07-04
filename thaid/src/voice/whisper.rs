@@ -34,7 +34,7 @@ impl WhisperTranscriber {
         info!(model = %self.model_size, path = %audio_path.display(), "Transcribing audio");
 
         let output = timeout(
-            Duration::from_secs(120),
+            Duration::from_secs(300),
             Command::new("whisper-cli")
                 .arg("--model")
                 .arg(&model_path)
@@ -47,7 +47,7 @@ impl WhisperTranscriber {
                 .output(),
         )
         .await
-        .context("whisper-cli timed out after 120s")?
+        .context("whisper-cli timed out after 300s")?
         .context("Failed to run whisper-cli — is whisper-cpp installed?")?;
 
         if !output.status.success() {

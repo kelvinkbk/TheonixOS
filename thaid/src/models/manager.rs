@@ -99,49 +99,126 @@ impl ModelManager {
         }
     }
 
-    /// Send a query to the loaded model and return the full response.
-    pub async fn query(&self, prompt: &str, model: Option<&str>) -> Result<String> {
+    /// Send a query to the loaded model, optionally executing tools, and return the final response.
+    pub async fn chat(&self, history: &[(String, String)], prompt: &str, model: Option<&str>) -> Result<String> {
         let model_name = self.ensure_loaded(model).await?;
 
-        #[derive(Serialize)]
-        struct OllamaRequest<'a> {
-            model: &'a str,
-            prompt: &'a str,
-            system: &'a str,
-            stream: bool,
+        let mut messages = vec![
+            serde_json::json!({
+                "role": "system",
+                "content": "You are THAID, an advanced, highly intelligent voice assistant for Theonix OS. You communicate entirely through spoken audio. Keep your answers brief, conversational, and direct. Never say you are an AI model or that you cannot produce audio. Do not use markdown, lists, or long paragraphs. You have access to the OS through tools."
+            })
+        ];
+
+        for (role, content) in history {
+            messages.push(serde_json::json!({
+                "role": role,
+                "content": content
+            }));
         }
 
-        #[derive(Deserialize)]
-        struct OllamaResponse {
-            response: String,
-            done: bool,
+        messages.push(serde_json::json!({
+            "role": "user",
+            "content": prompt
+        }));
+
+        let tools = serde_json::json!([{
+            "type": "function",
+            "function": {
+                "name": "run_os_command",
+                "description": "Execute a bash shell command on the user's OS to control the system (e.g. adjust volume, open applications, lock screen, shutdown).",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "command": {
+                            "type": "string",
+                            "description": "The bash shell command to execute."
+                        }
+                    },
+                    "required": ["command"]
+                }
+            }
+        }]);
+
+        let payload = serde_json::json!({
+            "model": model_name,
+            "messages": messages,
+            "tools": tools,
+            "stream": false
+        });
+
+        // 1st request
+        let resp = self.http.post(format!("{}/api/chat", self.ollama_url))
+            .json(&payload)
+            .send().await.context("Failed to send chat to Ollama")?
+            .error_for_status().context("Ollama returned an error status")?
+            .json::<serde_json::Value>().await.context("Failed to parse Ollama response")?;
+
+        let message = resp["message"].clone();
+
+        if let Some(tool_calls) = message["tool_calls"].as_array() {
+            let mut tool_results = Vec::new();
+            for tc in tool_calls {
+                if let Some(func) = tc["function"].as_object() {
+                    let name = func["name"].as_str().unwrap_or("");
+                    if name == "run_os_command" {
+                        if let Some(args_str) = func["arguments"]["command"].as_str() {
+                            info!(command = %args_str, "Executing OS command via tool call");
+                            let output = tokio::process::Command::new("bash")
+                                .arg("-c")
+                                .arg(args_str)
+                                .output()
+                                .await;
+                            
+                            let result_text = match output {
+                                Ok(out) => {
+                                    let stdout = String::from_utf8_lossy(&out.stdout);
+                                    let stderr = String::from_utf8_lossy(&out.stderr);
+                                    if out.status.success() {
+                                        format!("Success.\n{stdout}")
+                                    } else {
+                                        format!("Failed (code {}).\n{stderr}", out.status.code().unwrap_or(1))
+                                    }
+                                },
+                                Err(e) => format!("Execution failed: {e}")
+                            };
+
+                            // Ollama tool response expects a "tool" role with the tool call id or name (varies slightly by model/API, we use standard format)
+                            tool_results.push(serde_json::json!({
+                                "role": "tool",
+                                "name": "run_os_command",
+                                "content": result_text
+                            }));
+                        }
+                    }
+                }
+            }
+
+            messages.push(message);
+            for res in tool_results {
+                messages.push(res);
+            }
+
+            let payload2 = serde_json::json!({
+                "model": model_name,
+                "messages": messages,
+                "stream": false
+            });
+
+            let resp2 = self.http.post(format!("{}/api/chat", self.ollama_url))
+                .json(&payload2)
+                .send().await.context("Failed second chat request")?
+                .error_for_status().context("Second request error status")?
+                .json::<serde_json::Value>().await.context("Failed to parse second response")?;
+
+            if let Some(final_text) = resp2["message"]["content"].as_str() {
+                return Ok(final_text.to_string());
+            }
+        } else if let Some(content) = message["content"].as_str() {
+            return Ok(content.to_string());
         }
 
-        let request = OllamaRequest {
-            model: &model_name,
-            prompt,
-            system: "You are THAID, an advanced, highly intelligent voice assistant for Theonix OS. You communicate entirely through spoken audio. Keep your answers brief, conversational, and direct. Never say you are an AI model or that you cannot produce audio. Do not use markdown, lists, or long paragraphs, as your response will be read aloud by a Text-to-Speech engine.",
-            stream: false,
-        };
-
-        let resp = self
-            .http
-            .post(format!("{}/api/generate", self.ollama_url))
-            .json(&request)
-            .send()
-            .await
-            .context("Failed to send query to Ollama")?
-            .error_for_status()
-            .context("Ollama returned an error status")?
-            .json::<OllamaResponse>()
-            .await
-            .context("Failed to parse Ollama response")?;
-
-        if !resp.done {
-            warn!("Ollama indicated generation was not complete");
-        }
-
-        Ok(resp.response)
+        Err(anyhow::anyhow!("Invalid response format from Ollama"))
     }
 
     /// Unload the current model, freeing RAM.
