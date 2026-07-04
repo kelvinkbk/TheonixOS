@@ -48,6 +48,14 @@ Window {
                 root.opacity = 1.0
             }
         }
+        function onAmbientNotificationReceived(message) {
+            if (!isShown) {
+                root.visible = true
+                isShown = true
+                root.y = targetY
+                root.opacity = 1.0
+            }
+        }
     }
 
     Timer {

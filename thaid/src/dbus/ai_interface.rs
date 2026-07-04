@@ -43,6 +43,9 @@ impl AIInterface {
 
 #[interface(name = "org.theonix.AI")]
 impl AIInterface {
+    /// Emit a proactive notification to the user's desktop.
+    #[zbus(signal)]
+    pub async fn ambient_notification(ctxt: &zbus::SignalContext<'_>, message: &str) -> zbus::Result<()>;
     /// Send a text prompt and receive the full response synchronously.
     ///
     /// Parameters:

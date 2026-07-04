@@ -10,6 +10,7 @@ class ThaidState(QObject):
     responseReceived = pyqtSignal(str, arguments=['response'])
     audioLevelChanged = pyqtSignal()
     visibilityToggled = pyqtSignal()
+    ambientNotificationReceived = pyqtSignal(str, arguments=['message'])
 
     def __init__(self):
         super().__init__()
@@ -30,6 +31,9 @@ class ThaidState(QObject):
         # Export GUI control over DBus for global shortcuts
         self.bus.registerService("org.theonix.AIGUI")
         self.bus.registerObject("/org/theonix/AIGUI", self, QDBusConnection.RegisterOption.ExportAllSlots)
+
+        # Connect to Ambient Notifications from daemon
+        self.bus.connect("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "ambient_notification", self._on_ambient_notification)
 
         # Increase DBus timeout to 120 seconds (120000 ms) to allow for slow Ollama generation in VMs
         self.ai_interface.setTimeout(120000)
@@ -69,6 +73,12 @@ class ThaidState(QObject):
     def toggleVisibility(self):
         """Called via DBus (e.g. from a global keyboard shortcut) to toggle the GUI"""
         self.visibilityToggled.emit()
+
+    @pyqtSlot(QDBusMessage)
+    def _on_ambient_notification(self, msg):
+        """Called when the daemon emits a proactive alert"""
+        if msg.arguments():
+            self.ambientNotificationReceived.emit(str(msg.arguments()[0]))
 
     def startListening(self):
         self.setState("listening")

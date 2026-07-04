@@ -112,6 +112,10 @@ Item {
                 function onResponseReceived(response) {
                     chatText.text = "\"" + response + "\""
                 }
+                function onAmbientNotificationReceived(message) {
+                    chatText.text = "🔔 " + message
+                    thaidState.setState("chat")
+                }
             }
         }
         

@@ -115,6 +115,30 @@ async fn main() -> Result<()> {
 
     info!("thaid registered on D-Bus as org.theonix.AI at /org/theonix/AI");
 
+    // ---- Ambient Intelligence Watcher (Phase 14) ----------------------------
+    let iface_ref = connection.object_server().interface::<_, dbus::AIInterface>("/org/theonix/AI").await?;
+    let signal_ctxt = iface_ref.signal_context().clone();
+    
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
+        loop {
+            interval.tick().await;
+            // Watch for failed system services
+            if let Ok(out) = tokio::process::Command::new("systemctl").arg("--failed").output().await {
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                if !stdout.contains("0 loaded units listed") {
+                    if let Some(line) = stdout.lines().find(|l| l.contains("failed")) {
+                        let parts: Vec<&str> = line.split_whitespace().collect();
+                        if let Some(unit) = parts.first() {
+                            let msg = format!("Ambient Alert: '{}' has crashed. Would you like me to investigate?", unit);
+                            let _ = dbus::AIInterface::ambient_notification(&signal_ctxt, &msg).await;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     // ---- Signal handling (graceful shutdown) --------------------------------
     tokio::select! {
         _ = tokio::signal::ctrl_c() => {
