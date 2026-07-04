@@ -9,6 +9,8 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use tracing::{debug, info, warn};
+use crate::memory::ConversationStore;
+use crate::tools;
 
 /// Tracks the current state of a loaded model.
 #[derive(Debug, Clone, PartialEq)]
@@ -100,7 +102,13 @@ impl ModelManager {
     }
 
     /// Send a query to the loaded model, optionally executing tools, and return the final response.
-    pub async fn chat(&self, history: &[(String, String)], prompt: &str, model: Option<&str>) -> Result<String> {
+    pub async fn chat(
+        &self, 
+        history: &[(String, String)], 
+        prompt: &str, 
+        model: Option<&str>, 
+        memory: &Arc<RwLock<ConversationStore>>
+    ) -> Result<String> {
         let model_name = self.ensure_loaded(model).await?;
 
         let mut messages = vec![
@@ -122,23 +130,7 @@ impl ModelManager {
             "content": prompt
         }));
 
-        let tools = serde_json::json!([{
-            "type": "function",
-            "function": {
-                "name": "run_os_command",
-                "description": "Execute a bash shell command on the user's OS to control the system (e.g. adjust volume, open applications, lock screen, shutdown).",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "command": {
-                            "type": "string",
-                            "description": "The bash shell command to execute."
-                        }
-                    },
-                    "required": ["command"]
-                }
-            }
-        }]);
+        let tools = serde_json::Value::Array(crate::tools::get_all_tools());
 
         let payload = serde_json::json!({
             "model": model_name,
@@ -161,33 +153,19 @@ impl ModelManager {
             for tc in tool_calls {
                 if let Some(func) = tc["function"].as_object() {
                     let name = func["name"].as_str().unwrap_or("");
-                    if name == "run_os_command" {
-                        if let Some(args_str) = func["arguments"]["command"].as_str() {
-                            info!(command = %args_str, "Executing OS command via tool call");
-                            let output = tokio::process::Command::new("bash")
-                                .arg("-c")
-                                .arg(args_str)
-                                .output()
-                                .await;
-                            
-                            let result_text = match output {
-                                Ok(out) => {
-                                    let stdout = String::from_utf8_lossy(&out.stdout);
-                                    let stderr = String::from_utf8_lossy(&out.stderr);
-                                    if out.status.success() {
-                                        format!("Success.\n{stdout}")
-                                    } else {
-                                        format!("Failed (code {}).\n{stderr}", out.status.code().unwrap_or(1))
-                                    }
-                                },
-                                Err(e) => format!("Execution failed: {e}")
-                            };
-
-                            // Ollama tool response expects a "tool" role with the tool call id or name (varies slightly by model/API, we use standard format)
+                    if let Some(args) = func.get("arguments") {
+                        info!(tool = %name, "Executing AI tool call");
+                        if let Some(result_text) = crate::tools::execute_tool(name, args, memory).await {
                             tool_results.push(serde_json::json!({
                                 "role": "tool",
-                                "name": "run_os_command",
+                                "name": name,
                                 "content": result_text
+                            }));
+                        } else {
+                            tool_results.push(serde_json::json!({
+                                "role": "tool",
+                                "name": name,
+                                "content": format!("Tool '{}' not found or failed.", name)
                             }));
                         }
                     }

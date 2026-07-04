@@ -28,6 +28,7 @@ mod memory;
 mod models;
 mod permissions;
 mod voice;
+mod tools;
 
 #[tokio::main]
 async fn main() -> Result<()> {

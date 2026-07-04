@@ -47,6 +47,13 @@ impl ConversationStore {
             );
 
             CREATE INDEX IF NOT EXISTS idx_turns_session ON turns(session_id, created_at);
+
+            CREATE TABLE IF NOT EXISTS long_term_memory (
+                key        TEXT PRIMARY KEY,
+                value      TEXT NOT NULL,
+                created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+                updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+            );
         ",
         )?;
 
@@ -146,5 +153,30 @@ impl ConversationStore {
             params![session_id, max_turns as i64 * 2], // *2 because each turn = 2 rows
         )?;
         Ok(())
+    }
+
+    /// Save a long-term memory fact.
+    pub async fn save_fact(&self, key: &str, value: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO long_term_memory (key, value) VALUES (?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = strftime('%s', 'now')",
+            params![key, value],
+        )?;
+        debug!(key, value, "Saved long-term fact");
+        Ok(())
+    }
+
+    /// Retrieve all long-term memory facts.
+    pub async fn get_all_facts(&self) -> Result<Vec<(String, String)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT key, value FROM long_term_memory ORDER BY updated_at ASC")?;
+        
+        let facts: Vec<(String, String)> = stmt
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
+            .filter_map(|r| r.ok())
+            .collect();
+            
+        Ok(facts)
     }
 }

@@ -78,17 +78,32 @@ impl AIInterface {
             .map(|s| s.to_string());
 
         // Retrieve conversation history if session provided
-        let history = if let Some(ref sid) = session_id {
+        let mut history = if let Some(ref sid) = session_id {
             let memory = self.memory.read().await;
             memory.get_history(sid).await.unwrap_or_default()
         } else {
             vec![]
         };
 
+        // Fetch long-term memory facts and inject them as a system prompt
+        {
+            let memory = self.memory.read().await;
+            if let Ok(facts) = memory.get_all_facts().await {
+                if !facts.is_empty() {
+                    let mut facts_str = String::from("Here are some persistent facts you have learned about the user and MUST remember:\n");
+                    for (k, v) in facts {
+                        facts_str.push_str(&format!("- {}: {}\n", k, v));
+                    }
+                    // Insert at the beginning of the history so it acts as context
+                    history.insert(0, ("system".to_string(), facts_str));
+                }
+            }
+        }
+
         // Send to model manager (loads model lazily)
         let response = self
             .model_manager
-            .chat(&history, &prompt, model_override.as_deref())
+            .chat(&history, &prompt, model_override.as_deref(), &self.memory)
             .await
             .map_err(|e| {
                 error!(error = %e, "Model query failed");
