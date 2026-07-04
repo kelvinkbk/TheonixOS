@@ -212,10 +212,18 @@ impl ModelManager {
                 .json::<serde_json::Value>().await.context("Failed to parse second response")?;
 
             if let Some(final_text) = resp2["message"]["content"].as_str() {
-                return Ok(final_text.to_string());
+                let trimmed = final_text.trim();
+                if trimmed.is_empty() {
+                    return Ok("I have executed the command, but I don't have anything else to add.".to_string());
+                }
+                return Ok(trimmed.to_string());
             }
         } else if let Some(content) = message["content"].as_str() {
-            return Ok(content.to_string());
+            let trimmed = content.trim();
+            if trimmed.is_empty() {
+                return Ok("I am not sure how to respond to that.".to_string());
+            }
+            return Ok(trimmed.to_string());
         }
 
         Err(anyhow::anyhow!("Invalid response format from Ollama"))
