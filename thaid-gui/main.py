@@ -197,9 +197,9 @@ class ThaidState(QObject):
         self.responseReceived.emit(text)
 
 def main():
-    # Force Wayland, but allow fallback to X11/windows for testing
+    # Force X11/XWayland so KWin honors absolute window positioning (x, y)
     if not os.environ.get("QT_QPA_PLATFORM"):
-        os.environ["QT_QPA_PLATFORM"] = "wayland;xcb;windows"
+        os.environ["QT_QPA_PLATFORM"] = "xcb"
 
     app = QGuiApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
