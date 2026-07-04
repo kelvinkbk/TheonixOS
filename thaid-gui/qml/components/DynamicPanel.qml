@@ -23,8 +23,8 @@ Item {
         anchors.fill: parent
         radius: targetRadius
         
-        color: "#000000" // Pure black void
-        border.color: "#1a1a1a"
+        color: "#aa050505" // Translucent dark glass
+        border.color: "#22ffffff" // Subtle glass edge
         border.width: 1
 
         // Smooth physics-based spring animation for expansion
@@ -98,11 +98,13 @@ Item {
             anchors.centerIn: parent
             width: parent.width
             text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
-            color: "#ccc"
-            font.pixelSize: 15
+            color: "#eeeeee"
+            font.pixelSize: 16
+            font.family: "Inter, Roboto, sans-serif"
             wrapMode: Text.WordWrap
-            font.weight: Font.Light
+            font.weight: Font.Normal
             lineHeight: 1.4
+            horizontalAlignment: Text.AlignHCenter
             
             // Listen to the python/DBus backend for real responses
             Connections {

@@ -14,19 +14,46 @@ Window {
     color: "transparent"
     flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     
-    // Main draggable area (allows moving the window around if needed)
-    MouseArea {
-        anchors.fill: parent
-        property variant clickPos: "1,1"
+    // Position fixed to bottom-center
+    property int targetY: Screen.desktopAvailableHeight - height - 40
+    property int targetX: (Screen.width - width) / 2
 
-        onPressed: function(mouse) {
-            clickPos = Qt.point(mouse.x, mouse.y)
+    x: targetX
+    y: targetY
+    opacity: 1.0
+
+    property bool isShown: true
+
+    Behavior on y {
+        NumberAnimation { duration: 500; easing.type: Easing.OutExpo }
+    }
+    Behavior on opacity {
+        NumberAnimation { duration: 400; easing.type: Easing.OutQuad }
+    }
+
+    Connections {
+        target: typeof thaidState !== "undefined" ? thaidState : null
+        function onVisibilityToggled() {
+            if (isShown) {
+                // Hide animation
+                isShown = false
+                root.y = Screen.desktopAvailableHeight
+                root.opacity = 0.0
+                hideTimer.start()
+            } else {
+                // Show animation
+                root.visible = true
+                isShown = true
+                root.y = targetY
+                root.opacity = 1.0
+            }
         }
-        onPositionChanged: function(mouse) {
-            var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
-            root.x += delta.x
-            root.y += delta.y
-        }
+    }
+
+    Timer {
+        id: hideTimer
+        interval: 500
+        onTriggered: root.visible = false
     }
 
     // The main container that handles the Orb and the expanding panel
@@ -34,5 +61,4 @@ Window {
         id: dynamicPanel
         anchors.centerIn: parent
     }
-
 }

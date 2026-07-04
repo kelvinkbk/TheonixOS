@@ -9,6 +9,7 @@ class ThaidState(QObject):
     stateChanged = pyqtSignal()
     responseReceived = pyqtSignal(str, arguments=['response'])
     audioLevelChanged = pyqtSignal()
+    visibilityToggled = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -26,6 +27,10 @@ class ThaidState(QObject):
             self.bus
         )
         
+        # Export GUI control over DBus for global shortcuts
+        self.bus.registerService("org.theonix.AIGUI")
+        self.bus.registerObject("/org/theonix/AIGUI", self, QDBusConnection.RegisterOption.ExportAllSlots)
+
         # Increase DBus timeout to 120 seconds (120000 ms) to allow for slow Ollama generation in VMs
         self.ai_interface.setTimeout(120000)
 
@@ -59,6 +64,11 @@ class ThaidState(QObject):
             self.stopListening()
         else:
             self.startListening()
+
+    @pyqtSlot()
+    def toggleVisibility(self):
+        """Called via DBus (e.g. from a global keyboard shortcut) to toggle the GUI"""
+        self.visibilityToggled.emit()
 
     def startListening(self):
         self.setState("listening")
@@ -192,6 +202,7 @@ def main():
         os.environ["QT_QPA_PLATFORM"] = "wayland;xcb;windows"
 
     app = QGuiApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     
     # Initialize our DBus bridge / State manager
     thaid_state = ThaidState()
