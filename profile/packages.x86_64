@@ -147,6 +147,8 @@ ollama
 networkmanager
 pipewire
 pipewire-jack
+pipewire-alsa
+pipewire-pulse
 wireplumber
 apparmor
 konsole
