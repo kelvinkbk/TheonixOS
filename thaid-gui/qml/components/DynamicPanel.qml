@@ -157,7 +157,7 @@ Item {
         State {
             name: "chat"
             when: panelContainer.aiState === "chat"
-            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 120; targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
+            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: Math.max(120, chatText.paintedHeight + 60); targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
         }
     ]
 }
