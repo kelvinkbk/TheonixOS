@@ -1,3 +1,27 @@
+sudo pacman -Sy --noconfirm git base-devel cmake rustup python-pyqt6
+rustup default stable
+git clone https://github.com/kelvinkbk/TheonixOS.git ~/TheonixOS
+sudo systemctl enable --now ollama
+ollama pull llama3.2:1b
+
+
+
+
+
+git clone https://github.com/ggerganov/whisper.cpp.git /tmp/whisper
+cd /tmp/whisper
+make
+sudo cp build/bin/whisper-cli /usr/bin/whisper-cli || sudo cp main /usr/bin/whisper-cli
+
+curl -L https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz -o /tmp/piper.tar.gz
+tar -xzf /tmp/piper.tar.gz -C /tmp/
+sudo rm -rf /opt/piper
+sudo mv /tmp/piper /opt/piper
+sudo ln -sf /opt/piper/piper /usr/bin/piper
+
+
+
+
 sudo mkdir -p /usr/share/theonix/models/whisper/
 sudo mkdir -p /usr/share/theonix/models/piper/
 sudo curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin -o /usr/share/theonix/models/whisper/ggml-base.bin
