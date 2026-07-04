@@ -7,6 +7,7 @@
 use anyhow::{Context, Result};
 use std::path::PathBuf;
 use tokio::process::Command;
+use tokio::time::{timeout, Duration};
 use tracing::{debug, info};
 
 pub struct WhisperTranscriber {
@@ -32,17 +33,22 @@ impl WhisperTranscriber {
 
         info!(model = %self.model_size, path = %audio_path.display(), "Transcribing audio");
 
-        let output = Command::new("whisper-cli")
-            .arg("--model")
-            .arg(&model_path)
-            .arg("--language")
-            .arg("auto")
-            .arg("--output-txt")
-            .arg("--no-prints")
-            .arg(audio_path)
-            .output()
-            .await
-            .context("Failed to run whisper-cli — is whisper-cpp installed?")?;
+        let output = timeout(
+            Duration::from_secs(120),
+            Command::new("whisper-cli")
+                .arg("--model")
+                .arg(&model_path)
+                .arg("--language")
+                .arg("auto")
+                .arg("--output-txt")
+                .arg("--no-prints")
+                .arg("-f")
+                .arg(audio_path)
+                .output(),
+        )
+        .await
+        .context("whisper-cli timed out after 120s")?
+        .context("Failed to run whisper-cli — is whisper-cpp installed?")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);

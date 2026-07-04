@@ -98,6 +98,11 @@ class ThaidState(QObject):
             self._record_process.terminate()
             self._record_process.wait()
             self._record_process = None
+
+        wav_path = "/tmp/thaid_query.wav"
+        if (not os.path.exists(wav_path)) or os.path.getsize(wav_path) <= 44:
+            self._emit_response("STT Error: No usable audio captured from microphone.")
+            return
             
         self.setState("thinking")
         
@@ -108,7 +113,7 @@ class ThaidState(QObject):
             
             # 1. Transcribe (STT)
             msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
-            msg_stt << "/tmp/thaid_query.wav"
+            msg_stt << wav_path
             reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 300000)
             if reply_stt.type() != QDBusMessage.MessageType.ReplyMessage:
                 self._emit_response("STT Error: " + reply_stt.errorMessage())
