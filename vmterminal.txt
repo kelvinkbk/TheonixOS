@@ -1,0 +1,8 @@
+sudo mkdir -p /usr/share/theonix/models/whisper/
+sudo mkdir -p /usr/share/theonix/models/piper/
+sudo curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin -o /usr/share/theonix/models/whisper/ggml-base.bin
+sudo curl -L https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/high/en_US-lessac-high.onnx -o /usr/share/theonix/models/piper/en_US-lessac-high.onnx
+sudo curl -L https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/high/en_US-lessac-high.onnx.json -o /usr/share/theonix/models/piper/en_US-lessac-high.onnx.json
+
+cd ~/TheonixOS/thaid
+env -u INVOCATION_ID cargo run &
