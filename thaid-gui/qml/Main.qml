@@ -5,8 +5,8 @@ import "components"
 
 Window {
     id: root
-    width: 400
-    height: 800
+    width: dynamicPanel.width
+    height: dynamicPanel.height
     visible: true
     title: "THAID"
     
@@ -16,7 +16,7 @@ Window {
     
     // Position fixed to bottom-center
     property int targetY: Screen.desktopAvailableHeight - height - 40
-    property int targetX: (Screen.width - width) / 2
+    property int targetX: (Screen.desktopAvailableWidth - width) / 2
 
     x: targetX
     y: targetY
