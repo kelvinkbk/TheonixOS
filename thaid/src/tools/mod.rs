@@ -3,6 +3,9 @@ pub mod context;
 pub mod memory;
 pub mod vision;
 pub mod intent;
+pub mod settings;
+pub mod network;
+pub mod automation;
 
 use serde_json::Value;
 use std::sync::Arc;
@@ -16,6 +19,9 @@ pub fn get_all_tools() -> Vec<Value> {
     tools.extend(memory::get_memory_tools());
     tools.extend(vision::get_vision_tools());
     tools.extend(intent::get_intent_tools());
+    tools.extend(settings::get_settings_tools());
+    tools.extend(network::get_network_tools());
+    tools.extend(automation::get_automation_tools());
     tools
 }
 
@@ -33,6 +39,15 @@ pub async fn execute_tool(name: &str, args: &Value, mem: &Arc<RwLock<Conversatio
         return Some(res);
     }
     if let Some(res) = intent::execute_intent_tool(name, args).await {
+        return Some(res);
+    }
+    if let Some(res) = settings::execute_settings_tool(name, args).await {
+        return Some(res);
+    }
+    if let Some(res) = network::execute_network_tool(name, args).await {
+        return Some(res);
+    }
+    if let Some(res) = automation::execute_automation_tool(name, args).await {
         return Some(res);
     }
     None
