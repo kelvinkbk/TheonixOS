@@ -14,6 +14,15 @@ pub struct ThaidConfig {
     /// Base URL of the local Ollama instance
     pub ollama_url: String,
 
+    /// API Provider ("ollama", "openai", "gemini", "groq")
+    pub api_provider: String,
+
+    /// API Key for cloud providers
+    pub api_key: String,
+
+    /// Base URL for cloud providers (e.g. https://api.groq.com/openai/v1)
+    pub api_base_url: String,
+
     /// Default model to load when a query arrives
     pub default_model: String,
 
@@ -49,6 +58,9 @@ impl Default for ThaidConfig {
 
         Self {
             ollama_url: "http://127.0.0.1:11434".to_string(),
+            api_provider: "ollama".to_string(),
+            api_key: "".to_string(),
+            api_base_url: "".to_string(),
             default_model: "qwen2.5:0.5b".to_string(),
             idle_timeout_secs: 600, // 10 minutes
             memory_db_path: data_dir.join("memory.db"),

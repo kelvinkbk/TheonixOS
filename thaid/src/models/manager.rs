@@ -29,17 +29,23 @@ pub struct ModelManager {
     ollama_url: String,
     default_model: String,
     idle_timeout: Duration,
+    api_provider: String,
+    api_key: String,
+    api_base_url: String,
     state: Arc<RwLock<ModelState>>,
     last_used: Arc<RwLock<Option<Instant>>>,
     http: Client,
 }
 
 impl ModelManager {
-    pub fn new(ollama_url: String, default_model: String, idle_timeout: Duration) -> Self {
+    pub fn new(config: crate::config::ThaidConfig) -> Self {
         Self {
-            ollama_url,
-            default_model,
-            idle_timeout,
+            ollama_url: config.ollama_url,
+            default_model: config.default_model,
+            idle_timeout: Duration::from_secs(config.idle_timeout_secs),
+            api_provider: config.api_provider,
+            api_key: config.api_key,
+            api_base_url: config.api_base_url,
             state: Arc::new(RwLock::new(ModelState::Unloaded)),
             last_used: Arc::new(RwLock::new(None)),
             http: Client::builder()
@@ -53,6 +59,11 @@ impl ModelManager {
     /// Returns the model name that is ready.
     pub async fn ensure_loaded(&self, requested_model: Option<&str>) -> Result<String> {
         let model_name = requested_model.unwrap_or(&self.default_model).to_string();
+
+        if self.api_provider != "ollama" {
+            // Cloud APIs don't need local memory loading
+            return Ok(model_name);
+        }
 
         // Fast path: already loaded
         {
@@ -139,34 +150,69 @@ impl ModelManager {
             "stream": false
         });
 
-        // 1st request
-        let resp = self.http.post(format!("{}/api/chat", self.ollama_url))
-            .json(&payload)
-            .send().await.context("Failed to send chat to Ollama")?
-            .error_for_status().context("Ollama returned an error status")?
-            .json::<serde_json::Value>().await.context("Failed to parse Ollama response")?;
+        let is_openai = self.api_provider != "ollama";
+        let chat_url = if is_openai {
+            format!("{}/chat/completions", self.api_base_url.trim_end_matches('/'))
+        } else {
+            format!("{}/api/chat", self.ollama_url.trim_end_matches('/'))
+        };
 
-        let message = resp["message"].clone();
+        // 1st request
+        let mut req = self.http.post(&chat_url).json(&payload);
+        if is_openai {
+            req = req.bearer_auth(&self.api_key);
+        }
+
+        let resp = req
+            .send().await.context("Failed to send chat request")?
+            .error_for_status().context("API returned an error status")?
+            .json::<serde_json::Value>().await.context("Failed to parse API response")?;
+
+        let message = if is_openai {
+            resp["choices"][0]["message"].clone()
+        } else {
+            resp["message"].clone()
+        };
 
         if let Some(tool_calls) = message["tool_calls"].as_array() {
             let mut tool_results = Vec::new();
             for tc in tool_calls {
                 if let Some(func) = tc["function"].as_object() {
                     let name = func["name"].as_str().unwrap_or("");
-                    if let Some(args) = func.get("arguments") {
+                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("");
+                    
+                    if let Some(args_val) = func.get("arguments") {
+                        let args = if is_openai {
+                            if let Some(s) = args_val.as_str() {
+                                serde_json::from_str(s).unwrap_or_else(|_| serde_json::json!({}))
+                            } else {
+                                serde_json::json!({})
+                            }
+                        } else {
+                            args_val.clone()
+                        };
+
                         info!(tool = %name, "Executing AI tool call");
-                        if let Some(result_text) = crate::tools::execute_tool(name, args, memory).await {
-                            tool_results.push(serde_json::json!({
+                        if let Some(result_text) = crate::tools::execute_tool(name, &args, memory).await {
+                            let mut t_res = serde_json::json!({
                                 "role": "tool",
                                 "name": name,
                                 "content": result_text
-                            }));
+                            });
+                            if is_openai {
+                                t_res["tool_call_id"] = serde_json::Value::String(id.to_string());
+                            }
+                            tool_results.push(t_res);
                         } else {
-                            tool_results.push(serde_json::json!({
+                            let mut t_res = serde_json::json!({
                                 "role": "tool",
                                 "name": name,
                                 "content": format!("Tool '{}' not found or failed.", name)
-                            }));
+                            });
+                            if is_openai {
+                                t_res["tool_call_id"] = serde_json::Value::String(id.to_string());
+                            }
+                            tool_results.push(t_res);
                         }
                     }
                 }
@@ -183,13 +229,23 @@ impl ModelManager {
                 "stream": false
             });
 
-            let resp2 = self.http.post(format!("{}/api/chat", self.ollama_url))
-                .json(&payload2)
+            let mut req2 = self.http.post(&chat_url).json(&payload2);
+            if is_openai {
+                req2 = req2.bearer_auth(&self.api_key);
+            }
+
+            let resp2 = req2
                 .send().await.context("Failed second chat request")?
                 .error_for_status().context("Second request error status")?
                 .json::<serde_json::Value>().await.context("Failed to parse second response")?;
 
-            if let Some(final_text) = resp2["message"]["content"].as_str() {
+            let final_text_opt = if is_openai {
+                resp2["choices"][0]["message"]["content"].as_str()
+            } else {
+                resp2["message"]["content"].as_str()
+            };
+
+            if let Some(final_text) = final_text_opt {
                 let trimmed = final_text.trim();
                 if trimmed.is_empty() {
                     return Ok("I have executed the command, but I don't have anything else to add.".to_string());

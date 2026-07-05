@@ -86,12 +86,8 @@ async fn main() -> Result<()> {
         .await
         .context("Failed to open conversation memory database")?;
 
-    // ---- Model manager (lazy loading) -------------------------------------
-    let model_manager = std::sync::Arc::new(models::ModelManager::new(
-        config.ollama_url.clone(),
-        config.default_model.clone(),
-        std::time::Duration::from_secs(config.idle_timeout_secs),
-    ));
+    // ---- Initialize core systems --------------------------------------------
+    let model_manager = std::sync::Arc::new(models::ModelManager::new(config.clone()));
 
     // Start the idle watcher — unloads model after inactivity
     let mgr_clone = model_manager.clone();
