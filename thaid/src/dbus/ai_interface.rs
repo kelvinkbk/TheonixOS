@@ -103,10 +103,37 @@ impl AIInterface {
             }
         }
 
+        // Instant Context Awareness (Phase 15)
+        // Fetch the currently active window via KWin to give THAID instant environmental awareness
+        let active_window_output = tokio::process::Command::new("bash")
+            .arg("-c")
+            .arg("qdbus org.kde.KWin /KWin supportInformation | grep -A 5 'Active Window'")
+            .output()
+            .await;
+            
+        if let Ok(out) = active_window_output {
+            let info = String::from_utf8_lossy(&out.stdout).to_string();
+            if !info.trim().is_empty() {
+                let context_str = format!("ENVIRONMENT CONTEXT (For your awareness only, don't mention it unless relevant): The user's currently active window is:\n{}", info);
+                history.push(("system".to_string(), context_str));
+            }
+        }
+
+        // Multi-Agent Specialists Routing (Phase 12)
+        let lower_prompt = prompt.to_lowercase();
+        let routed_model = if model_override.is_some() {
+            model_override.clone()
+        } else if lower_prompt.contains("code") || lower_prompt.contains("rust") || lower_prompt.contains("python") || lower_prompt.contains("bug") || lower_prompt.contains("compile") || lower_prompt.contains("error") || lower_prompt.contains("script") {
+            info!("Routing query to Coding Specialist (qwen2.5-coder:7b)");
+            Some("qwen2.5-coder:7b".to_string())
+        } else {
+            None // Falls back to default model
+        };
+
         // Send to model manager (loads model lazily)
         let response = self
             .model_manager
-            .chat(&history, &prompt, model_override.as_deref(), &self.memory)
+            .chat(&history, &prompt, routed_model.as_deref(), &self.memory)
             .await
             .map_err(|e| {
                 error!(error = %e, "Model query failed");
