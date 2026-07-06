@@ -185,7 +185,7 @@ impl ModelManager {
                 if let Some(func) = tc["function"].as_object() {
                     let name = func["name"].as_str().unwrap_or("");
                     let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("");
-                    
+
                     if let Some(args_val) = func.get("arguments") {
                         let args = if is_openai {
                             if let Some(s) = args_val.as_str() {

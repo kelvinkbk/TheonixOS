@@ -58,7 +58,7 @@ pub async fn execute_system_tool(name: &str, args: &Value) -> Option<String> {
                     Ok(out) => {
                         let stdout = String::from_utf8_lossy(&out.stdout);
                         let stderr = String::from_utf8_lossy(&out.stderr);
-                        
+
                         if out.status.success() {
                             Some(format!("Success.\n{stdout}"))
                         } else {

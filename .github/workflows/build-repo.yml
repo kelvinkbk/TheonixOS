@@ -89,6 +89,9 @@ jobs:
       - name: Fix file permissions after Docker build
         run: sudo chown -R $USER:$USER ./repo || true
 
+      - name: Add .nojekyll to bypass Jekyll processing
+        run: touch ./repo/.nojekyll
+
       - name: Deploy repo to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
