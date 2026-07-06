@@ -218,6 +218,58 @@ chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/force-resolution.sh" 2>/dev/null |
 chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-installer" 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-recovery" 2>/dev/null || true
 
+echo "=== Integrating THAID (Theonix AI Daemon) into ISO ==="
+# 1. Compile backend
+echo "Compiling THAID Rust backend..."
+cd /workdir/thaid
+cargo build --release
+mkdir -p "$PROFILE_DIR/airootfs/usr/bin"
+cp target/release/thaid "$PROFILE_DIR/airootfs/usr/bin/"
+
+# 2. Copy systemd and DBus services
+echo "Installing DBus & Systemd services..."
+mkdir -p "$PROFILE_DIR/airootfs/usr/lib/systemd/user"
+cp /workdir/thaid/data/thaid.service "$PROFILE_DIR/airootfs/usr/lib/systemd/user/"
+mkdir -p "$PROFILE_DIR/airootfs/usr/share/dbus-1/services"
+cp /workdir/thaid/data/org.theonix.AI.service "$PROFILE_DIR/airootfs/usr/share/dbus-1/services/"
+
+# 3. Copy GUI
+echo "Installing THAID Floating Orb GUI..."
+mkdir -p "$PROFILE_DIR/airootfs/usr/share/thaid-gui"
+cp -a /workdir/thaid-gui/* "$PROFILE_DIR/airootfs/usr/share/thaid-gui/"
+cat << 'EOF' > "$PROFILE_DIR/airootfs/usr/bin/thaid-gui"
+#!/bin/bash
+cd /usr/share/thaid-gui
+python main.py "$@"
+EOF
+chmod +x "$PROFILE_DIR/airootfs/usr/bin/thaid-gui"
+
+# 4. Create Desktop Entry & Autostart
+mkdir -p "$PROFILE_DIR/airootfs/usr/share/applications"
+mkdir -p "$PROFILE_DIR/airootfs/etc/xdg/autostart"
+cat << 'EOF' > "$PROFILE_DIR/airootfs/usr/share/applications/thaid-gui.desktop"
+[Desktop Entry]
+Name=Theonix AI Orb
+Comment=Floating AI Assistant
+Exec=/usr/bin/thaid-gui
+Icon=theonix-logo
+Terminal=false
+Type=Application
+Categories=Utility;
+EOF
+cp "$PROFILE_DIR/airootfs/usr/share/applications/thaid-gui.desktop" "$PROFILE_DIR/airootfs/etc/xdg/autostart/"
+
+# 5. Download Piper TTS & Voice Model
+echo "Downloading Piper TTS and Voice Model..."
+mkdir -p "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper"
+curl -sL "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz" | tar -xz -C "/tmp/"
+cp /tmp/piper/piper "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper/"
+cp -a /tmp/piper/espeak-ng-data "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper/" 2>/dev/null || true
+curl -sL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true" -o "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper/en_US-lessac-medium.onnx"
+curl -sL "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json?download=true" -o "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper/en_US-lessac-medium.onnx.json"
+chmod +x "$PROFILE_DIR/airootfs/usr/share/theonix/models/piper/piper"
+cd /workdir
+
 echo "Generating shadow/gshadow for live ISO..."
 bash /workdir/scripts/generate_shadow.sh "$PROFILE_DIR"
 
