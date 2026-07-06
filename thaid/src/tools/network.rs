@@ -35,7 +35,7 @@ pub fn get_network_tools() -> Vec<Value> {
                     "required": ["ssid"]
                 }
             }
-        })
+        }),
     ]
 }
 
@@ -46,32 +46,44 @@ pub async fn execute_network_tool(name: &str, args: &Value) -> Option<String> {
                 .args(["-t", "-f", "SSID,SECURITY,SIGNAL", "dev", "wifi"])
                 .output()
                 .await;
-                
+
             match output {
                 Ok(out) if out.status.success() => {
                     let text = String::from_utf8_lossy(&out.stdout);
-                    Some(format!("Available WiFi networks (SSID:SECURITY:SIGNAL):\n{}", text.trim()))
-                },
-                _ => Some("Failed to scan WiFi networks. Make sure NetworkManager is running.".to_string()),
+                    Some(format!(
+                        "Available WiFi networks (SSID:SECURITY:SIGNAL):\n{}",
+                        text.trim()
+                    ))
+                }
+                _ => Some(
+                    "Failed to scan WiFi networks. Make sure NetworkManager is running."
+                        .to_string(),
+                ),
             }
-        },
+        }
         "connect_wifi" => {
             let ssid = args.get("ssid").and_then(|v| v.as_str())?;
             let password = args.get("password").and_then(|v| v.as_str()).unwrap_or("");
-            
             let mut cmd = Command::new("nmcli");
             cmd.args(["dev", "wifi", "connect", ssid]);
             if !password.is_empty() {
                 cmd.args(["password", password]);
             }
-            
+
             let output = cmd.output().await;
             match output {
-                Ok(out) if out.status.success() => Some(format!("Successfully connected to WiFi network '{}'.", ssid)),
-                Ok(out) => Some(format!("Failed to connect to '{}'. Output: {}", ssid, String::from_utf8_lossy(&out.stderr))),
+                Ok(out) if out.status.success() => Some(format!(
+                    "Successfully connected to WiFi network '{}'.",
+                    ssid
+                )),
+                Ok(out) => Some(format!(
+                    "Failed to connect to '{}'. Output: {}",
+                    ssid,
+                    String::from_utf8_lossy(&out.stderr)
+                )),
                 Err(e) => Some(format!("Error running nmcli: {}", e)),
             }
-        },
+        }
         _ => None,
     }
 }

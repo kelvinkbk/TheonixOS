@@ -31,7 +31,7 @@ pub fn get_system_tools() -> Vec<Value> {
                     "required": ["command"]
                 }
             }
-        })
+        }),
     ]
 }
 
@@ -44,36 +44,36 @@ pub async fn execute_system_tool(name: &str, args: &Value) -> Option<String> {
                 .arg("echo 'CPU & Memory Info:'; top -b -n 1 | head -n 5; echo ''; free -m")
                 .output()
                 .await;
-            
+
             match output {
                 Ok(out) => Some(String::from_utf8_lossy(&out.stdout).to_string()),
                 Err(e) => Some(format!("Failed to get system info: {}", e)),
             }
-        },
+        }
         "run_os_command" => {
             if let Some(command) = args.get("command").and_then(|v| v.as_str()) {
-                let output = Command::new("bash")
-                    .arg("-c")
-                    .arg(command)
-                    .output()
-                    .await;
-                
+                let output = Command::new("bash").arg("-c").arg(command).output().await;
+
                 match output {
                     Ok(out) => {
                         let stdout = String::from_utf8_lossy(&out.stdout);
                         let stderr = String::from_utf8_lossy(&out.stderr);
+                        
                         if out.status.success() {
                             Some(format!("Success.\n{stdout}"))
                         } else {
-                            Some(format!("Failed (code {}).\n{stderr}", out.status.code().unwrap_or(1)))
+                            Some(format!(
+                                "Failed (code {}).\n{stderr}",
+                                out.status.code().unwrap_or(1)
+                            ))
                         }
-                    },
+                    }
                     Err(e) => Some(format!("Execution failed: {e}")),
                 }
             } else {
                 Some("Error: Missing command argument".to_string())
             }
-        },
+        }
         _ => None,
     }
 }

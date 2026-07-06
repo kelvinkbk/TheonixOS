@@ -19,7 +19,10 @@ impl PiperTts {
     /// Convert text to speech and save to output_path (WAV).
     pub async fn synthesize(&self, text: &str, output_path: &PathBuf) -> Result<()> {
         if !self.voice_model_path.exists() {
-            anyhow::bail!("Piper voice model not found at {}", self.voice_model_path.display());
+            anyhow::bail!(
+                "Piper voice model not found at {}",
+                self.voice_model_path.display()
+            );
         }
 
         info!(chars = text.len(), "Synthesizing speech");

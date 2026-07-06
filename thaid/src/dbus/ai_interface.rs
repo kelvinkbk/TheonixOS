@@ -2,8 +2,8 @@
 // thaid — D-Bus Interface: org.theonix.AI
 // =============================================================================
 
+use crate::voice::{piper::PiperTts, whisper::WhisperTranscriber};
 use crate::{config::ThaidConfig, memory::ConversationStore, models::ModelManager};
-use crate::voice::{whisper::WhisperTranscriber, piper::PiperTts};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -30,7 +30,7 @@ impl AIInterface {
     ) -> Self {
         let whisper = WhisperTranscriber::new(config.whisper_model.clone());
         let piper = PiperTts::new(config.piper_voice_path.clone());
-        
+
         Self {
             config,
             model_manager,
@@ -45,7 +45,10 @@ impl AIInterface {
 impl AIInterface {
     /// Emit a proactive notification to the user's desktop.
     #[zbus(signal)]
-    pub async fn ambient_notification(ctxt: &zbus::SignalContext<'_>, message: &str) -> zbus::Result<()>;
+    pub async fn ambient_notification(
+        ctxt: &zbus::SignalContext<'_>,
+        message: &str,
+    ) -> zbus::Result<()>;
     /// Send a text prompt and receive the full response synchronously.
     ///
     /// Parameters:
@@ -110,7 +113,7 @@ impl AIInterface {
             .arg("qdbus org.kde.KWin /KWin supportInformation | grep -A 5 'Active Window'")
             .output()
             .await;
-            
+
         if let Ok(out) = active_window_output {
             let info = String::from_utf8_lossy(&out.stdout).to_string();
             if !info.trim().is_empty() {
@@ -123,7 +126,14 @@ impl AIInterface {
         let lower_prompt = prompt.to_lowercase();
         let routed_model = if model_override.is_some() {
             model_override.clone()
-        } else if lower_prompt.contains("code") || lower_prompt.contains("rust") || lower_prompt.contains("python") || lower_prompt.contains("bug") || lower_prompt.contains("compile") || lower_prompt.contains("error") || lower_prompt.contains("script") {
+        } else if lower_prompt.contains("code")
+            || lower_prompt.contains("rust")
+            || lower_prompt.contains("python")
+            || lower_prompt.contains("bug")
+            || lower_prompt.contains("compile")
+            || lower_prompt.contains("error")
+            || lower_prompt.contains("script")
+        {
             info!("Routing query to Coding Specialist (qwen2.5-coder:7b)");
             Some("qwen2.5-coder:7b".to_string())
         } else {
@@ -245,12 +255,16 @@ impl AIInterface {
     async fn transcribe(&self, audio_path: String) -> zbus::fdo::Result<String> {
         let path = PathBuf::from(&audio_path);
         if !path.exists() {
-            return Err(zbus::fdo::Error::InvalidArgs(format!("Audio file not found: {}", audio_path)));
+            return Err(zbus::fdo::Error::InvalidArgs(format!(
+                "Audio file not found: {}",
+                audio_path
+            )));
         }
-        
-        self.whisper.transcribe(&path).await.map_err(|e| {
-            zbus::fdo::Error::Failed(format!("Transcription failed: {e}"))
-        })
+
+        self.whisper
+            .transcribe(&path)
+            .await
+            .map_err(|e| zbus::fdo::Error::Failed(format!("Transcription failed: {e}")))
     }
 
     /// Synthesize speech from text and save to a WAV file.
@@ -262,8 +276,9 @@ impl AIInterface {
     /// Returns: Result<()>
     async fn synthesize(&self, text: String, output_path: String) -> zbus::fdo::Result<()> {
         let path = PathBuf::from(&output_path);
-        self.piper.synthesize(&text, &path).await.map_err(|e| {
-            zbus::fdo::Error::Failed(format!("TTS failed: {e}"))
-        })
+        self.piper
+            .synthesize(&text, &path)
+            .await
+            .map_err(|e| zbus::fdo::Error::Failed(format!("TTS failed: {e}")))
     }
 }

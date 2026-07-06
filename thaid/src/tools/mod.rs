@@ -1,16 +1,16 @@
-pub mod system;
-pub mod context;
-pub mod memory;
-pub mod vision;
-pub mod intent;
-pub mod settings;
-pub mod network;
 pub mod automation;
+pub mod context;
+pub mod intent;
+pub mod memory;
+pub mod network;
+pub mod settings;
+pub mod system;
+pub mod vision;
 
+use crate::memory::ConversationStore;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::memory::ConversationStore;
 
 pub fn get_all_tools() -> Vec<Value> {
     let mut tools = Vec::new();
@@ -25,7 +25,11 @@ pub fn get_all_tools() -> Vec<Value> {
     tools
 }
 
-pub async fn execute_tool(name: &str, args: &Value, mem: &Arc<RwLock<ConversationStore>>) -> Option<String> {
+pub async fn execute_tool(
+    name: &str,
+    args: &Value,
+    mem: &Arc<RwLock<ConversationStore>>,
+) -> Option<String> {
     if let Some(res) = system::execute_system_tool(name, args).await {
         return Some(res);
     }

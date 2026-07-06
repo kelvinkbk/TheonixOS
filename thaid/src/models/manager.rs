@@ -2,6 +2,8 @@
 // thaid — Model Manager (lazy loading + idle unload)
 // =============================================================================
 
+use crate::memory::ConversationStore;
+use crate::tools;
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -9,8 +11,6 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use tracing::{debug, info, warn};
-use crate::memory::ConversationStore;
-use crate::tools;
 
 /// Tracks the current state of a loaded model.
 #[derive(Debug, Clone, PartialEq)]
@@ -114,20 +114,18 @@ impl ModelManager {
 
     /// Send a query to the loaded model, optionally executing tools, and return the final response.
     pub async fn chat(
-        &self, 
-        history: &[(String, String)], 
-        prompt: &str, 
-        model: Option<&str>, 
-        memory: &Arc<RwLock<ConversationStore>>
+        &self,
+        history: &[(String, String)],
+        prompt: &str,
+        model: Option<&str>,
+        memory: &Arc<RwLock<ConversationStore>>,
     ) -> Result<String> {
         let model_name = self.ensure_loaded(model).await?;
 
-        let mut messages = vec![
-            serde_json::json!({
-                "role": "system",
-                "content": "You are THAID, the central AI nervous system for Theonix OS. Your personality is calm, highly intelligent, and extremely minimal. You speak only when useful. If you do not know something, you admit uncertainty immediately. Keep your answers extremely brief and direct. Never use markdown, bullet points, or long paragraphs because your output is spoken aloud via TTS. You have deep control over the operating system through tools. Do not offer platitudes or conversational filler."
-            })
-        ];
+        let mut messages = vec![serde_json::json!({
+            "role": "system",
+            "content": "You are THAID, the central AI nervous system for Theonix OS. Your personality is calm, highly intelligent, and extremely minimal. You speak only when useful. If you do not know something, you admit uncertainty immediately. Keep your answers extremely brief and direct. Never use markdown, bullet points, or long paragraphs because your output is spoken aloud via TTS. You have deep control over the operating system through tools. Do not offer platitudes or conversational filler."
+        })];
 
         for (role, content) in history {
             messages.push(serde_json::json!({
@@ -152,7 +150,10 @@ impl ModelManager {
 
         let is_openai = self.api_provider != "ollama";
         let chat_url = if is_openai {
-            format!("{}/chat/completions", self.api_base_url.trim_end_matches('/'))
+            format!(
+                "{}/chat/completions",
+                self.api_base_url.trim_end_matches('/')
+            )
         } else {
             format!("{}/api/chat", self.ollama_url.trim_end_matches('/'))
         };
@@ -164,9 +165,14 @@ impl ModelManager {
         }
 
         let resp = req
-            .send().await.context("Failed to send chat request")?
-            .error_for_status().context("API returned an error status")?
-            .json::<serde_json::Value>().await.context("Failed to parse API response")?;
+            .send()
+            .await
+            .context("Failed to send chat request")?
+            .error_for_status()
+            .context("API returned an error status")?
+            .json::<serde_json::Value>()
+            .await
+            .context("Failed to parse API response")?;
 
         let message = if is_openai {
             resp["choices"][0]["message"].clone()
@@ -193,7 +199,9 @@ impl ModelManager {
                         };
 
                         info!(tool = %name, "Executing AI tool call");
-                        if let Some(result_text) = crate::tools::execute_tool(name, &args, memory).await {
+                        if let Some(result_text) =
+                            crate::tools::execute_tool(name, &args, memory).await
+                        {
                             let mut t_res = serde_json::json!({
                                 "role": "tool",
                                 "name": name,
@@ -235,9 +243,14 @@ impl ModelManager {
             }
 
             let resp2 = req2
-                .send().await.context("Failed second chat request")?
-                .error_for_status().context("Second request error status")?
-                .json::<serde_json::Value>().await.context("Failed to parse second response")?;
+                .send()
+                .await
+                .context("Failed second chat request")?
+                .error_for_status()
+                .context("Second request error status")?
+                .json::<serde_json::Value>()
+                .await
+                .context("Failed to parse second response")?;
 
             let final_text_opt = if is_openai {
                 resp2["choices"][0]["message"]["content"].as_str()
@@ -248,7 +261,10 @@ impl ModelManager {
             if let Some(final_text) = final_text_opt {
                 let trimmed = final_text.trim();
                 if trimmed.is_empty() {
-                    return Ok("I have executed the command, but I don't have anything else to add.".to_string());
+                    return Ok(
+                        "I have executed the command, but I don't have anything else to add."
+                            .to_string(),
+                    );
                 }
                 return Ok(trimmed.to_string());
             }

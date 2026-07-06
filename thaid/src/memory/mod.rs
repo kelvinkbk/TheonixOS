@@ -170,13 +170,14 @@ impl ConversationStore {
     /// Retrieve all long-term memory facts.
     pub async fn get_all_facts(&self) -> Result<Vec<(String, String)>> {
         let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare("SELECT key, value FROM long_term_memory ORDER BY updated_at ASC")?;
-        
+        let mut stmt =
+            conn.prepare("SELECT key, value FROM long_term_memory ORDER BY updated_at ASC")?;
+
         let facts: Vec<(String, String)> = stmt
             .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
             .filter_map(|r| r.ok())
             .collect();
-            
+
         Ok(facts)
     }
 }
