@@ -3,10 +3,9 @@
 // =============================================================================
 
 use crate::memory::ConversationStore;
-use crate::tools;
 use anyhow::{Context, Result};
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
