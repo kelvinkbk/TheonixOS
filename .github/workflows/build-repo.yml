@@ -93,7 +93,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./repo/x86_64
+          publish_dir: ./repo
           publish_branch: gh-pages
           force_orphan: true
           commit_message: "ci: update pacman repo [skip ci]"
