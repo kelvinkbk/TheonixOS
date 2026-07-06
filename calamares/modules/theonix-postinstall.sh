@@ -23,13 +23,18 @@ for service in \
     fi
 done
 
-# ---- 2. Mask live-ISO-only services -----------------------------------------
+# ---- 2. Mask live-ISO-only services & remove autostarts -----------------------
 for service in \
     livecd-talk \
     choose-mirror \
     pacman-init; do
     systemctl mask "$service" 2>/dev/null && echo "  Masked: $service" || true
 done
+
+# Remove the Calamares installer autostart so it doesn't run on the installed OS
+rm -f /etc/xdg/autostart/calamares.desktop
+rm -f /etc/xdg/autostart/pin-installer.desktop
+echo "  Removed live-ISO autostart entries"
 
 # ---- 3. Set SDDM theme -----------------------------------------------------
 mkdir -p /etc/sddm.conf.d
