@@ -24,6 +24,8 @@ RUN pacman -Sy --noconfirm archlinux-keyring && \
         reflector \
         rust \
         cargo \
+        gcc \
+        pkgconf \
         curl && \
     # Clean package cache to reduce image size
     pacman -Scc --noconfirm && \
