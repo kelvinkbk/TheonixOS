@@ -223,6 +223,7 @@ echo "=== Integrating THAID (Theonix AI Daemon) into ISO ==="
 echo "Installing THAID Floating Orb GUI..."
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/thaid-gui"
 cp -a /workdir/thaid-gui/* "$PROFILE_DIR/airootfs/usr/share/thaid-gui/"
+mkdir -p "$PROFILE_DIR/airootfs/usr/bin"
 cat << 'EOF' > "$PROFILE_DIR/airootfs/usr/bin/thaid-gui"
 #!/bin/bash
 cd /usr/share/thaid-gui
