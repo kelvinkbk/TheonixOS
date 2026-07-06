@@ -219,21 +219,7 @@ chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-installer" 2>/dev/null || 
 chmod +x "$PROFILE_DIR/airootfs/usr/local/bin/theonix-recovery" 2>/dev/null || true
 
 echo "=== Integrating THAID (Theonix AI Daemon) into ISO ==="
-# 1. Compile backend
-echo "Compiling THAID Rust backend..."
-cd /workdir/thaid
-cargo build --release
-mkdir -p "$PROFILE_DIR/airootfs/usr/bin"
-cp target/release/thaid "$PROFILE_DIR/airootfs/usr/bin/"
-
-# 2. Copy systemd and DBus services
-echo "Installing DBus & Systemd services..."
-mkdir -p "$PROFILE_DIR/airootfs/usr/lib/systemd/user"
-cp /workdir/thaid/data/thaid.service "$PROFILE_DIR/airootfs/usr/lib/systemd/user/"
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/dbus-1/services"
-cp /workdir/thaid/data/org.theonix.AI.service "$PROFILE_DIR/airootfs/usr/share/dbus-1/services/"
-
-# 3. Copy GUI
+# 1. Copy GUI
 echo "Installing THAID Floating Orb GUI..."
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/thaid-gui"
 cp -a /workdir/thaid-gui/* "$PROFILE_DIR/airootfs/usr/share/thaid-gui/"
