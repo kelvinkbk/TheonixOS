@@ -9,11 +9,27 @@
 # =============================================================================
 
 echo "==> grub-install-wrapper: Intercepting GRUB installation..."
-echo "==> Original arguments preserved, appending --no-nvram"
+echo "==> Original arguments preserved"
 
 udevadm trigger
 udevadm settle
 
-/usr/bin/grub-install "$@" --no-nvram
+/usr/bin/grub-install "$@"
+EXIT_CODE=$?
 
-echo "==> grub-install-wrapper: GRUB installed successfully to fallback path."
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "==> grub-install-wrapper: GRUB install failed with exit code $EXIT_CODE."
+    echo "==> Retrying with --no-nvram to bypass buggy UEFI firmware..."
+    /usr/bin/grub-install "$@" --no-nvram
+    RETRY_CODE=$?
+    if [ $RETRY_CODE -eq 0 ]; then
+        echo "==> grub-install-wrapper: GRUB installed successfully without NVRAM."
+        exit 0
+    else
+        echo "==> grub-install-wrapper: Fatal error installing GRUB."
+        exit $RETRY_CODE
+    fi
+else
+    echo "==> grub-install-wrapper: GRUB installed successfully with NVRAM entry."
+    exit 0
+fi
