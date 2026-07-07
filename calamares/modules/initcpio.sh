@@ -19,10 +19,7 @@ mkdir -p "${ROOT}/boot"
 
 # The kernel is mounted on the Live ISO at /run/archiso/bootmnt/theonix/boot/x86_64/vmlinuz-linux
 # If that path doesn't exist, fallback to the generic arch path
-KERNEL_SRC="/run/archiso/bootmnt/theonix/boot/x86_64/vmlinuz-linux"
-if [ ! -f "$KERNEL_SRC" ]; then
-    KERNEL_SRC="/run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux"
-fi
+KERNEL_SRC=$(find /run/archiso/ -type f \( -name "vmlinuz-linux" -o -name "vmlinuz" \) | head -n 1)
 
 if [ -f "$KERNEL_SRC" ]; then
     cp "$KERNEL_SRC" "${ROOT}/boot/vmlinuz-linux"
