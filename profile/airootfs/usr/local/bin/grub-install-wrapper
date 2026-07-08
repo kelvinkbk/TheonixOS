@@ -2,34 +2,81 @@
 # =============================================================================
 # Theonix OS — GRUB Install Wrapper
 # =============================================================================
-# This script intercepts Calamares' grub-install command to forcefully apply
-# the --removable flag and strip conflicting arguments like --bootloader-id.
-# This completely bypasses buggy EFI NVRAM implementations (like VirtualBox)
-# and guarantees a bootable system by installing to the default fallback path.
+# Intercepts Calamares' grub-install to handle edge cases:
+#   - VMware BIOS boot (add --no-floppy)
+#   - Buggy UEFI NVRAM (retry with --no-nvram)
+#   - Fallback to --removable for EFI
 # =============================================================================
 
 echo "==> grub-install-wrapper: Intercepting GRUB installation..."
-echo "==> Original arguments preserved"
+echo "==> Arguments: $@"
 
-udevadm trigger
-udevadm settle
+udevadm trigger 2>/dev/null || true
+udevadm settle 2>/dev/null || true
 
-/usr/bin/grub-install "$@"
-EXIT_CODE=$?
+# Detect if this is a BIOS or EFI install from the arguments
+IS_BIOS=0
+for arg in "$@"; do
+    case "$arg" in
+        --target=i386-pc) IS_BIOS=1 ;;
+    esac
+done
 
-if [ $EXIT_CODE -ne 0 ]; then
-    echo "==> grub-install-wrapper: GRUB install failed with exit code $EXIT_CODE."
-    echo "==> Retrying with --no-nvram to bypass buggy UEFI firmware..."
-    /usr/bin/grub-install "$@" --no-nvram
-    RETRY_CODE=$?
-    if [ $RETRY_CODE -eq 0 ]; then
-        echo "==> grub-install-wrapper: GRUB installed successfully without NVRAM."
+if [ $IS_BIOS -eq 1 ]; then
+    echo "==> grub-install-wrapper: BIOS mode detected"
+    # Try normal install first
+    /usr/bin/grub-install "$@" 2>&1
+    EXIT_CODE=$?
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "==> grub-install-wrapper: First attempt failed ($EXIT_CODE). Retrying with --no-floppy..."
+        /usr/bin/grub-install "$@" --no-floppy 2>&1
+        EXIT_CODE=$?
+    fi
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "==> grub-install-wrapper: Second attempt failed ($EXIT_CODE). Trying without --force..."
+        # Strip --force and --recheck, try clean
+        CLEAN_ARGS=()
+        for arg in "$@"; do
+            case "$arg" in
+                --force|--recheck) ;;
+                *) CLEAN_ARGS+=("$arg") ;;
+            esac
+        done
+        /usr/bin/grub-install "${CLEAN_ARGS[@]}" --no-floppy 2>&1
+        EXIT_CODE=$?
+    fi
+
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "==> grub-install-wrapper: GRUB installed successfully (BIOS)."
         exit 0
     else
-        echo "==> grub-install-wrapper: Fatal error installing GRUB."
-        exit $RETRY_CODE
+        echo "==> grub-install-wrapper: All BIOS attempts failed. Exit code: $EXIT_CODE"
+        exit $EXIT_CODE
     fi
 else
-    echo "==> grub-install-wrapper: GRUB installed successfully with NVRAM entry."
-    exit 0
+    echo "==> grub-install-wrapper: EFI mode detected"
+    /usr/bin/grub-install "$@" 2>&1
+    EXIT_CODE=$?
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "==> grub-install-wrapper: EFI install failed ($EXIT_CODE). Retrying with --no-nvram..."
+        /usr/bin/grub-install "$@" --no-nvram 2>&1
+        EXIT_CODE=$?
+    fi
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "==> grub-install-wrapper: Retrying with --removable --no-nvram..."
+        /usr/bin/grub-install "$@" --removable --no-nvram 2>&1
+        EXIT_CODE=$?
+    fi
+
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "==> grub-install-wrapper: GRUB installed successfully (EFI)."
+        exit 0
+    else
+        echo "==> grub-install-wrapper: All EFI attempts failed. Exit code: $EXIT_CODE"
+        exit $EXIT_CODE
+    fi
 fi
