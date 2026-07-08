@@ -23,18 +23,28 @@ for service in \
     fi
 done
 
-# ---- 2. Mask live-ISO-only services & remove autostarts -----------------------
-for service in \
-    livecd-talk \
-    choose-mirror \
-    pacman-init; do
+# ---- 2. Remove live-ISO-only services, users & autostarts -------------------
+for service in livecd-talk choose-mirror pacman-init; do
     systemctl mask "$service" 2>/dev/null && echo "  Masked: $service" || true
 done
+
+echo "  Cleaning up live user environment..."
+systemctl disable live-user.service 2>/dev/null || true
+systemctl stop live-user.service 2>/dev/null || true
+rm -f /etc/systemd/system/live-user.service
+rm -f /etc/systemd/system/multi-user.target.wants/live-user.service
+
+userdel -r theonix 2>/dev/null || true
+rm -rf /var/lib/AccountsService/users/theonix 2>/dev/null || true
+
+rm -f /etc/sddm.conf.d/autologin.conf 2>/dev/null || true
 
 # Remove the Calamares installer autostart so it doesn't run on the installed OS
 rm -f /etc/xdg/autostart/calamares.desktop
 rm -f /etc/xdg/autostart/pin-installer.desktop
-echo "  Removed live-ISO autostart entries"
+rm -f /etc/skel/.config/autostart/pin-installer.desktop
+rm -f /home/*/.config/autostart/pin-installer.desktop
+echo "  Removed live-ISO artifacts and autostart entries"
 
 # ---- 3. Set SDDM theme -----------------------------------------------------
 mkdir -p /etc/sddm.conf.d
@@ -105,10 +115,14 @@ GRUB_EOF
 grub-mkconfig -o /boot/grub/grub.cfg 2>/dev/null || \
     echo "  Warning: grub-mkconfig failed (may be OK if using systemd-boot)"
 
-# ---- 8. Create the first-boot wizard marker ---------------------------------
+# ---- 8. Create the first-boot wizard marker and clean MOTD ------------------
 mkdir -p /etc/theonix
 touch /etc/theonix/firstboot
 echo "  First-boot wizard marker created"
+
+echo "Welcome to Theonix OS" > /etc/motd
+echo "Theonix OS \r (\l)" > /etc/issue
+echo "  Cleaned MOTD branding"
 
 # ---- 9. Write Theonix OS os-release additions -------------------------------
 cat >> /etc/os-release << 'OSREL_EOF'

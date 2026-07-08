@@ -172,3 +172,10 @@ spectacle
 qt6-tools
 os-prober
 ntfs-3g
+mesa
+mesa-utils
+vulkan-icd-loader
+vulkan-tools
+vulkan-radeon
+vulkan-nouveau
+vulkan-mesa-implicit-layers
