@@ -94,6 +94,30 @@ User=theonix
 Session=plasma
 EOF
 
+# Ensure the canonical airootfs.sfs path exists for Calamares unpackfs.
+# This handles copytoram, Ventoy, and any non-standard boot method by
+# creating a symlink at boot time (before Calamares is launched).
+cat <<'EOF' > "$PROFILE_DIR/airootfs/etc/systemd/system/theonix-sfs-resolve.service"
+[Unit]
+Description=Resolve airootfs.sfs path for Calamares
+DefaultDependencies=no
+Before=calamares.service display-manager.service sddm.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c '\
+CANONICAL="/run/archiso/bootmnt/theonix/x86_64/airootfs.sfs"; \
+if [ -f "$CANONICAL" ]; then exit 0; fi; \
+SFS=$(find /run/archiso/ -name airootfs.sfs -type f 2>/dev/null | head -n1); \
+if [ -n "$SFS" ]; then mkdir -p "$(dirname "$CANONICAL")"; ln -sf "$SFS" "$CANONICAL"; fi'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+ln -sf /etc/systemd/system/theonix-sfs-resolve.service "$PROFILE_DIR/airootfs/etc/systemd/system/multi-user.target.wants/theonix-sfs-resolve.service"
+
 mkdir -p "$WORKDIR" "$OUTDIR"
 
 echo "Ensuring required packages are included..."

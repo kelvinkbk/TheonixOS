@@ -34,6 +34,14 @@ systemctl stop live-user.service 2>/dev/null || true
 rm -f /etc/systemd/system/live-user.service
 rm -f /etc/systemd/system/multi-user.target.wants/live-user.service
 
+# Remove the boot-time SFS resolver (live-only, not needed on installed system)
+systemctl disable theonix-sfs-resolve.service 2>/dev/null || true
+rm -f /etc/systemd/system/theonix-sfs-resolve.service
+rm -f /etc/systemd/system/multi-user.target.wants/theonix-sfs-resolve.service
+
+# Remove live-only NOPASSWD sudo rule
+rm -f /etc/sudoers.d/10-wheel-nopasswd
+
 userdel -r theonix 2>/dev/null || true
 rm -rf /var/lib/AccountsService/users/theonix 2>/dev/null || true
 
