@@ -131,6 +131,8 @@ wayland
 # KDE Plasma
 plasma-meta
 sddm
+qt6-5compat
+qt6-svg
 packagekit-qt6
 dolphin
 

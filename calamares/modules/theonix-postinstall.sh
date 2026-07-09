@@ -54,13 +54,20 @@ rm -f /etc/skel/.config/autostart/pin-installer.desktop
 rm -f /home/*/.config/autostart/pin-installer.desktop
 echo "  Removed live-ISO artifacts and autostart entries"
 
-# ---- 3. Set SDDM theme -----------------------------------------------------
+# ---- 3. Set SDDM theme and X11 fallback --------------------------------------
 mkdir -p /etc/sddm.conf.d
 cat > /etc/sddm.conf.d/theonix.conf << 'SDDM_EOF'
 [Theme]
 Current=theonix
+
+[General]
+DisplayServer=x11
 SDDM_EOF
-echo "  SDDM theme set to: theonix"
+echo "  SDDM theme set to: theonix (X11)"
+
+# Add environment variables to fix KWin Wayland in VMs
+echo "KWIN_DRM_NO_AMS=1" >> /etc/environment
+echo "  Disabled KWin Wayland Atomic Modesetting for VM compatibility"
 
 # ---- 4. Set Plymouth theme --------------------------------------------------
 if command -v plymouth-set-default-theme &>/dev/null; then
@@ -106,7 +113,7 @@ echo "  tmpfs /tmp enabled"
 # ---- 7. Set GRUB defaults for the installed system --------------------------
 cat > /etc/default/grub << 'GRUB_EOF'
 GRUB_DEFAULT=0
-GRUB_TIMEOUT=5
+GRUB_TIMEOUT=10
 GRUB_TIMEOUT_STYLE=menu
 GRUB_DISTRIBUTOR="Theonix OS"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 systemd.show_status=auto rd.udev.log_level=3 splash"
