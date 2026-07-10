@@ -1,8 +1,8 @@
 // =============================================================================
-// Theonix OS — SDDM Login Theme
+// Theonix OS — SDDM Login Theme (Stable Version)
 // =============================================================================
-// Design: Glassmorphism with animated clock, Theonix logo, and blur effects.
-// Compatible with SDDM >= 0.20
+// Design: Clean, modern translucent panels without shader-based blur.
+// 100% stable on software rendering (llvmpipe) and VMware.
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
@@ -15,7 +15,7 @@ Rectangle {
     height: Screen.height
 
     // =========================================================================
-    // Background with dynamic wallpaper
+    // Background
     // =========================================================================
     Image {
         id: wallpaper
@@ -24,6 +24,7 @@ Rectangle {
                       : Qt.resolvedUrl("assets/background.jpg")
         fillMode:     Image.PreserveAspectCrop
         antialiasing: true
+        asynchronous: true
     }
 
     // Dark overlay for readability
@@ -34,152 +35,139 @@ Rectangle {
     }
 
     // =========================================================================
-    // Live animated clock (top-right)
+    // Clock Widget (Top-Right)
     // =========================================================================
-    Item {
-        id: clockWidget
+    Column {
         anchors {
             top:    parent.top
             right:  parent.right
-            margins: 40
+            margins: 48
         }
-        width:  280
-        height: 100
+        spacing: 4
 
-        Column {
+        Text {
+            id: timeDisplay
             anchors.right: parent.right
-            spacing: 4
-
-            Text {
-                id: timeDisplay
-                anchors.right: parent.right
-                text:          Qt.formatTime(new Date(), "HH:mm")
-                font {
-                    pixelSize: 56
-                    weight:    Font.Light
-                    family:    "Inter"
-                }
-                color: "white"
-                style: Text.Raised
-                styleColor: "rgba(0,0,0,0.4)"
-
-                Timer {
-                    interval: 1000
-                    running:  true
-                    repeat:   true
-                    onTriggered: timeDisplay.text = Qt.formatTime(new Date(), "HH:mm")
-                }
+            text:          Qt.formatTime(new Date(), "HH:mm")
+            color:         "white"
+            font {
+                pixelSize: 64
+                weight:    Font.Light
+                family:    "Inter"
             }
+            style: Text.Raised
+            styleColor: "rgba(0,0,0,0.6)"
 
-            Text {
-                anchors.right: parent.right
-                text:          Qt.formatDate(new Date(), "dddd, MMMM d")
-                font {
-                    pixelSize: 15
-                    family:    "Inter"
-                }
-                color: "rgba(255,255,255,0.75)"
+            Timer {
+                interval: 1000
+                running:  true
+                repeat:   true
+                onTriggered: timeDisplay.text = Qt.formatTime(new Date(), "HH:mm")
+            }
+        }
+
+        Text {
+            anchors.right: parent.right
+            text:          Qt.formatDate(new Date(), "dddd, MMMM d")
+            color:         "rgba(255, 255, 255, 0.8)"
+            font {
+                pixelSize: 18
+                family:    "Inter"
+                weight:    Font.Normal
             }
         }
     }
 
     // =========================================================================
-    // Login Panel — Glassmorphism card, centred
+    // Login Panel (Center)
     // =========================================================================
     Rectangle {
         id: loginPanel
         anchors.centerIn: parent
-        width:  380
-        height: 480
-        radius: 20
+        width:  400
+        height: 460
+        radius: 24
 
-        // Glass background
-        color:  "transparent"
+        // Solid translucent background (No shader blur for 100% stability)
+        color: "rgba(10, 12, 24, 0.75)"
+        
         border {
-            color: "rgba(255,255,255,0.18)"
+            color: "rgba(255, 255, 255, 0.12)"
             width: 1
-        }
-
-        // Simple translucent background for VM compatibility (removed MultiEffect blur)
-        Rectangle {
-            anchors.fill: parent
-            radius:       20
-            color:        "rgba(255,255,255,0.08)"
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius:       20
-            color:        "rgba(255,255,255,0.08)"
         }
 
         ColumnLayout {
             anchors {
                 fill:    parent
-                margins: 36
+                margins: 40
             }
             spacing: 0
 
-            // ---- Theonix Logo ----
+            // ---- Logo ----
             Image {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 8
+                Layout.topMargin: 12
                 source: Qt.resolvedUrl("assets/logo.svg")
-                width:  64
-                height: 64
+                width:  72
+                height: 72
                 fillMode: Image.PreserveAspectFit
                 antialiasing: true
+                sourceSize.width: 144
+                sourceSize.height: 144
             }
 
-            // ---- Product Name ----
+            // ---- Title ----
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 12
+                Layout.topMargin: 20
                 text:  "Theonix OS"
+                color: "white"
                 font {
-                    pixelSize: 22
-                    weight:    Font.SemiBold
+                    pixelSize: 26
+                    weight:    Font.DemiBold
                     family:    "Inter"
                 }
-                color: "white"
             }
 
             // ---- Subtitle ----
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 4
-                text:  "Sign in to continue"
+                Layout.topMargin: 6
+                text:  "Welcome back"
+                color: "rgba(255, 255, 255, 0.6)"
                 font {
-                    pixelSize: 13
+                    pixelSize: 14
                     family:    "Inter"
                 }
-                color: "rgba(255,255,255,0.55)"
             }
 
-            Item { Layout.fillHeight: true; Layout.minimumHeight: 24 }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 30 }
 
-            // ---- User selector ----
+            // ---- User Selector ----
             ComboBox {
                 id: userSelect
                 Layout.fillWidth: true
-                Layout.topMargin: 4
+                Layout.preferredHeight: 48
                 model: userModel
                 textRole: "name"
                 currentIndex: userModel.lastIndex
 
                 contentItem: Text {
-                    leftPadding:  14
+                    leftPadding:  16
                     text:         userSelect.displayText
-                    font.pixelSize: 13
-                    font.family:  "Inter"
-                    color: "white"
+                    color:        "white"
+                    font {
+                        pixelSize: 14
+                        family:    "Inter"
+                        weight:    Font.Medium
+                    }
                     verticalAlignment: Text.AlignVCenter
                 }
 
                 background: Rectangle {
-                    color:  "rgba(255,255,255,0.1)"
-                    radius: 10
-                    border { color: "rgba(255,255,255,0.18)"; width: 1 }
+                    color:  "rgba(255, 255, 255, 0.05)"
+                    radius: 12
+                    border { color: "rgba(255, 255, 255, 0.1)"; width: 1 }
                 }
 
                 popup: Popup {
@@ -188,9 +176,9 @@ Rectangle {
                     implicitHeight: contentItem.implicitHeight + 8
 
                     background: Rectangle {
-                        color:  "#1A1D2E"
-                        radius: 10
-                        border { color: "rgba(255,255,255,0.15)"; width: 1 }
+                        color:  "#121420"
+                        radius: 12
+                        border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
                     }
 
                     contentItem: ListView {
@@ -202,98 +190,101 @@ Rectangle {
 
                 delegate: ItemDelegate {
                     width:  userSelect.width
-                    height: 40
+                    height: 44
 
                     contentItem: Text {
-                        leftPadding: 14
+                        leftPadding: 16
                         text:        modelData.name || ""
-                        font.pixelSize: 13
-                        font.family: "Inter"
-                        color: highlighted ? "#6C63FF" : "white"
+                        color:       highlighted ? "#7B73FF" : "white"
+                        font {
+                            pixelSize: 14
+                            family:    "Inter"
+                        }
                         verticalAlignment: Text.AlignVCenter
                     }
 
                     highlighted: userSelect.highlightedIndex === index
 
                     background: Rectangle {
-                        color: highlighted ? "rgba(108,99,255,0.15)" : "transparent"
-                        radius: 6
+                        color: highlighted ? "rgba(123, 115, 255, 0.1)" : "transparent"
+                        radius: 8
                     }
                 }
             }
 
-            // ---- Password field ----
+            // ---- Password Field ----
             TextField {
                 id: passwordField
                 Layout.fillWidth: true
                 Layout.topMargin: 12
+                Layout.preferredHeight: 48
                 echoMode:        TextInput.Password
                 placeholderText: "Password"
+                color:           "white"
+                placeholderTextColor: "rgba(255, 255, 255, 0.4)"
                 font {
-                    pixelSize: 13
+                    pixelSize: 14
                     family:    "Inter"
                 }
-                color:           "white"
-                placeholderTextColor: "rgba(255,255,255,0.4)"
 
                 background: Rectangle {
                     color:  passwordField.activeFocus
-                            ? "rgba(108,99,255,0.18)"
-                            : "rgba(255,255,255,0.10)"
-                    radius: 10
+                            ? "rgba(123, 115, 255, 0.1)"
+                            : "rgba(255, 255, 255, 0.05)"
+                    radius: 12
                     border {
-                        color: passwordField.activeFocus ? "#6C63FF" : "rgba(255,255,255,0.18)"
+                        color: passwordField.activeFocus ? "#7B73FF" : "rgba(255, 255, 255, 0.1)"
                         width: 1
                     }
-                    Behavior on color { ColorAnimation { duration: 200 } }
-                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: 250 } }
+                    Behavior on border.color { ColorAnimation { duration: 250 } }
                 }
 
                 Keys.onReturnPressed: loginButton.clicked()
                 Keys.onEnterPressed:  loginButton.clicked()
             }
 
-            // ---- Error message ----
+            // ---- Error Message ----
             Text {
                 id: errorText
                 Layout.alignment:  Qt.AlignHCenter
-                Layout.topMargin:  6
+                Layout.topMargin:  8
+                Layout.preferredHeight: 16
                 visible:           text.length > 0
                 text:              ""
-                font.pixelSize:    12
-                font.family:       "Inter"
-                color:             "#FF6B6B"
+                color:             "#FF5A5A"
+                font {
+                    pixelSize: 13
+                    family:    "Inter"
+                }
             }
 
-            Item { Layout.fillHeight: true; Layout.minimumHeight: 16 }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 20 }
 
-            // ---- Login button ----
+            // ---- Login Button ----
             Button {
                 id: loginButton
                 Layout.fillWidth: true
-                height: 46
-                text:   "Sign In"
-
-                font {
-                    pixelSize: 14
-                    weight:    Font.Medium
-                    family:    "Inter"
-                }
+                Layout.preferredHeight: 48
+                text: "Login"
 
                 background: Rectangle {
                     color:  loginButton.pressed ? "#5A52E0"
-                            : loginButton.hovered ? "#7B73FF" : "#6C63FF"
-                    radius: 10
-
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                            : loginButton.hovered ? "#857DFF" : "#6C63FF"
+                    radius: 12
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
 
                 contentItem: Text {
                     text:                loginButton.text
-                    font:                loginButton.font
                     color:               "white"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment:   Text.AlignVCenter
+                    font {
+                        pixelSize: 15
+                        weight:    Font.DemiBold
+                        family:    "Inter"
+                    }
                 }
 
                 onClicked: {
@@ -302,110 +293,113 @@ Rectangle {
                     sddm.login(user.name, passwordField.text, sessionIndex)
                 }
             }
-
-            Item { Layout.minimumHeight: 8 }
         }
     }
 
     // =========================================================================
-    // Session selector (bottom-left)
+    // Footer Controls (Sessions & Power)
     // =========================================================================
-    Row {
+    Item {
         anchors {
-            bottom:       parent.bottom
-            left:         parent.left
-            bottomMargin: 24
-            leftMargin:   28
+            bottom: parent.bottom
+            left:   parent.left
+            right:  parent.right
+            margins: 32
         }
-        spacing: 12
+        height: 48
 
-        Text {
-            text:             "Session:"
-            color:            "rgba(255,255,255,0.6)"
-            font.pixelSize:   12
-            font.family:      "Inter"
+        // ---- Session Selector (Left) ----
+        Row {
+            anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-        }
+            spacing: 16
 
-        ComboBox {
-            id: sessionCombo
-            width:  160
-            height: 32
-            model:  sessionModel
-            textRole: "name"
-            onCurrentIndexChanged: sessionIndex = currentIndex
-
-            contentItem: Text {
-                leftPadding: 10
-                text:        sessionCombo.displayText
-                font.pixelSize: 12
-                font.family: "Inter"
-                color:       "white"
-                verticalAlignment: Text.AlignVCenter
+            Text {
+                text:             "Session:"
+                color:            "rgba(255, 255, 255, 0.7)"
+                anchors.verticalCenter: parent.verticalCenter
+                font {
+                    pixelSize: 13
+                    family:    "Inter"
+                }
             }
 
-            background: Rectangle {
-                color:  "rgba(255,255,255,0.08)"
-                radius: 8
-                border { color: "rgba(255,255,255,0.15)"; width: 1 }
+            ComboBox {
+                id: sessionCombo
+                width:  160
+                height: 36
+                model:  sessionModel
+                textRole: "name"
+                onCurrentIndexChanged: sessionIndex = currentIndex
+
+                contentItem: Text {
+                    leftPadding: 12
+                    text:        sessionCombo.displayText
+                    color:       "white"
+                    verticalAlignment: Text.AlignVCenter
+                    font {
+                        pixelSize: 13
+                        family:    "Inter"
+                    }
+                }
+
+                background: Rectangle {
+                    color:  "rgba(0, 0, 0, 0.4)"
+                    radius: 8
+                    border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
+                }
+            }
+        }
+
+        // ---- Power Buttons (Right) ----
+        Row {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 12
+
+            Repeater {
+                model: [
+                    { text: "Restart",   action: function() { sddm.reboot()    } },
+                    { text: "Shut Down", action: function() { sddm.powerOff()  } }
+                ]
+
+                delegate: Button {
+                    height: 36
+                    width: 100
+                    
+                    contentItem: Text {
+                        text: modelData.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font {
+                            pixelSize: 13
+                            family:    "Inter"
+                            weight:    Font.Medium
+                        }
+                    }
+
+                    background: Rectangle {
+                        color: parent.hovered ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.4)"
+                        radius: 8
+                        border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
+                    onClicked: modelData.action()
+                }
             }
         }
     }
 
     // =========================================================================
-    // Power buttons (bottom-right)
-    // =========================================================================
-    Row {
-        anchors {
-            bottom:       parent.bottom
-            right:        parent.right
-            bottomMargin: 24
-            rightMargin:  28
-        }
-        spacing: 12
-
-        Repeater {
-            model: [
-                { text: "⏻", tip: "Shut Down",  action: function() { sddm.powerOff()  } },
-                { text: "↻", tip: "Restart",    action: function() { sddm.reboot()    } },
-            ]
-
-            delegate: Rectangle {
-                width: 40; height: 40; radius: 20
-                color: powerMouse.containsMouse
-                       ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)"
-                border { color: "rgba(255,255,255,0.18)"; width: 1 }
-
-                Behavior on color { ColorAnimation { duration: 150 } }
-
-                Text {
-                    anchors.centerIn: parent
-                    text:  modelData.text
-                    color: "white"
-                    font.pixelSize: 18
-                }
-
-                ToolTip.visible: powerMouse.containsMouse
-                ToolTip.text:    modelData.tip
-
-                MouseArea {
-                    id: powerMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked:    modelData.action()
-                }
-            }
-        }
-    }
-
-    // =========================================================================
-    // Authentication signal handler
+    // Signals & State
     // =========================================================================
     Connections {
         target: sddm
         function onLoginFailed() {
             passwordField.text = ""
-            errorText.text     = "Incorrect password — please try again"
+            errorText.text     = "Incorrect password, please try again."
             passwordField.forceActiveFocus()
         }
         function onLoginSucceeded() {
@@ -413,11 +407,6 @@ Rectangle {
         }
     }
 
-    // =========================================================================
-    // Focus on startup
-    // =========================================================================
     Component.onCompleted: passwordField.forceActiveFocus()
-
-    // Session index binding
     property int sessionIndex: sessionModel.lastIndex
 }
