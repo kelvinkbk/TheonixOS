@@ -18,6 +18,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
+      - name: Generate GRUB theme fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y grub-common fonts-dejavu
+          sudo mkdir -p profile/airootfs/usr/share/grub/themes/theonix/
+          sudo grub-mkfont -s 16 -o profile/airootfs/usr/share/grub/themes/theonix/dejavu16.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+          sudo grub-mkfont -s 14 -o profile/airootfs/usr/share/grub/themes/theonix/dejavu14.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+        
       - name: Cache mkarchiso working directory
         uses: actions/cache@v4
         with:
