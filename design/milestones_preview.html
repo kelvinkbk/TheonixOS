@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theonix OS - Design Previews</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap');
+        
+        :root {
+            --bg-color: #0d0d12;
+            --surface-color: #1a1a24;
+            --accent-color: #6C63FF;
+            --accent-glow: rgba(108, 99, 255, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 60px;
+        }
+
+        .preview-section {
+            background: var(--surface-color);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .preview-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        /* --- 1. FASTFETCH PREVIEW --- */
+        .terminal {
+            background-color: #000;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            gap: 30px;
+            color: #d8d8d8;
+        }
+        .term-logo {
+            color: #00ffff;
+            white-space: pre;
+            font-weight: bold;
+        }
+        .term-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .term-row span:first-child {
+            color: #00ffff;
+            font-weight: bold;
+            display: inline-block;
+            width: 90px;
+        }
+
+        /* --- 2. GRUB PREVIEW --- */
+        .grub-preview {
+            height: 400px;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .grub-menu {
+            width: 500px;
+            background: rgba(30, 30, 30, 0.7);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .grub-item {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        .grub-item.selected {
+            background-color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* --- 3. PLYMOUTH PREVIEW --- */
+        .plymouth-preview {
+            height: 400px;
+            background-color: #000;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- 4. WELCOME APP PREVIEW --- */
+        .app-preview {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            background: #2a2a35;
+            border-radius: 8px;
+        }
+        .welcome-window {
+            width: 700px;
+            background-color: #121212;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .window-header {
+            background: #1a1a1a;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .window-title {
+            margin: 0 auto;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .window-content {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .w-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+        }
+        .w-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .w-btn {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .w-btn:hover {
+            background-color: #2d2d2d;
+            border-color: var(--accent-color);
+        }
+        .w-btn strong { color: white; font-size: 16px; margin-bottom: 4px; }
+        .w-btn span { color: #a0a0a0; font-size: 12px; }
+        .w-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .w-close {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Theonix OS Milestones Preview</h1>
+
+    <div class="container">
+        
+        <!-- FASTFETCH -->
+        <div class="preview-section">
+            <h2>1. Fastfetch Terminal Branding</h2>
+            <div class="terminal">
+                <div class="term-logo">
+       ████████████████████████████
+       ████████████████████████████
+       ▀▀▀▀▀▀▀▀▀▀████████▀▀▀▀▀▀▀▀▀▀
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                 ████████
+                </div>
+                <div class="term-text">
+                    <div style="color:#00ffff; font-weight:bold; font-size: 16px; margin-bottom:10px;">user@theonix-os</div>
+                    <div class="term-row"><span>OS</span> 󰁔 Theonix OS x86_64</div>
+                    <div class="term-row"><span>Kernel</span> 󰁔 6.6.10-arch1-1</div>
+                    <div class="term-row"><span>Packages</span> 󰁔 1042 (pacman)</div>
+                    <div class="term-row"><span>Shell</span> 󰁔 bash 5.2.21</div>
+                    <div class="term-row"><span>Terminal</span> 󰁔 konsole</div>
+                    <div class="term-row"><span>DE</span> 󰁔 Plasma 6.0</div>
+                    <div class="term-row"><span>CPU</span> 󰁔 AMD Ryzen 9 7900X</div>
+                    <div class="term-row"><span>Memory</span> 󰁔 4096MiB / 32000MiB</div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <div style="width:20px;height:20px;background:#333;"></div>
+                        <div style="width:20px;height:20px;background:#ff5555;"></div>
+                        <div style="width:20px;height:20px;background:#50fa7b;"></div>
+                        <div style="width:20px;height:20px;background:#f1fa8c;"></div>
+                        <div style="width:20px;height:20px;background:#bd93f9;"></div>
+                        <div style="width:20px;height:20px;background:#00ffff;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUB -->
+        <div class="preview-section">
+            <h2>2. Custom GRUB Theme</h2>
+            <div class="grub-preview">
+                <div style="position:absolute; top:40px; font-size:30px; font-weight:bold; color:white;">THEONIX OS</div>
+                <div class="grub-menu">
+                    <div class="grub-item selected">Theonix OS</div>
+                    <div class="grub-item">Advanced options for Theonix OS</div>
+                    <div class="grub-item">Windows 11 (on /dev/nvme0n1p1)</div>
+                    <div class="grub-item">UEFI Firmware Settings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLYMOUTH -->
+        <div class="preview-section">
+            <h2>3. Plymouth Boot Splash</h2>
+            <div class="plymouth-preview">
+                <div style="font-size: 40px; font-weight:bold; color:white; letter-spacing: 5px;">THEONIX</div>
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- WELCOME APP -->
+        <div class="preview-section">
+            <h2>4. PyQt6 Welcome App</h2>
+            <div class="app-preview">
+                <div class="welcome-window">
+                    <div class="window-header">
+                        <div class="window-title">Welcome to Theonix OS</div>
+                    </div>
+                    <div class="window-content">
+                        <div class="w-title">Welcome to Theonix OS</div>
+                        <div class="w-subtitle">The AI-Powered Linux Experience. Here are a few things to get you started:</div>
+                        
+                        <div class="w-btn">
+                            <strong>📦 System Updates</strong>
+                            <span>Ensure your system is fully up to date.</span>
+                        </div>
+                        <div class="w-btn">
+                            <strong>🧠 Theonix AI Daemon (THAID)</strong>
+                            <span>Check the status of your built-in AI assistant.</span>
+                        </div>
+                        <div class="w-btn">
+                            <strong>🛍️ Install Software</strong>
+                            <span>Open KDE Discover to find apps.</span>
+                        </div>
+
+                        <div class="w-footer">
+                            <label style="color:#a0a0a0; display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" style="accent-color:#6C63FF; width:16px; height:16px;">
+                                Do not show this window again
+                            </label>
+                            <button class="w-close">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
