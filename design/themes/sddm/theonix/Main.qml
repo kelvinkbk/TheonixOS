@@ -168,47 +168,6 @@ Rectangle {
                     radius: 12
                     border { color: Qt.rgba(1.0, 1.0, 1.0, 0.09803921568627451); width: 1 }
                 }
-
-                popup: C.Popup {
-                    y:      userSelect.height + 4
-                    width:  userSelect.width
-                    implicitHeight: contentItem.implicitHeight + 8
-
-                    background: Rectangle {
-                        color:  Qt.rgba(0.07058823529411765, 0.0784313725490196, 0.12549019607843137, 1.0)
-                        radius: 12
-                        border { color: Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725); width: 1 }
-                    }
-
-                    contentItem: ListView {
-                        clip:  true
-                        model: userSelect.delegateModel
-                        implicitHeight: contentHeight
-                    }
-                }
-
-                delegate: C.ItemDelegate {
-                    width:  userSelect.width
-                    height: 44
-
-                    contentItem: Text {
-                        leftPadding: 16
-                        text:        modelData.name || ""
-                        color:       highlighted ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 1.0) : "white"
-                        font {
-                            pixelSize: 14
-                            family:    "Inter"
-                        }
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    highlighted: userSelect.highlightedIndex === index
-
-                    background: Rectangle {
-                        color: highlighted ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 0.09803921568627451) : "transparent"
-                        radius: 8
-                    }
-                }
             }
 
             // ---- Password Field ----
