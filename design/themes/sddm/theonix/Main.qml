@@ -15,12 +15,10 @@ Rectangle {
 
     // =========================================================================
     // Background
-    // =========================================================================
     Image {
         id: wallpaper
         anchors.fill: parent
-        source:       config.background !== "" ? Qt.resolvedUrl(config.background)
-                      : Qt.resolvedUrl("assets/background.jpg")
+        source:       Qt.resolvedUrl("assets/background.png")
         fillMode:     Image.PreserveAspectCrop
         antialiasing: true
         asynchronous: true
@@ -247,8 +245,7 @@ Rectangle {
 
                 onClicked: {
                     errorText.text = ""
-                    var user = userModel.get(userSelect.currentIndex)
-                    sddm.login(user.name, passwordField.text, sessionIndex)
+                    sddm.login(userSelect.currentText, passwordField.text, sessionIndex)
                 }
             }
         }
