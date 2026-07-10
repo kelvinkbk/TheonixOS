@@ -68,7 +68,8 @@ install_grub_uefi() {
     mkdir -p "$EFI_DIR"
 
     # Mount EFI partition if not already mounted
-    local EFI_PART=$(fdisk -l "$DISK" 2>/dev/null | grep -i 'EFI' | awk '{print $1}' | head -1)
+    local EFI_PART
+    EFI_PART=$(fdisk -l "$DISK" 2>/dev/null | grep -i 'EFI' | awk '{print $1}' | head -1)
     if [ -n "$EFI_PART" ] && ! mountpoint -q "$EFI_DIR" 2>/dev/null; then
         mount "$EFI_PART" "$EFI_DIR" 2>/dev/null || true
     fi
