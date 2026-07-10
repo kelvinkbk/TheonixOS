@@ -1,9 +1,10 @@
 name: Theonix OS ISO Build
 
 on:
-  push:
-    branches: [ "main", "dev" ]
-    tags: [ "v*.*.*" ]
+  workflow_run:
+    workflows: ["Build Custom Pacman Repository"]
+    types:
+      - completed
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:

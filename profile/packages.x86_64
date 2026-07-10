@@ -183,5 +183,6 @@ vulkan-nouveau
 vulkan-mesa-implicit-layers
 qt5-declarative
 qt5-quickcontrols2
-qt5-graphicaleffectstheonix-release
+qt5-graphicaleffects
+theonix-release
 theonix-welcome
