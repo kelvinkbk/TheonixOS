@@ -56,7 +56,7 @@ Rectangle {
                 family:    "Inter"
             }
             style: Text.Raised
-            styleColor: "rgba(0,0,0,0.6)"
+            styleColor: "#99000000"
 
             Timer {
                 interval: 1000
@@ -69,7 +69,7 @@ Rectangle {
         Text {
             anchors.right: parent.right
             text:          Qt.formatDate(new Date(), "dddd, MMMM d")
-            color:         "rgba(255, 255, 255, 0.8)"
+            color:         "#CCFFFFFF"
             font {
                 pixelSize: 18
                 family:    "Inter"
@@ -89,10 +89,10 @@ Rectangle {
         radius: 24
 
         // Solid translucent background (No shader blur for 100% stability)
-        color: "rgba(10, 12, 24, 0.75)"
+        color: "#BF0A0C18"
         
         border {
-            color: "rgba(255, 255, 255, 0.12)"
+            color: "#1EFFFFFF"
             width: 1
         }
 
@@ -134,7 +134,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: 6
                 text:  "Welcome back"
-                color: "rgba(255, 255, 255, 0.6)"
+                color: "#99FFFFFF"
                 font {
                     pixelSize: 14
                     family:    "Inter"
@@ -165,9 +165,9 @@ Rectangle {
                 }
 
                 background: Rectangle {
-                    color:  "rgba(255, 255, 255, 0.05)"
+                    color:  "#0CFFFFFF"
                     radius: 12
-                    border { color: "rgba(255, 255, 255, 0.1)"; width: 1 }
+                    border { color: "#19FFFFFF"; width: 1 }
                 }
 
                 popup: Popup {
@@ -178,7 +178,7 @@ Rectangle {
                     background: Rectangle {
                         color:  "#121420"
                         radius: 12
-                        border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
+                        border { color: "#26FFFFFF"; width: 1 }
                     }
 
                     contentItem: ListView {
@@ -206,7 +206,7 @@ Rectangle {
                     highlighted: userSelect.highlightedIndex === index
 
                     background: Rectangle {
-                        color: highlighted ? "rgba(123, 115, 255, 0.1)" : "transparent"
+                        color: highlighted ? "#197B73FF" : "transparent"
                         radius: 8
                     }
                 }
@@ -221,7 +221,7 @@ Rectangle {
                 echoMode:        TextInput.Password
                 placeholderText: "Password"
                 color:           "white"
-                placeholderTextColor: "rgba(255, 255, 255, 0.4)"
+                placeholderTextColor: "#66FFFFFF"
                 font {
                     pixelSize: 14
                     family:    "Inter"
@@ -229,11 +229,11 @@ Rectangle {
 
                 background: Rectangle {
                     color:  passwordField.activeFocus
-                            ? "rgba(123, 115, 255, 0.1)"
-                            : "rgba(255, 255, 255, 0.05)"
+                            ? "#197B73FF"
+                            : "#0CFFFFFF"
                     radius: 12
                     border {
-                        color: passwordField.activeFocus ? "#7B73FF" : "rgba(255, 255, 255, 0.1)"
+                        color: passwordField.activeFocus ? "#7B73FF" : "#19FFFFFF"
                         width: 1
                     }
                     Behavior on color { ColorAnimation { duration: 250 } }
@@ -316,7 +316,7 @@ Rectangle {
 
             Text {
                 text:             "Session:"
-                color:            "rgba(255, 255, 255, 0.7)"
+                color:            "#B2FFFFFF"
                 anchors.verticalCenter: parent.verticalCenter
                 font {
                     pixelSize: 13
@@ -344,9 +344,9 @@ Rectangle {
                 }
 
                 background: Rectangle {
-                    color:  "rgba(0, 0, 0, 0.4)"
+                    color:  "#66000000"
                     radius: 8
-                    border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
+                    border { color: "#26FFFFFF"; width: 1 }
                 }
             }
         }
@@ -380,9 +380,9 @@ Rectangle {
                     }
 
                     background: Rectangle {
-                        color: parent.hovered ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.4)"
+                        color: parent.hovered ? "#26FFFFFF" : "#66000000"
                         radius: 8
-                        border { color: "rgba(255, 255, 255, 0.15)"; width: 1 }
+                        border { color: "#26FFFFFF"; width: 1 }
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
