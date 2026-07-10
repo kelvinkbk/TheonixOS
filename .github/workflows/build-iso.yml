@@ -21,10 +21,9 @@ jobs:
       - name: Generate GRUB theme fonts
         run: |
           sudo apt-get update
-          sudo apt-get install -y grub-common fonts-dejavu
+          sudo apt-get install -y grub-common
           sudo mkdir -p profile/airootfs/usr/share/grub/themes/theonix/
-          sudo grub-mkfont -s 16 -o profile/airootfs/usr/share/grub/themes/theonix/dejavu16.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
-          sudo grub-mkfont -s 14 -o profile/airootfs/usr/share/grub/themes/theonix/dejavu14.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+          sudo cp /usr/share/grub/unicode.pf2 profile/airootfs/usr/share/grub/themes/theonix/font.pf2
         
       - name: Cache mkarchiso working directory
         uses: actions/cache@v4

@@ -5,7 +5,7 @@
 title-text: ""
 desktop-image: "background.png"
 terminal-box: "terminal_box_*.png"
-terminal-font: "DejaVu Sans Regular 14"
+terminal-font: "Unknown Regular 16"
 
 # ---------------------------------------------------------------------------
 # Boot Menu Box
@@ -16,7 +16,7 @@ terminal-font: "DejaVu Sans Regular 14"
   width = 700
   height = 300
   
-  item_font = "DejaVu Sans Regular 16"
+  item_font = "Unknown Regular 16"
   item_color = "#FFFFFF"
   selected_item_color = "#6C63FF"
   
