@@ -56,7 +56,7 @@ Rectangle {
                 family:    "Inter"
             }
             style: Text.Raised
-            styleColor: "#99000000"
+            styleColor: Qt.rgba(0.0, 0.0, 0.0, 0.6)
 
             Timer {
                 interval: 1000
@@ -69,7 +69,7 @@ Rectangle {
         Text {
             anchors.right: parent.right
             text:          Qt.formatDate(new Date(), "dddd, MMMM d")
-            color:         "#CCFFFFFF"
+            color:         Qt.rgba(1.0, 1.0, 1.0, 0.8)
             font {
                 pixelSize: 18
                 family:    "Inter"
@@ -89,10 +89,10 @@ Rectangle {
         radius: 24
 
         // Solid translucent background (No shader blur for 100% stability)
-        color: "#BF0A0C18"
+        color: Qt.rgba(0.0392156862745098, 0.047058823529411764, 0.09411764705882353, 0.7490196078431373)
         
         border {
-            color: "#1EFFFFFF"
+            color: Qt.rgba(1.0, 1.0, 1.0, 0.11764705882352941)
             width: 1
         }
 
@@ -134,7 +134,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: 6
                 text:  "Welcome back"
-                color: "#99FFFFFF"
+                color: Qt.rgba(1.0, 1.0, 1.0, 0.6)
                 font {
                     pixelSize: 14
                     family:    "Inter"
@@ -165,9 +165,9 @@ Rectangle {
                 }
 
                 background: Rectangle {
-                    color:  "#0CFFFFFF"
+                    color:  Qt.rgba(1.0, 1.0, 1.0, 0.047058823529411764)
                     radius: 12
-                    border { color: "#19FFFFFF"; width: 1 }
+                    border { color: Qt.rgba(1.0, 1.0, 1.0, 0.09803921568627451); width: 1 }
                 }
 
                 popup: Popup {
@@ -176,9 +176,9 @@ Rectangle {
                     implicitHeight: contentItem.implicitHeight + 8
 
                     background: Rectangle {
-                        color:  "#121420"
+                        color:  Qt.rgba(0.07058823529411765, 0.0784313725490196, 0.12549019607843137, 1.0)
                         radius: 12
-                        border { color: "#26FFFFFF"; width: 1 }
+                        border { color: Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725); width: 1 }
                     }
 
                     contentItem: ListView {
@@ -195,7 +195,7 @@ Rectangle {
                     contentItem: Text {
                         leftPadding: 16
                         text:        modelData.name || ""
-                        color:       highlighted ? "#7B73FF" : "white"
+                        color:       highlighted ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 1.0) : "white"
                         font {
                             pixelSize: 14
                             family:    "Inter"
@@ -206,7 +206,7 @@ Rectangle {
                     highlighted: userSelect.highlightedIndex === index
 
                     background: Rectangle {
-                        color: highlighted ? "#197B73FF" : "transparent"
+                        color: highlighted ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 0.09803921568627451) : "transparent"
                         radius: 8
                     }
                 }
@@ -221,7 +221,7 @@ Rectangle {
                 echoMode:        TextInput.Password
                 placeholderText: "Password"
                 color:           "white"
-                placeholderTextColor: "#66FFFFFF"
+                placeholderTextColor: Qt.rgba(1.0, 1.0, 1.0, 0.4)
                 font {
                     pixelSize: 14
                     family:    "Inter"
@@ -229,11 +229,11 @@ Rectangle {
 
                 background: Rectangle {
                     color:  passwordField.activeFocus
-                            ? "#197B73FF"
-                            : "#0CFFFFFF"
+                            ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 0.09803921568627451)
+                            : Qt.rgba(1.0, 1.0, 1.0, 0.047058823529411764)
                     radius: 12
                     border {
-                        color: passwordField.activeFocus ? "#7B73FF" : "#19FFFFFF"
+                        color: passwordField.activeFocus ? Qt.rgba(0.4823529411764706, 0.45098039215686275, 1.0, 1.0) : Qt.rgba(1.0, 1.0, 1.0, 0.09803921568627451)
                         width: 1
                     }
                     Behavior on color { ColorAnimation { duration: 250 } }
@@ -252,7 +252,7 @@ Rectangle {
                 Layout.preferredHeight: 16
                 visible:           text.length > 0
                 text:              ""
-                color:             "#FF5A5A"
+                color:             Qt.rgba(1.0, 0.35294117647058826, 0.35294117647058826, 1.0)
                 font {
                     pixelSize: 13
                     family:    "Inter"
@@ -269,8 +269,8 @@ Rectangle {
                 text: "Login"
 
                 background: Rectangle {
-                    color:  loginButton.pressed ? "#5A52E0"
-                            : loginButton.hovered ? "#857DFF" : "#6C63FF"
+                    color:  loginButton.pressed ? Qt.rgba(0.35294117647058826, 0.3215686274509804, 0.8784313725490196, 1.0)
+                            : loginButton.hovered ? Qt.rgba(0.5215686274509804, 0.49019607843137253, 1.0, 1.0) : Qt.rgba(0.4235294117647059, 0.38823529411764707, 1.0, 1.0)
                     radius: 12
                     Behavior on color { ColorAnimation { duration: 200 } }
                 }
@@ -316,7 +316,7 @@ Rectangle {
 
             Text {
                 text:             "Session:"
-                color:            "#B2FFFFFF"
+                color:            Qt.rgba(1.0, 1.0, 1.0, 0.6980392156862745)
                 anchors.verticalCenter: parent.verticalCenter
                 font {
                     pixelSize: 13
@@ -344,9 +344,9 @@ Rectangle {
                 }
 
                 background: Rectangle {
-                    color:  "#66000000"
+                    color:  Qt.rgba(0.0, 0.0, 0.0, 0.4)
                     radius: 8
-                    border { color: "#26FFFFFF"; width: 1 }
+                    border { color: Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725); width: 1 }
                 }
             }
         }
@@ -380,9 +380,9 @@ Rectangle {
                     }
 
                     background: Rectangle {
-                        color: parent.hovered ? "#26FFFFFF" : "#66000000"
+                        color: parent.hovered ? Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725) : Qt.rgba(0.0, 0.0, 0.0, 0.4)
                         radius: 8
-                        border { color: "#26FFFFFF"; width: 1 }
+                        border { color: Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725); width: 1 }
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
