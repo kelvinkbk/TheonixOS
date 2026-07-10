@@ -1,0 +1,4 @@
+* text=auto
+
+# Ensure GRUB config files use LF endings
+profile/airootfs/usr/share/grub/themes/theonix/theme.txt text eol=lf
