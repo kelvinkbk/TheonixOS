@@ -12,17 +12,9 @@ bg_sprite.SetX(0);
 bg_sprite.SetY(0);
 bg_sprite.SetZ(-100);
 
-# ── Logo ───────────────────────────────────────────────────────
-logo_img = Image("logo.png");
-logo_w   = logo_img.GetWidth();
-logo_h   = logo_img.GetHeight();
-logo_x   = (screen_width  - logo_w) / 2;
-logo_y   = (screen_height - logo_h) / 2 - 80;
-
-logo_sprite = Sprite(logo_img);
-logo_sprite.SetX(logo_x);
-logo_sprite.SetY(logo_y);
-logo_sprite.SetZ(10);
+# ── Logo (Removed fake PNG) ────────────────────────────────────
+logo_h   = 0;
+logo_y   = (screen_height) / 2 - 40;
 
 # ── "THEONIX" text label ───────────────────────────────────────
 label_img    = Image.Text("THEONIX  OS", 0.85, 0.75, 0.95, 0.9);
