@@ -67,11 +67,20 @@ install_grub_uefi() {
     local EFI_DIR="${ROOT}/boot/efi"
     mkdir -p "$EFI_DIR"
 
-    # Mount EFI partition if not already mounted
-    local EFI_PART
-    EFI_PART=$(fdisk -l "$DISK" 2>/dev/null | grep -i 'EFI' | awk '{print $1}' | head -1 || true)
-    if [ -n "$EFI_PART" ] && ! mountpoint -q "$EFI_DIR" 2>/dev/null; then
-        mount "$EFI_PART" "$EFI_DIR" 2>/dev/null || true
+    # Mount EFI partition if not already mounted by Calamares
+    if ! mountpoint -q "$EFI_DIR" 2>/dev/null; then
+        echo "==> bootloader: /boot/efi not mounted. Searching all disks for an EFI partition..."
+        local EFI_PART
+        EFI_PART=$(fdisk -l 2>/dev/null | grep -i 'EFI' | awk '{print $1}' | head -1 || true)
+        
+        if [ -n "$EFI_PART" ]; then
+            echo "==> bootloader: Found EFI partition at $EFI_PART. Mounting..."
+            mount "$EFI_PART" "$EFI_DIR" 2>/dev/null || true
+        else
+            echo "==> bootloader: WARNING: Could not find any EFI partition on the system!"
+        fi
+    else
+        echo "==> bootloader: /boot/efi is already mounted."
     fi
 
     # Try 1: Normal EFI install
