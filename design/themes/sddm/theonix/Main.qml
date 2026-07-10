@@ -19,7 +19,7 @@ Rectangle {
     Image {
         id: wallpaper
         anchors.fill: parent
-        source:       config.background !== "" ? config.background
+        source:       config.background !== "" ? Qt.resolvedUrl(config.background)
                       : Qt.resolvedUrl("assets/background.jpg")
         fillMode:     Image.PreserveAspectCrop
         antialiasing: true
