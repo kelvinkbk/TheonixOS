@@ -7,7 +7,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Effects 1.0
 import SddmComponents 2.0
 
 Rectangle {
@@ -101,12 +100,11 @@ Rectangle {
             width: 1
         }
 
-        // Blur effect (requires Qt 6 or QtGraphicalEffects)
-        layer.enabled:  true
-        layer.effect:   MultiEffect {
-            blurEnabled: true
-            blur:        0.9
-            blurMax:     32
+        // Simple translucent background for VM compatibility (removed MultiEffect blur)
+        Rectangle {
+            anchors.fill: parent
+            radius:       20
+            color:        "rgba(255,255,255,0.08)"
         }
 
         Rectangle {
