@@ -144,7 +144,7 @@ Rectangle {
             Item { Layout.fillHeight: true; Layout.minimumHeight: 30 }
 
             // ---- User Selector ----
-            ComboBox {
+            C.ComboBox {
                 id: userSelect
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
@@ -324,7 +324,7 @@ Rectangle {
                 }
             }
 
-            ComboBox {
+            C.ComboBox {
                 id: sessionCombo
                 width:  160
                 height: 36
