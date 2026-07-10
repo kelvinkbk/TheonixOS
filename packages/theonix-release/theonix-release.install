@@ -1,0 +1,7 @@
+post_install() {
+    /usr/share/libalpm/scripts/theonix-release-update
+}
+
+post_upgrade() {
+    post_install
+}

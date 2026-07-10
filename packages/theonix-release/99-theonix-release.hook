@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = filesystem
+
+[Action]
+Description = Enforcing Theonix OS release branding...
+When = PostTransaction
+Exec = /usr/share/libalpm/scripts/theonix-release-update

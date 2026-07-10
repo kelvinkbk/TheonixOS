@@ -1,0 +1,22 @@
+pkgname=theonix-release
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Theonix OS release and branding files"
+arch=('any')
+url="https://github.com/kelvinkbk/TheonixOS"
+license=('GPL')
+depends=('bash')
+install=theonix-release.install
+source=('os-release' 'lsb-release' '99-theonix-release.hook' 'theonix-release-update')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -d "$pkgdir/usr/share/theonix-release"
+    install -d "$pkgdir/usr/share/libalpm/hooks"
+    install -d "$pkgdir/usr/share/libalpm/scripts"
+
+    install -m644 os-release "$pkgdir/usr/share/theonix-release/os-release"
+    install -m644 lsb-release "$pkgdir/usr/share/theonix-release/lsb-release"
+    install -m644 99-theonix-release.hook "$pkgdir/usr/share/libalpm/hooks/99-theonix-release.hook"
+    install -m755 theonix-release-update "$pkgdir/usr/share/libalpm/scripts/theonix-release-update"
+}
