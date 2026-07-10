@@ -102,6 +102,9 @@ jobs:
       - name: Add .nojekyll to bypass Jekyll processing
         run: touch ./repo/.nojekyll
 
+      - name: Copy website to repo root
+        run: cp -r website/* ./repo/
+
       - name: Deploy repo to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
