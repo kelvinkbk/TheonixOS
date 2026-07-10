@@ -1,0 +1,58 @@
+# =============================================================================
+# Theonix OS — GRUB Bootloader Theme
+# =============================================================================
+
+title-text: ""
+desktop-image: "background.png"
+terminal-box: "terminal_box_*.png"
+terminal-font: "Inter Regular 14"
+
+# ---------------------------------------------------------------------------
+# Boot Menu Box
+# ---------------------------------------------------------------------------
++ boot_menu {
+  left = 50%-350
+  top = 50%-150
+  width = 700
+  height = 300
+  
+  item_font = "Inter Regular 16"
+  item_color = "#FFFFFF"
+  selected_item_color = "#6C63FF"
+  
+  item_height = 36
+  item_padding = 10
+  item_spacing = 6
+  
+  menu_pixmap_style = "menu_box_*.png"
+  
+  scrollbar = true
+  scrollbar_width = 10
+  scrollbar_thumb = "scrollbar_thumb_*.png"
+}
+
+# ---------------------------------------------------------------------------
+# Circular progress indicator (timeout)
+# ---------------------------------------------------------------------------
++ circular_progress {
+  left = 50%-32
+  top = 50%+180
+  width = 64
+  height = 64
+  
+  center_bitmap = "progress_center.png"
+  tick_bitmap = "progress_tick.png"
+  num_ticks = 12
+  ticks_disappear = true
+}
+
+# ---------------------------------------------------------------------------
+# Logo
+# ---------------------------------------------------------------------------
++ image {
+  left = 50%-100
+  top = 50%-280
+  width = 200
+  height = 90
+  file = "logo.png"
+}
