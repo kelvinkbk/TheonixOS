@@ -5,7 +5,7 @@
 // 100% stable on software rendering (llvmpipe) and VMware.
 
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Controls 2.15 as C
 import QtQuick.Layouts 1.15
 import SddmComponents 2.0
 
@@ -170,7 +170,7 @@ Rectangle {
                     border { color: Qt.rgba(1.0, 1.0, 1.0, 0.09803921568627451); width: 1 }
                 }
 
-                popup: Popup {
+                popup: C.Popup {
                     y:      userSelect.height + 4
                     width:  userSelect.width
                     implicitHeight: contentItem.implicitHeight + 8
@@ -188,7 +188,7 @@ Rectangle {
                     }
                 }
 
-                delegate: ItemDelegate {
+                delegate: C.ItemDelegate {
                     width:  userSelect.width
                     height: 44
 
@@ -213,7 +213,7 @@ Rectangle {
             }
 
             // ---- Password Field ----
-            TextField {
+            C.TextField {
                 id: passwordField
                 Layout.fillWidth: true
                 Layout.topMargin: 12
@@ -262,7 +262,7 @@ Rectangle {
             Item { Layout.fillHeight: true; Layout.minimumHeight: 20 }
 
             // ---- Login Button ----
-            Button {
+            C.Button {
                 id: loginButton
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
@@ -363,7 +363,7 @@ Rectangle {
                     { text: "Shut Down", action: function() { sddm.powerOff()  } }
                 ]
 
-                delegate: Button {
+                delegate: C.Button {
                     height: 36
                     width: 100
                     
