@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Welcome
+Comment=Welcome to Theonix OS
+Exec=/usr/bin/theonix-welcome
+Icon=system-help
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel

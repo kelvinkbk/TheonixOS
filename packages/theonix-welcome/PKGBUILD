@@ -1,0 +1,16 @@
+pkgname=theonix-welcome
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Welcome application for Theonix OS"
+arch=('any')
+url="https://github.com/kelvinkbk/TheonixOS"
+license=('GPL')
+depends=('python' 'python-pyqt6' 'konsole' 'discover')
+source=('theonix-welcome' 'theonix-welcome.desktop' 'autostart.desktop')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 theonix-welcome "$pkgdir/usr/bin/theonix-welcome"
+    install -Dm644 theonix-welcome.desktop "$pkgdir/usr/share/applications/theonix-welcome.desktop"
+    install -Dm644 autostart.desktop "$pkgdir/etc/xdg/autostart/theonix-welcome.desktop"
+}

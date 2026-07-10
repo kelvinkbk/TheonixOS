@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+import sys
+import os
+import subprocess
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
+                             QLabel, QPushButton, QCheckBox, QFrame, QSizePolicy)
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont, QIcon, QPixmap, QColor
+
+CONFIG_FILE = os.path.expanduser("~/.config/theonix-welcome.conf")
+
+class TheonixWelcome(QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        # Check if user asked to not show again
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r") as f:
+                if "show=false" in f.read():
+                    sys.exit(0)
+
+        self.initUI()
+        
+    def initUI(self):
+        self.setWindowTitle("Welcome to Theonix OS")
+        self.setFixedSize(700, 480)
+        
+        # Dark Theme Styling
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #121212;
+                color: #FFFFFF;
+                font-family: 'Inter', sans-serif;
+            }
+            QLabel#title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #6C63FF;
+                margin-top: 10px;
+            }
+            QLabel#subtitle {
+                font-size: 14px;
+                color: #A0A0A0;
+                margin-bottom: 20px;
+            }
+            QPushButton {
+                background-color: #1E1E1E;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                text-align: left;
+            }
+            QPushButton:hover {
+                background-color: #2D2D2D;
+                border: 1px solid #6C63FF;
+            }
+            QPushButton:pressed {
+                background-color: #1A1A1A;
+            }
+            QCheckBox {
+                font-size: 13px;
+                color: #A0A0A0;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                border: 1px solid #6C63FF;
+                background-color: #1E1E1E;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #6C63FF;
+            }
+        """)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(40, 40, 40, 20)
+        layout.setSpacing(15)
+
+        # Header
+        title = QLabel("Welcome to Theonix OS")
+        title.setObjectName("title")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        subtitle = QLabel("The AI-Powered Linux Experience. Here are a few things to get you started:")
+        subtitle.setObjectName("subtitle")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setWordWrap(True)
+
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+
+        # Buttons
+        btn_update = self.create_button("📦 System Updates", "Ensure your system is fully up to date.")
+        btn_update.clicked.connect(self.run_update)
+
+        btn_thaid = self.create_button("🧠 Theonix AI Daemon (THAID)", "Check the status of your built-in AI assistant.")
+        btn_thaid.clicked.connect(self.run_thaid_check)
+        
+        btn_software = self.create_button("🛍️ Install Software", "Open KDE Discover to find apps.")
+        btn_software.clicked.connect(self.run_discover)
+
+        layout.addWidget(btn_update)
+        layout.addWidget(btn_thaid)
+        layout.addWidget(btn_software)
+
+        layout.addStretch()
+
+        # Bottom Bar
+        bottom_layout = QHBoxLayout()
+        
+        self.checkbox = QCheckBox("Do not show this window again")
+        self.checkbox.stateChanged.connect(self.toggle_autostart)
+        
+        close_btn = QPushButton("Close")
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6C63FF;
+                color: white;
+                border: none;
+                text-align: center;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #5A52D9;
+            }
+        """)
+        close_btn.clicked.connect(self.close)
+
+        bottom_layout.addWidget(self.checkbox)
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(close_btn)
+
+        layout.addLayout(bottom_layout)
+        self.setLayout(layout)
+
+    def create_button(self, title, desc):
+        btn = QPushButton()
+        btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        
+        btn_layout = QVBoxLayout(btn)
+        btn_layout.setContentsMargins(15, 10, 15, 10)
+        btn_layout.setSpacing(2)
+        
+        lbl_title = QLabel(title)
+        lbl_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF; background: transparent; border: none;")
+        
+        lbl_desc = QLabel(desc)
+        lbl_desc.setStyleSheet("font-size: 12px; color: #A0A0A0; background: transparent; border: none;")
+        
+        btn_layout.addWidget(lbl_title)
+        btn_layout.addWidget(lbl_desc)
+        
+        return btn
+
+    def run_update(self):
+        subprocess.Popen(['konsole', '-e', 'sudo pacman -Syu'])
+
+    def run_thaid_check(self):
+        subprocess.Popen(['konsole', '-e', 'systemctl status thaid'])
+
+    def run_discover(self):
+        subprocess.Popen(['plasma-discover'])
+
+    def toggle_autostart(self):
+        if self.checkbox.isChecked():
+            with open(CONFIG_FILE, "w") as f:
+                f.write("show=false\n")
+        else:
+            if os.path.exists(CONFIG_FILE):
+                os.remove(CONFIG_FILE)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = TheonixWelcome()
+    ex.show()
+    sys.exit(app.exec())
