@@ -66,6 +66,18 @@ jobs:
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
             
+            # Build theonix-welcome
+            cd /workdir/packages/theonix-welcome
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            sudo pacman -U --noconfirm *.pkg.tar.zst
+
+            # Build theonix-branding
+            cd /workdir/packages/theonix-branding
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            sudo pacman -U --noconfirm *.pkg.tar.zst
+            
             # Build theonix-uacl
             cd /workdir/packages/theonix-uacl
             sudo -u builduser makepkg -s --noconfirm
@@ -82,10 +94,7 @@ jobs:
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
             
-            # Build theonix-welcome
-            cd /workdir/packages/theonix-welcome
-            sudo -u builduser makepkg -s --noconfirm
-            cp *.pkg.tar.zst /workdir/repo/x86_64/
+
             
             # Build theonix-release
             cd /workdir/packages/theonix-release

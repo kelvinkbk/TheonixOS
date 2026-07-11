@@ -1,0 +1,28 @@
+pkgname=theonix-branding
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Theonix OS official branding themes for GRUB, Plymouth, and SDDM"
+arch=('any')
+url="https://github.com/kelvinkbk/Theonix-OS"
+license=('MIT')
+depends=('grub' 'plymouth' 'sddm')
+source=("local-source::git+file://${PWD%/*/*}/.git") # Placeholder
+md5sums=('SKIP')
+
+package() {
+    # Install GRUB theme
+    mkdir -p "$pkgdir/usr/share/grub/themes/theonix"
+    cp -r "$srcdir/local-source/design/themes/grub/theonix/"* "$pkgdir/usr/share/grub/themes/theonix/"
+    
+    # Install Plymouth theme
+    mkdir -p "$pkgdir/usr/share/plymouth/themes/theonix"
+    cp -r "$srcdir/local-source/design/themes/plymouth/theonix/"* "$pkgdir/usr/share/plymouth/themes/theonix/"
+    
+    # Install SDDM theme
+    mkdir -p "$pkgdir/usr/share/sddm/themes/theonix"
+    cp -r "$srcdir/local-source/design/themes/sddm/theonix/"* "$pkgdir/usr/share/sddm/themes/theonix/"
+    
+    # Ensure correct permissions
+    find "$pkgdir" -type f -exec chmod 644 {} \;
+    find "$pkgdir" -type d -exec chmod 755 {} \;
+}
