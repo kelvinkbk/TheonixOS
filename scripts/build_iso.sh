@@ -130,18 +130,7 @@ sed -i '/^grub-btrfs$/d' "$PROFILE_DIR/packages.x86_64"
 
 # Removed manual copy to etc/theonix as it is provided by theonix-config package
 echo "Installing custom design themes..."
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/sddm/themes"
-cp -a /workdir/design/themes/sddm/theonix "$PROFILE_DIR/airootfs/usr/share/sddm/themes/" 2>/dev/null || true
-
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/plymouth/themes"
-cp -a /workdir/design/themes/plymouth/theonix "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/" 2>/dev/null || true
-# Ensure background.png exists for the Plymouth script theme
-if [ ! -f "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/theonix/background.png" ]; then
-    cp /workdir/design/themes/kde/theonix/contents/images/3840x2160.png \
-        "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/theonix/background.png" 2>/dev/null || \
-    cp "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/theonix/logo.png" \
-        "$PROFILE_DIR/airootfs/usr/share/plymouth/themes/theonix/background.png" 2>/dev/null || true
-fi
+# Themes are now installed via the theonix-branding package, so we don't copy sddm/plymouth/grub directly to airootfs anymore.
 
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/plasma/look-and-feel"
 cp -a /workdir/design/themes/kde/theonix "$PROFILE_DIR/airootfs/usr/share/plasma/look-and-feel/org.theonix.desktop" 2>/dev/null || true
@@ -152,9 +141,6 @@ cp -a /workdir/design/themes/kde/theonix/colors/Theonix.colors "$PROFILE_DIR/air
 mkdir -p "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/contents/images"
 cp -a /workdir/design/themes/kde/theonix/contents/images/3840x2160.png "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/contents/images/" 2>/dev/null || true
 cp -a /workdir/design/themes/kde/wallpaper_metadata.desktop "$PROFILE_DIR/airootfs/usr/share/wallpapers/Theonix/metadata.desktop" 2>/dev/null || true
-
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/grub/themes"
-cp -a /workdir/design/themes/grub/theonix "$PROFILE_DIR/airootfs/usr/share/grub/themes/" 2>/dev/null || true
 
 echo "Applying dark theme to root user for Calamares pkexec compatibility..."
 mkdir -p "$PROFILE_DIR/airootfs/root/.config"
