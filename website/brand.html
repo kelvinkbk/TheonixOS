@@ -35,6 +35,17 @@
   <link rel="stylesheet" href="assets/css/theonix.min.css" />
   <script defer src="assets/js/components.js"></script>
   <script defer src="assets/js/main.js"></script>
+  <link rel="preload" href="assets/img/logo.svg" as="image" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Theonix OS",
+    "url": "https://theonixos.xyz/"
+  }
+  </script>
 </head>
 
 <body>
@@ -65,11 +76,11 @@
 
         <div class="grid sm:grid-cols-2 gap-6 mt-10">
           <div class="card p-10 grid place-items-center reveal" style="background:linear-gradient(160deg,#0b1120,#070b14)">
-            <img src="assets/img/logo.svg" width="72" height="72" alt="Theonix OS logo" />
+            <img loading="lazy" src="assets/img/logo.svg" width="72" height="72" alt="Theonix OS logo" />
             <p class="text-faint text-sm mt-5 font-mono">On dark surface</p>
           </div>
           <div class="card p-10 grid place-items-center reveal" data-delay="90" style="background:linear-gradient(160deg,#eef3ff,#c9d6f0)">
-            <img src="assets/img/logo.svg" width="72" height="72" alt="Theonix OS logo on a light background" />
+            <img loading="lazy" src="assets/img/logo.svg" width="72" height="72" alt="Theonix OS logo on a light background" />
             <p class="text-sm mt-5 font-mono" style="color:#3b4666">On light surface</p>
           </div>
         </div>

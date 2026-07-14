@@ -20,6 +20,17 @@
   <link rel="stylesheet" href="assets/css/theonix.min.css" />
   <script defer src="assets/js/components.js"></script>
   <script defer src="assets/js/main.js"></script>
+  <link rel="preload" href="assets/img/logo.svg" as="image" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Theonix OS",
+    "url": "https://theonixos.xyz/"
+  }
+  </script>
 </head>
 
 <body>
@@ -29,7 +40,7 @@
 
   <main id="main" class="min-h-screen grid place-items-center px-5">
     <div class="text-center max-w-lg">
-      <img src="assets/img/logo.svg" alt="" width="56" height="56" class="mx-auto" style="filter:drop-shadow(0 0 18px rgba(34,211,238,0.6))" />
+      <img loading="lazy" src="assets/img/logo.svg" alt="" width="56" height="56" class="mx-auto" style="filter:drop-shadow(0 0 18px rgba(34,211,238,0.6))" />
       <p class="eyebrow justify-center mt-6">Error 404</p>
       <h1 class="heading-hero font-display font-bold mt-3 text-gradient">Page not found</h1>
       <p class="lead mt-4">The page you&rsquo;re looking for drifted off into deep space. Let&rsquo;s get you back on course.</p>
