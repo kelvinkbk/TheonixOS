@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://theonixos.xyz/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://theonixos.xyz/download.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://theonixos.xyz/download-start.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://theonixos.xyz/features.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://theonixos.xyz/screenshots.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://theonixos.xyz/documentation.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://theonixos.xyz/verify.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/roadmap.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/changelog.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/release-notes.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/community.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/contributors.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://theonixos.xyz/faq.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://theonixos.xyz/blog.html</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://theonixos.xyz/about.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://theonixos.xyz/brand.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+</urlset>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap — Theonix OS</title>
+  <meta name="description" content="Where Theonix OS stands today and where it's headed: what shipped in 1.0 &ldquo;Genesis&rdquo;, what's in progress, and what we're planning and exploring next." />
+  <meta name="keywords" content="Theonix OS, roadmap, Arch Linux, KDE Plasma 6, Wayland, AI assistant, ARM64, rolling release" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/roadmap.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="Roadmap — Theonix OS" />
+  <meta property="og:description" content="What shipped in 1.0, what's in progress, and what we're planning and exploring next." />
+  <meta property="og:url" content="https://theonixos.xyz/roadmap.html" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta property="og:image:alt" content="Theonix OS logo and tagline" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Roadmap — Theonix OS" />
+  <meta name="twitter:description" content="What shipped in 1.0, what's in progress, and what's planned next." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
+
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
+</head>
+
+<body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
+
+  <main id="main">
+    <!-- ===================== HEADER ===================== -->
+    <section class="pt-32 pb-12">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Roadmap</p>
+          <h1 class="heading-hero font-display font-bold mt-5">Where Theonix is, <span class="text-gradient">and where it's going</span>.</h1>
+          <p class="lead mt-6">Theonix OS 1.0 &ldquo;Genesis&rdquo; is the first public release. This page is an honest snapshot &mdash; what's already shipped, what we're actively working on, and what we're planning or still exploring. Plans are intentions, not promises.</p>
+          <div class="flex flex-wrap items-center gap-3 mt-8">
+            <a href="download.html" class="btn btn-primary">Download Theonix OS</a>
+            <a href="release-notes.html" class="btn btn-ghost">Read the 1.0 release notes</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STATUS GROUPS ===================== -->
+    <section class="section pt-4">
+      <div class="container-x">
+        <div class="grid lg:grid-cols-3 gap-6 items-start">
+
+          <!-- Shipped -->
+          <div class="card p-7 reveal">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="icon-badge">
+                  <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                </div>
+                <h2 class="font-display text-xl">Shipped in 1.0</h2>
+              </div>
+              <span class="badge badge-new">Done</span>
+            </div>
+            <p class="text-muted mt-4 text-[0.95rem] leading-relaxed">Delivered in the first public release, &ldquo;Genesis&rdquo;.</p>
+            <ul class="mt-5 space-y-3">
+              <li class="spec-row"><span class="v">Arch base bring-up</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Custom Calamares installer</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Custom package repository</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">KDE Plasma 6</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Wayland session</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Rolling release model</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Fastfetch branding</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Custom branding &amp; theme</span><span class="badge badge-new">Shipped</span></li>
+              <li class="spec-row"><span class="v">Improved bootloader / fixed GRUB install</span><span class="badge badge-new">Shipped</span></li>
+            </ul>
+          </div>
+
+          <!-- In progress -->
+          <div class="card p-7 reveal" data-delay="90">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="icon-badge">
+                  <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a9 9 0 1 0 9 9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg>
+                </div>
+                <h2 class="font-display text-xl">In progress</h2>
+              </div>
+              <span class="chip">Near-term</span>
+            </div>
+            <p class="text-muted mt-4 text-[0.95rem] leading-relaxed">Active work with no fixed dates &mdash; it lands when it's ready.</p>
+            <ul class="mt-5 space-y-3">
+              <li class="spec-row"><span class="v">Polishing the desktop experience</span><span class="badge">Active</span></li>
+              <li class="spec-row"><span class="v">Expanding the custom repository</span><span class="badge">Active</span></li>
+              <li class="spec-row"><span class="v">Documentation improvements</span><span class="badge">Active</span></li>
+              <li class="spec-row"><span class="v">More branded defaults</span><span class="badge">Active</span></li>
+            </ul>
+          </div>
+
+          <!-- Planned -->
+          <div class="card p-7 reveal" data-delay="180">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="icon-badge">
+                  <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3"/><circle cx="12" cy="12" r="4.5"/></svg>
+                </div>
+                <h2 class="font-display text-xl">Planned / exploring</h2>
+              </div>
+              <span class="badge badge-soon">Planned</span>
+            </div>
+            <p class="text-muted mt-4 text-[0.95rem] leading-relaxed">Ideas we intend to pursue. Not committed, not shipped.</p>
+            <ul class="mt-5 space-y-3">
+              <li class="spec-row"><span class="v">Local, privacy-respecting AI assistant</span><span class="badge badge-soon">Planned</span></li>
+              <li class="spec-row"><span class="v">ARM64 support (future)</span><span class="badge badge-soon">Exploring</span></li>
+              <li class="spec-row"><span class="v">Additional configuration tooling</span><span class="badge badge-soon">Planned</span></li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DISCLAIMER + CTA ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="card card-spot p-8 lg:p-12 reveal relative overflow-hidden">
+          <div class="glow-blob" style="width:30rem;height:30rem;top:-10rem;right:-6rem;background:rgba(108,99,255,0.12)" aria-hidden="true"></div>
+          <div class="relative max-w-3xl">
+            <h2 class="heading-2 font-display font-bold">This roadmap can change</h2>
+            <p class="lead mt-4">Everything above reflects our current intentions for Theonix OS. Priorities shift, and items in the &ldquo;planned&rdquo; and &ldquo;in progress&rdquo; groups may move, change shape, or be set aside. Nothing here is a delivery promise or a firm date.</p>
+            <p class="text-muted mt-4">Have an idea, a request or feedback? We develop in the open &mdash; tell us what matters to you.</p>
+            <div class="flex flex-wrap items-center gap-3 mt-8">
+              <a href="download.html" class="btn btn-primary">Download Theonix OS</a>
+              <a href="community.html" class="btn btn-ghost">Join the community</a>
+              <a href="https://github.com/theonix-os/theonix" rel="noopener" class="btn btn-ghost">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.09.68-.22.68-.48v-1.7c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.36 1.12 2.94.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.02 10.02 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>
+                Open an issue on GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+</body>
+</html>

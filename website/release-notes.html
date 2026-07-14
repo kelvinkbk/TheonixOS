@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release Notes — Theonix OS 1.0 Genesis</title>
+  <meta name="description" content="Detailed release notes for Theonix OS 1.0 &quot;Genesis&quot; — the first public release. Overview, highlights, what's included, download and verification, known considerations and what's next." />
+  <meta name="keywords" content="Theonix OS release notes, 1.0 Genesis, Arch Linux, KDE Plasma 6, Wayland, Calamares, Pacman, Flatpak, SHA256" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/release-notes.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="Release Notes — Theonix OS 1.0 Genesis" />
+  <meta property="og:description" content="Detailed release notes for the first public release of Theonix OS, version 1.0 &quot;Genesis&quot;." />
+  <meta property="og:url" content="https://theonixos.xyz/release-notes.html" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta property="og:image:alt" content="Theonix OS logo and tagline" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Release Notes — Theonix OS 1.0 Genesis" />
+  <meta name="twitter:description" content="Detailed release notes for Theonix OS 1.0 &quot;Genesis&quot;." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
+
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
+</head>
+
+<body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
+
+  <main id="main">
+    <!-- ===================== HEADER ===================== -->
+    <section class="pt-32 pb-12">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Release notes</p>
+          <div class="flex flex-wrap items-center gap-3 mt-5">
+            <span class="chip"><span class="dot" style="background:var(--theo-mint)"></span> Stable</span>
+            <span class="badge badge-new">First release</span>
+            <span class="chip font-mono">2026</span>
+          </div>
+          <h1 class="heading-hero font-display font-bold mt-6">Theonix OS 1.0 <span class="text-gradient">&ldquo;Genesis&rdquo;</span></h1>
+          <p class="lead mt-6">
+            The first public release of Theonix OS. This page collects the detailed notes for the
+            Genesis release &mdash; what it is, what it ships, how to install and verify it, and what
+            to keep in mind.
+          </p>
+          <div class="flex flex-wrap items-center gap-4 mt-8">
+            <a href="download.html" class="btn btn-primary">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              Download Theonix OS
+            </a>
+            <a href="changelog.html" class="btn btn-ghost">Back to changelog</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== OVERVIEW ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <h2 class="heading-2 font-display font-bold">Overview</h2>
+          <p class="text-muted mt-5 leading-relaxed">
+            Theonix OS is a modern, Arch-based Linux distribution. Version&nbsp;1.0 &ldquo;Genesis&rdquo;
+            is its first public release: a rolling system that pairs the Arch base and Pacman with a
+            KDE&nbsp;Plasma&nbsp;6 desktop on Wayland, a custom Calamares installer, its own package
+            repository and consistent Theonix branding throughout. The goal of Genesis is a desktop
+            that feels coherent from first boot &mdash; installer, repository, desktop and branding
+            tuned to work together &mdash; delivered as a free and open source project.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HIGHLIGHTS ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">What's new</p>
+          <h2 class="heading-2 font-display font-bold mt-4">Highlights</h2>
+          <p class="lead mt-4">The headline changes that make up the Genesis release.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-5 mt-12">
+          <article class="card card-hover p-7 reveal">
+            <h3 class="font-display text-xl">Initial public release</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Genesis is the first time Theonix OS is available to the public. It brings the whole system together into a single, installable release for x86_64 hardware.</p>
+          </article>
+          <article class="card card-hover p-7 reveal" data-delay="70">
+            <h3 class="font-display text-xl">Theonix branding &amp; theme</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A new visual identity and theme run across the desktop, giving Theonix a consistent look from the login screen to the applications you use every day.</p>
+          </article>
+          <article class="card card-hover p-7 reveal" data-delay="140">
+            <h3 class="font-display text-xl">Custom Calamares installer</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A branded Calamares installer handles partitioning, user creation and the bootloader. It takes you from the live session to an installed desktop in a few guided steps.</p>
+          </article>
+          <article class="card card-hover p-7 reveal">
+            <h3 class="font-display text-xl">Custom package repository</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Theonix ships its own package repository. It delivers the branding, defaults and tooling that make the system feel complete, alongside the standard Arch packages.</p>
+          </article>
+          <article class="card card-hover p-7 reveal" data-delay="70">
+            <h3 class="font-display text-xl">Fastfetch branding</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Fastfetch is configured with Theonix branding, so opening a terminal presents a clean, themed summary of your system information out of the box.</p>
+          </article>
+          <article class="card card-hover p-7 reveal" data-delay="140">
+            <h3 class="font-display text-xl">KDE Plasma 6 desktop</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Genesis is built around KDE&nbsp;Plasma&nbsp;6, a modern and highly configurable desktop environment that anchors the Theonix experience.</p>
+          </article>
+          <article class="card card-hover p-7 reveal">
+            <h3 class="font-display text-xl">Wayland by default</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">The Wayland session is enabled by default, providing a modern display stack for the Plasma&nbsp;6 desktop.</p>
+          </article>
+          <article class="card card-hover p-7 reveal" data-delay="70">
+            <h3 class="font-display text-xl">Improved bootloader &amp; GRUB fix</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">The bootloader configuration has been improved for a more reliable startup, and an issue with GRUB installation has been resolved.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== WHAT'S INCLUDED ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Under the hood</p>
+          <h2 class="heading-2 font-display font-bold mt-4">What's included</h2>
+          <p class="lead mt-4">
+            The core components that ship with Theonix OS 1.0 &mdash; KDE&nbsp;Plasma&nbsp;6, Wayland,
+            Pacman and Flatpak, the Calamares installer, the custom repository, Fastfetch and the GRUB
+            bootloader.
+          </p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-5 mt-12 items-start">
+          <!-- Component chips -->
+          <div class="card p-7 reveal">
+            <h3 class="font-display text-lg">Core components</h3>
+            <div class="flex flex-wrap gap-2.5 mt-5">
+              <span class="chip">KDE Plasma 6</span>
+              <span class="chip">Wayland</span>
+              <span class="chip">Pacman</span>
+              <span class="chip">Flatpak</span>
+              <span class="chip">Calamares installer</span>
+              <span class="chip">Custom repository</span>
+              <span class="chip">Fastfetch</span>
+              <span class="chip">GRUB bootloader</span>
+            </div>
+            <p class="text-muted mt-6 text-[0.95rem] leading-relaxed">
+              Pacman handles system packages from the Arch and Theonix repositories, while Flatpak
+              covers sandboxed desktop applications &mdash; giving you a broad software catalog from
+              day one.
+            </p>
+          </div>
+
+          <!-- Spec table -->
+          <div class="card p-7 reveal" data-delay="70">
+            <h3 class="font-display text-lg">Release specifications</h3>
+            <dl class="mt-5">
+              <div class="spec-row"><dt>Version</dt><dd class="font-mono">1.0 &ldquo;Genesis&rdquo;</dd></div>
+              <div class="spec-row"><dt>Base</dt><dd>Arch Linux</dd></div>
+              <div class="spec-row"><dt>Desktop</dt><dd>KDE Plasma 6</dd></div>
+              <div class="spec-row"><dt>Session</dt><dd>Wayland</dd></div>
+              <div class="spec-row"><dt>Architecture</dt><dd class="font-mono">x86_64</dd></div>
+              <div class="spec-row"><dt>ISO size</dt><dd>~3.2 GB</dd></div>
+              <div class="spec-row"><dt>Firmware</dt><dd>UEFI &amp; Legacy BIOS</dd></div>
+              <div class="spec-row"><dt>License</dt><dd>GPL</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DOWNLOAD & VERIFY ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Get it</p>
+          <h2 class="heading-2 font-display font-bold mt-4">Download &amp; verify</h2>
+          <p class="text-muted mt-5 leading-relaxed">
+            Grab the ISO from the download page, then confirm its integrity before writing it to a USB
+            stick. After downloading, compute the SHA256 checksum of the ISO and compare it against the
+            published value on the verify page.
+          </p>
+
+          <div class="code-block mt-6" data-copy>
+            <code>sha256sum TheonixOS-1.0.iso</code>
+            <button class="copy-btn" data-copy-btn type="button">Copy</button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4 mt-8">
+            <a href="download.html" class="btn btn-primary">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              Download the ISO
+            </a>
+            <a href="verify.html" class="link-arrow">Verify your download (SHA256)
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== KNOWN CONSIDERATIONS ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <h2 class="heading-2 font-display font-bold">Known considerations</h2>
+          <p class="text-muted mt-5 leading-relaxed">A few practical notes to keep in mind for the Genesis release.</p>
+        </div>
+
+        <div class="max-w-3xl mt-8 space-y-4">
+          <div class="card p-6 reveal">
+            <h3 class="font-display text-lg">Secure Boot</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">On some systems you may need to disable Secure Boot in your firmware settings to boot the live media. You can re-enable it later depending on your setup.</p>
+          </div>
+          <div class="card p-6 reveal" data-delay="70">
+            <h3 class="font-display text-lg">NVIDIA graphics</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">If you use an NVIDIA GPU, the proprietary drivers can be installed after installation. Consult the documentation for the recommended steps on your hardware.</p>
+          </div>
+          <div class="card p-6 reveal" data-delay="140">
+            <h3 class="font-display text-lg">Reporting issues</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">If you run into a problem, please report it on GitHub. Clear reports help us improve future releases.
+              <a href="https://github.com/theonix-os/theonix/issues" rel="noopener" class="link-arrow ml-1">Open an issue
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== LOOKING AHEAD ===================== -->
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="card p-8 lg:p-10 max-w-3xl reveal">
+          <div class="flex items-center gap-3">
+            <h2 class="font-display text-xl">Looking ahead</h2>
+            <span class="badge badge-soon">Planned</span>
+          </div>
+          <p class="text-muted mt-4 text-[0.95rem] leading-relaxed">
+            A local, privacy-respecting AI integration and further polish are planned for future
+            releases. See where Theonix is heading on the roadmap.
+            <a href="roadmap.html" class="link-arrow ml-1">View the roadmap
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+            </a>
+          </p>
+        </div>
+
+        <div class="text-center mt-12 reveal">
+          <a href="download.html" class="btn btn-primary btn-lg">Download Theonix OS</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+</body>
+</html>

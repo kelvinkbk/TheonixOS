@@ -1,263 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theonix OS | The AI-Powered Linux Experience</title>
-    <meta name="description" content="Theonix OS is a modern, Arch-based Linux distribution with seamless AI integration, premium glassmorphism design, and rolling releases.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #050508;
-            --surface-color: rgba(20, 20, 30, 0.6);
-            --accent-primary: #6C63FF;
-            --accent-secondary: #00FFFF;
-            --text-main: #F4F4F9;
-            --text-muted: #A0A0B5;
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glow: 0 0 40px rgba(108, 99, 255, 0.4);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theonix OS — A Modern Arch-Based Linux Distribution</title>
+  <meta name="description" content="Theonix OS is a modern Arch Linux based distribution with KDE Plasma 6, Wayland, a rolling release model, a custom Calamares installer and its own package repository. Free and open source." />
+  <meta name="keywords" content="Theonix OS, Arch Linux, Linux distribution, KDE Plasma 6, Wayland, rolling release, Calamares, Pacman, Flatpak" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/" />
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="Theonix OS — A Modern Arch-Based Linux Distribution" />
+  <meta property="og:description" content="KDE Plasma 6, Wayland, rolling release, custom installer and repository. Free and open source." />
+  <meta property="og:url" content="https://theonixos.xyz/" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta property="og:image:alt" content="Theonix OS logo and tagline" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Theonix OS — A Modern Arch-Based Linux Distribution" />
+  <meta name="twitter:description" content="KDE Plasma 6, Wayland, rolling release. Free and open source." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(108, 99, 255, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(0, 255, 255, 0.1), transparent 25%);
-            background-attachment: fixed;
-        }
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
 
-        /* Typography */
-        h1, h2, h3 {
-            font-family: 'Outfit', sans-serif;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
 
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 1000;
-        }
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links a {
-            color: var(--text-main);
-            text-decoration: none;
-            margin-left: 30px;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--accent-secondary);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
-            position: relative;
-        }
-
-        .hero h1 {
-            font-size: 5rem;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            animation: fadeUp 1s ease-out;
-        }
-
-        .hero h1 span {
-            color: var(--accent-primary);
-            text-shadow: var(--glow);
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin-bottom: 40px;
-            animation: fadeUp 1.2s ease-out;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 20px;
-            animation: fadeUp 1.4s ease-out;
-        }
-
-        .btn {
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary), #5A52D9);
-            color: white;
-            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(108, 99, 255, 0.5);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-main);
-            border: 2px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--accent-primary);
-            background: rgba(108, 99, 255, 0.1);
-        }
-
-        /* Features Section */
-        .features {
-            padding: 100px 50px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .card {
-            background: var(--surface-color);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border-color: rgba(108, 99, 255, 0.3);
-        }
-
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--accent-secondary);
-        }
-
-        .card p {
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        /* Animations */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 3rem; }
-            .nav-links { display: none; }
-            .btn-group { flex-direction: column; }
-        }
-    </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Theonix OS",
+        "operatingSystem": "Linux",
+        "applicationCategory": "OperatingSystem",
+        "softwareVersion": "1.0",
+        "author": { "@type": "Person", "name": "Kelvin Benny Koshy" },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "downloadUrl": "https://huggingface.co/datasets/kelvinkbk/TheonixOS-1.0/resolve/main/TheonixOS-1.0.iso"
+      },
+      {
+        "@type": "WebSite",
+        "name": "Theonix OS",
+        "url": "https://theonixos.xyz/"
+      }
+    ]
+  }
+  </script>
 </head>
+
 <body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
 
-    <nav>
-        <div class="logo">THEONIX</div>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="https://github.com/kelvinkbk/TheonixOS">GitHub</a>
+  <main id="main">
+    <!-- ===================== HERO ===================== -->
+    <section class="relative pt-36 lg:pt-44 pb-20 lg:pb-28 overflow-hidden">
+      <div class="glow-blob" style="width:36rem;height:36rem;top:-8rem;left:50%;transform:translateX(-50%);background:rgba(34,211,238,0.12)" aria-hidden="true"></div>
+      <div class="container-x text-center relative">
+        <div class="reveal flex justify-center">
+          <span class="chip"><span class="dot dot-live"></span> Theonix OS 1.0 &ldquo;Genesis&rdquo; &middot; Available now</span>
         </div>
-    </nav>
 
-    <section class="hero">
-        <h1>The Future of <span>Linux</span></h1>
-        <p>Experience the world's first AI-native Arch Linux distribution. Crafted with uncompromising aesthetics, rolling-release power, and intelligent automation.</p>
-        <div class="btn-group">
-            <a href="https://github.com/kelvinkbk/TheonixOS/releases" class="btn btn-primary">Download ISO</a>
-            <a href="#features" class="btn btn-secondary">Explore Features</a>
+        <h1 class="reveal heading-hero font-display font-bold mt-7">
+          Arch Linux, <span class="text-gradient">refined</span>.<br class="hidden sm:block" /> Ready out of the box.
+        </h1>
+
+        <p class="reveal lead max-w-2xl mx-auto mt-6" data-delay="120">
+          Theonix OS pairs a rolling Arch base with KDE&nbsp;Plasma&nbsp;6 on Wayland, a custom
+          Calamares installer and its own package repository &mdash; a fast, modern desktop that
+          just works. Free and open source.
+        </p>
+
+        <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4 mt-9" data-delay="200">
+          <a href="download.html" class="btn btn-primary btn-lg btn-block sm:w-auto">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Download Theonix OS
+          </a>
+          <a href="features.html" class="btn btn-ghost btn-lg btn-block sm:w-auto">
+            Explore features
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+          </a>
         </div>
+
+        <p class="reveal mt-5 text-sm text-faint font-mono" data-delay="260">
+          v1.0 &ldquo;Genesis&rdquo; &middot; ~3.2&nbsp;GB ISO &middot; x86_64 &middot; UEFI &amp; BIOS
+        </p>
+
+        <div class="reveal mt-16 max-w-4xl mx-auto animate-float" data-delay="320">
+          <div class="terminal" data-terminal>
+            <div class="terminal-head">
+              <span class="term-dot" style="background:#ff5f57"></span>
+              <span class="term-dot" style="background:#febc2e"></span>
+              <span class="term-dot" style="background:#28c840"></span>
+              <span class="ml-3 text-xs text-muted font-mono">theonix@genesis — konsole</span>
+            </div>
+            <div class="terminal-body text-left" data-terminal-body>
+              <div class="term-line term-out">Starting Theonix shell…</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section id="features" class="features">
-        <h2 class="section-title">Designed for Excellence</h2>
-        <div class="grid">
-            
-            <div class="card">
-                <div class="card-icon">🧠</div>
-                <h3>THAID Built-in</h3>
-                <p>Theonix OS ships with the Theonix AI Daemon (THAID) fully integrated. Access an intelligent assistant directly from your desktop to troubleshoot, script, and manage your system.</p>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">✨</div>
-                <h3>Premium Aesthetics</h3>
-                <p>Every element of the OS has been meticulously designed. From the custom GRUB menu and Plymouth boot splash to the glassmorphism Welcome App and dark mode by default.</p>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">⚡</div>
-                <h3>Arch-Powered</h3>
-                <p>Built on the bleeding-edge foundation of Arch Linux. Enjoy rolling releases, access to the AUR, and the sheer performance of a minimalist core paired with a robust repository.</p>
-            </div>
-
+    <!-- ===================== AT A GLANCE ===================== -->
+    <section class="section">
+      <div class="container-x">
+        <div class="reveal grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass rounded-2xl p-6 stat"><div class="stat-num text-gradient-cyan">Rolling</div><div class="text-sm text-muted mt-1">Release model</div></div>
+          <div class="glass rounded-2xl p-6 stat"><div class="stat-num text-gradient-cyan">Plasma 6</div><div class="text-sm text-muted mt-1">On Wayland</div></div>
+          <div class="glass rounded-2xl p-6 stat"><div class="stat-num text-gradient-cyan">Arch</div><div class="text-sm text-muted mt-1">Base &amp; Pacman</div></div>
+          <div class="glass rounded-2xl p-6 stat"><div class="stat-num text-gradient-cyan">GPL</div><div class="text-sm text-muted mt-1">Open source</div></div>
         </div>
+      </div>
     </section>
 
+    <!-- ===================== FEATURE CARDS ===================== -->
+    <section class="section">
+      <div class="container-x">
+        <div class="text-center max-w-2xl mx-auto reveal">
+          <p class="eyebrow justify-center">Why Theonix</p>
+          <h2 class="heading-1 font-display font-bold mt-4">A distribution built with intent</h2>
+          <p class="lead mt-4">Every layer &mdash; installer, repository, desktop and branding &mdash; is tuned so the system is coherent from first boot.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
+          <article class="card card-spot card-hover p-7 reveal">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Zm9-9v18M3 12h18"/></svg></div>
+            <h3 class="font-display text-xl">Rolling Arch base</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Built on Arch Linux with Pacman. Install once and receive continuous updates &mdash; no version jumps, no reinstalls.</p>
+          </article>
+          <article class="card card-spot card-hover p-7 reveal" data-delay="70">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m14.5-6.5-1.5 1.5M7 17l-1.5 1.5m0-13L7 7m10 10 1.5 1.5"/><circle cx="12" cy="12" r="3.5"/></svg></div>
+            <h3 class="font-display text-xl">KDE Plasma 6 · Wayland</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A modern Plasma 6 desktop running on Wayland by default, with the custom Theonix theme and branding throughout.</p>
+          </article>
+          <article class="card card-spot card-hover p-7 reveal" data-delay="140">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 6l1 14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-14M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></div>
+            <h3 class="font-display text-xl">Custom repository</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A dedicated Theonix package repository ships the branding, defaults and tooling that make the system feel complete.</p>
+          </article>
+          <article class="card card-spot card-hover p-7 reveal">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg></div>
+            <h3 class="font-display text-xl">Guided installer</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A branded Calamares installer handles partitioning, users and the bootloader &mdash; from live USB to installed desktop in minutes.</p>
+          </article>
+          <article class="card card-spot card-hover p-7 reveal" data-delay="70">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m13 2-9 12h6l-2 8 9-12h-6l2-8Z"/></svg></div>
+            <h3 class="font-display text-xl">Fast boot</h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A lean systemd service set and a streamlined boot path get you to the desktop quickly, with Fastfetch showing off the result.</p>
+          </article>
+          <article class="card card-spot card-hover p-7 reveal" data-delay="140">
+            <div class="icon-badge mb-5"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a4 4 0 0 1 4 4v1a4 4 0 0 1 0 8 4 4 0 0 1-8 0 4 4 0 0 1 0-8V7a4 4 0 0 1 4-4Z"/><path stroke-linecap="round" d="M12 12v6"/></svg></div>
+            <h3 class="font-display text-xl flex items-center gap-2">AI integration <span class="badge badge-soon">Planned</span></h3>
+            <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">A local, privacy-respecting AI assistant is on the roadmap &mdash; on-device help without sending your data to the cloud.</p>
+          </article>
+        </div>
+
+        <div class="text-center mt-10 reveal"><a href="features.html" class="btn btn-ghost">See all features</a></div>
+      </div>
+    </section>
+
+    <!-- ===================== SCREENSHOTS ===================== -->
+    <section class="section">
+      <div class="container-x">
+        <div class="text-center max-w-2xl mx-auto reveal">
+          <p class="eyebrow justify-center">The desktop</p>
+          <h2 class="heading-1 font-display font-bold mt-4">Plasma, the Theonix way</h2>
+          <p class="lead mt-4">A cohesive dark theme, glass surfaces and consistent branding across the whole system.</p>
+        </div>
+
+        <div class="mt-12 reveal">
+          <div class="carousel glass p-2" data-carousel>
+            <div class="carousel-track" data-carousel-track>
+              <div class="carousel-slide"><div class="shot"><div class="text-center px-6"><div class="chip mx-auto mb-4">Desktop</div><div class="font-display text-2xl">KDE Plasma 6 desktop</div><p class="text-muted mt-2 text-sm">Custom theme · Wayland session</p></div></div></div>
+              <div class="carousel-slide"><div class="shot"><div class="text-center px-6"><div class="chip mx-auto mb-4">Installer</div><div class="font-display text-2xl">Calamares installer</div><p class="text-muted mt-2 text-sm">Branded, guided setup</p></div></div></div>
+              <div class="carousel-slide"><div class="shot"><div class="text-center px-6"><div class="chip mx-auto mb-4">Terminal</div><div class="font-display text-2xl">Fastfetch branding</div><p class="text-muted mt-2 text-sm">Theonix system info</p></div></div></div>
+              <div class="carousel-slide"><div class="shot"><div class="text-center px-6"><div class="chip mx-auto mb-4">Login</div><div class="font-display text-2xl">SDDM login screen</div><p class="text-muted mt-2 text-sm">Themed to match</p></div></div></div>
+            </div>
+            <button class="carousel-btn glass-strong left-4" data-carousel-prev aria-label="Previous screenshot"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg></button>
+            <button class="carousel-btn glass-strong right-4" data-carousel-next aria-label="Next screenshot"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg></button>
+          </div>
+          <div class="flex items-center justify-center gap-2 mt-6" data-carousel-dots></div>
+        </div>
+        <div class="text-center mt-8 reveal"><a href="screenshots.html" class="btn btn-ghost">Open the gallery</a></div>
+      </div>
+    </section>
+
+    <!-- ===================== INSTALL ===================== -->
+    <section class="section">
+      <div class="container-x">
+        <div class="text-center max-w-2xl mx-auto reveal">
+          <p class="eyebrow justify-center">Get started</p>
+          <h2 class="heading-1 font-display font-bold mt-4">Installed in four steps</h2>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mt-14">
+          <div class="card p-6 reveal"><div class="font-mono text-sm text-cyan-400" style="color:var(--theo-cyan)">01</div><h3 class="font-display text-lg mt-2">Download</h3><p class="text-muted mt-2 text-[0.9rem]">Grab the ISO and verify its SHA256 checksum.</p></div>
+          <div class="card p-6 reveal" data-delay="70"><div class="font-mono text-sm" style="color:var(--theo-cyan)">02</div><h3 class="font-display text-lg mt-2">Flash USB</h3><p class="text-muted mt-2 text-[0.9rem]">Write it to a USB stick with your tool of choice.</p></div>
+          <div class="card p-6 reveal" data-delay="140"><div class="font-mono text-sm" style="color:var(--theo-cyan)">03</div><h3 class="font-display text-lg mt-2">Boot</h3><p class="text-muted mt-2 text-[0.9rem]">Boot the live session in UEFI or BIOS mode.</p></div>
+          <div class="card p-6 reveal" data-delay="210"><div class="font-mono text-sm" style="color:var(--theo-cyan)">04</div><h3 class="font-display text-lg mt-2">Install</h3><p class="text-muted mt-2 text-[0.9rem]">Run Calamares and reboot into Theonix.</p></div>
+        </div>
+        <div class="text-center mt-10 reveal"><a href="documentation.html" class="link-arrow">Read the full installation guide<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg></a></div>
+      </div>
+    </section>
+
+    <!-- ===================== COMMUNITY CTA ===================== -->
+    <section class="section">
+      <div class="container-x">
+        <div class="card p-10 lg:p-16 text-center reveal relative overflow-hidden">
+          <div class="glow-blob" style="width:34rem;height:34rem;top:-10rem;left:50%;transform:translateX(-50%);background:rgba(34,211,238,0.12)" aria-hidden="true"></div>
+          <div class="relative">
+            <p class="eyebrow justify-center">Open source</p>
+            <h2 class="heading-1 font-display font-bold mt-4">Build Theonix with us</h2>
+            <p class="lead mt-4 max-w-xl mx-auto">Theonix is developed in the open. Report issues, suggest features, package software or help others get started.</p>
+            <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
+              <a href="https://github.com/theonix-os/theonix" rel="noopener" class="btn btn-ghost"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.09.68-.22.68-.48v-1.7c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.36 1.12 2.94.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.02 10.02 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>GitHub</a>
+              <a href="https://discord.gg/theonix" rel="noopener" class="btn btn-ghost">Discord</a>
+              <a href="community.html" class="btn btn-ghost">Get involved</a>
+            </div>
+            <div class="mt-10"><a href="download.html" class="btn btn-primary btn-lg">Download Theonix OS</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
 </body>
 </html>

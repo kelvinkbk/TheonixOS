@@ -1,0 +1,9 @@
+[build]
+  # Set the base directory to where the website files live
+  base = "website"
+  
+  # The command to build the Tailwind CSS
+  command = "npm run build:css"
+  
+  # The directory containing the built HTML/CSS files to deploy
+  publish = "."

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your ISO — Theonix OS</title>
+  <meta name="description" content="How to verify your Theonix OS ISO with the SHA256 checksum on Linux, macOS and Windows before flashing. Make sure your download is complete and untampered." />
+  <meta name="keywords" content="verify Theonix ISO, SHA256 checksum, sha256sum, certutil, Get-FileHash, Linux ISO verification" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/verify.html" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="Verify your ISO — Theonix OS" />
+  <meta property="og:description" content="Check the SHA256 checksum of your download on Linux, macOS or Windows before flashing." />
+  <meta property="og:url" content="https://theonixos.xyz/verify.html" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Verify your ISO — Theonix OS" />
+  <meta name="twitter:description" content="Check the SHA256 checksum of your download before flashing." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
+
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
+</head>
+
+<body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
+
+  <main id="main">
+    <section class="pt-32 pb-12">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Security</p>
+          <h1 class="heading-hero font-display font-bold mt-5">Verify your ISO</h1>
+          <p class="lead mt-6">Always confirm your download before flashing. Comparing the SHA256 checksum proves the ISO downloaded completely and was not altered on its way to you.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pt-0">
+      <div class="container-x">
+        <div class="max-w-3xl space-y-12">
+
+          <!-- Step 1 -->
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold flex items-center gap-3"><span class="font-mono text-base" style="color:var(--theo-cyan)">01</span> Get the official checksum</h2>
+            <p class="text-muted mt-3">Each build publishes a <span class="font-mono">SHA256SUMS</span> file next to the ISO. Download it from the official route:</p>
+            <div class="code-block mt-3"><code>curl -LO https://huggingface.co/datasets/kelvinkbk/TheonixOS-1.0/resolve/main/SHA256SUMS</code><button class="copy-btn" data-copy="curl -LO https://huggingface.co/datasets/kelvinkbk/TheonixOS-1.0/resolve/main/SHA256SUMS" data-label="Copy">Copy</button></div>
+            <p class="text-xs text-faint mt-3">Only trust the checksum from the official <a href="https://huggingface.co/datasets/kelvinkbk/TheonixOS-1.0/blob/main/SHA256SUMS" rel="noopener" class="link-arrow" style="display:inline-flex">TheonixOS Hugging Face repository</a> &mdash; not from a third-party page.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold flex items-center gap-3"><span class="font-mono text-base" style="color:var(--theo-cyan)">02</span> Compute the checksum</h2>
+            <p class="text-muted mt-3">Run the command for your operating system in the folder containing the ISO.</p>
+
+            <div class="grid gap-4 mt-5">
+              <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2"><span class="chip">Linux</span></div>
+                <div class="code-block"><code>sha256sum TheonixOS-1.0.iso</code><button class="copy-btn" data-copy="sha256sum TheonixOS-1.0.iso" data-label="Copy">Copy</button></div>
+                <p class="text-xs text-faint mt-2">Or verify against the file automatically: <span class="font-mono">sha256sum -c SHA256SUMS</span></p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2"><span class="chip">macOS</span></div>
+                <div class="code-block"><code>shasum -a 256 TheonixOS-1.0.iso</code><button class="copy-btn" data-copy="shasum -a 256 TheonixOS-1.0.iso" data-label="Copy">Copy</button></div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center gap-2 mb-2"><span class="chip">Windows &middot; PowerShell</span></div>
+                <div class="code-block"><code>Get-FileHash .\TheonixOS-1.0.iso -Algorithm SHA256</code><button class="copy-btn" data-copy="Get-FileHash .\TheonixOS-1.0.iso -Algorithm SHA256" data-label="Copy">Copy</button></div>
+                <p class="text-xs text-faint mt-2">Command Prompt: <span class="font-mono">certutil -hashfile TheonixOS-1.0.iso SHA256</span></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold flex items-center gap-3"><span class="font-mono text-base" style="color:var(--theo-cyan)">03</span> Compare the values</h2>
+            <p class="text-muted mt-3">Match the hash your machine produced against the value in <span class="font-mono">SHA256SUMS</span>.</p>
+            <div class="grid sm:grid-cols-2 gap-4 mt-5">
+              <div class="card p-5">
+                <div class="flex items-center gap-2"><span class="dot" style="background:var(--theo-mint)"></span><span class="font-medium" style="color:var(--theo-mint)">They match</span></div>
+                <p class="text-muted text-[0.95rem] mt-2">Your ISO is intact. You&rsquo;re safe to flash it to a USB drive and boot.</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center gap-2"><span class="dot" style="background:#ff6b6b"></span><span class="font-medium" style="color:#ff6b6b">They differ</span></div>
+                <p class="text-muted text-[0.95rem] mt-2">Do not use the file. Delete it and download again from the <a href="download.html" class="link-arrow" style="display:inline-flex">download page</a> if it keeps failing.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signatures (optional) -->
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold flex items-center gap-3"><span class="font-mono text-base" style="color:var(--theo-cyan)">04</span> Signature verification <span class="badge">Optional</span></h2>
+            <p class="text-muted mt-3">When a detached GPG signature is published alongside a release, you can also verify authenticity with the Theonix signing key:</p>
+            <div class="code-block mt-3"><code>gpg --verify SHA256SUMS.sig SHA256SUMS</code><button class="copy-btn" data-copy="gpg --verify SHA256SUMS.sig SHA256SUMS" data-label="Copy">Copy</button></div>
+            <p class="text-xs text-faint mt-3">The checksum confirms integrity; a signature additionally confirms the file came from the Theonix maintainers.</p>
+          </div>
+
+          <div class="card p-6 reveal text-center">
+            <p class="text-muted text-[0.95rem]">Ready to install? Follow the <a href="documentation.html#install" class="link-arrow" style="display:inline-flex">installation guide</a>, or head back to <a href="download.html" class="link-arrow" style="display:inline-flex">downloads</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+</body>
+</html>

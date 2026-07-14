@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — Theonix OS</title>
+  <meta name="description" content="Install and run Theonix OS: create a bootable USB, boot the live ISO, run the Calamares installer, manage packages with Pacman and Flatpak, keep the system updated, recover from problems and troubleshoot." />
+  <meta name="keywords" content="Theonix OS documentation, install Theonix, Calamares, bootable USB, Pacman, Flatpak, dual boot, Secure Boot, recovery, troubleshooting" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/documentation.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="Documentation — Theonix OS" />
+  <meta property="og:description" content="Create a bootable USB, boot the live ISO, run the Calamares installer, manage packages, update and recover Theonix OS." />
+  <meta property="og:url" content="https://theonixos.xyz/documentation.html" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta property="og:image:alt" content="Theonix OS logo and tagline" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Documentation — Theonix OS" />
+  <meta name="twitter:description" content="Install, manage, update and recover Theonix OS. Real Arch commands and a guided Calamares walkthrough." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
+
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
+</head>
+
+<body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
+
+  <main id="main">
+    <!-- ===================== PAGE HEADER ===================== -->
+    <section class="pt-32 pb-12">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">Documentation</p>
+          <h1 class="heading-1 font-display font-bold mt-4">Install &amp; run Theonix OS</h1>
+          <p class="lead mt-5">Everything you need to take Theonix OS from a downloaded ISO to an installed, up-to-date desktop &mdash; with real Arch commands, honest guidance and recovery tips when things go sideways.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== BODY ===================== -->
+    <section class="pb-24">
+      <div class="container-x">
+        <div class="grid lg:grid-cols-[16rem_minmax(0,1fr)] gap-10">
+
+          <!-- Sidebar -->
+          <aside class="lg:sticky lg:top-24 self-start">
+            <nav class="glass rounded-2xl p-6" aria-label="On this page">
+              <p class="eyebrow">On this page</p>
+              <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="#install" class="text-muted hover:text-white transition-colors">Installation overview</a></li>
+                <li><a href="#boot-usb" class="text-muted hover:text-white transition-colors">Booting the USB</a></li>
+                <li><a href="#bios-uefi" class="text-muted hover:text-white transition-colors">BIOS vs UEFI</a></li>
+                <li><a href="#secure-boot" class="text-muted hover:text-white transition-colors">Secure Boot</a></li>
+                <li><a href="#dual-boot" class="text-muted hover:text-white transition-colors">Dual boot</a></li>
+                <li><a href="#packages" class="text-muted hover:text-white transition-colors">Package management</a></li>
+                <li><a href="#updates" class="text-muted hover:text-white transition-colors">Updates</a></li>
+                <li><a href="#recovery" class="text-muted hover:text-white transition-colors">Recovery</a></li>
+                <li><a href="#troubleshoot" class="text-muted hover:text-white transition-colors">Troubleshooting</a></li>
+              </ul>
+            </nav>
+          </aside>
+
+          <!-- Content -->
+          <div class="max-w-3xl space-y-14">
+
+            <!-- 1. INSTALL -->
+            <article id="install" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Step by step</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Installation overview</h2>
+              <p class="text-muted mt-4 leading-relaxed">Theonix OS ships as a live ISO. You boot the live session, try the desktop, then launch the custom <span class="font-medium text-white">Calamares</span> installer to write it to disk. The whole flow &mdash; download, flash, boot, install &mdash; takes only a few minutes of hands-on time.</p>
+
+              <ol class="mt-7 space-y-6">
+                <li class="card p-6">
+                  <div class="flex items-start gap-4">
+                    <span class="font-mono text-sm mt-0.5" style="color:var(--theo-cyan)">01</span>
+                    <div class="flex-1">
+                      <h3 class="font-display text-lg">Download &amp; verify</h3>
+                      <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Get the ISO from the <a href="download.html" class="link-arrow">download page<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg></a> then confirm its SHA256 checksum before flashing &mdash; follow the <a href="verify.html" class="link-arrow">verification guide<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg></a>.</p>
+                      <div class="code-block mt-4"><code>sha256sum TheonixOS-1.0.iso</code><button class="copy-btn" data-copy="sha256sum TheonixOS-1.0.iso" data-label="Copy">Copy</button></div>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="card p-6">
+                  <div class="flex items-start gap-4">
+                    <span class="font-mono text-sm mt-0.5" style="color:var(--theo-cyan)">02</span>
+                    <div class="flex-1">
+                      <h3 class="font-display text-lg">Create a bootable USB</h3>
+                      <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">On Linux, write the image directly to the USB device with <span class="font-mono text-[0.85rem]">dd</span>. Replace <span class="font-mono text-[0.85rem]">/dev/sdX</span> with your actual USB device &mdash; this <span class="text-white">erases everything</span> on it, so double-check with <span class="font-mono text-[0.85rem]">lsblk</span> first.</p>
+                      <div class="code-block mt-4"><code>sudo dd if=TheonixOS-1.0.iso of=/dev/sdX bs=4M status=progress oflag=sync</code><button class="copy-btn" data-copy="sudo dd if=TheonixOS-1.0.iso of=/dev/sdX bs=4M status=progress oflag=sync" data-label="Copy">Copy</button></div>
+                      <p class="text-muted mt-3 text-[0.95rem] leading-relaxed">Prefer a graphical tool? <span class="text-white">Balena Etcher</span> (Linux, macOS, Windows), <span class="text-white">Rufus</span> (Windows) and <span class="text-white">GNOME Disks</span> all write the ISO in a few clicks &mdash; use <em>DD / image</em> mode when Rufus offers a choice.</p>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="card p-6">
+                  <div class="flex items-start gap-4">
+                    <span class="font-mono text-sm mt-0.5" style="color:var(--theo-cyan)">03</span>
+                    <div class="flex-1">
+                      <h3 class="font-display text-lg">Boot from the USB</h3>
+                      <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Insert the stick, restart, and open your firmware boot menu to pick the USB device (see <a href="#boot-usb" class="link-arrow">Booting the USB<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m0 0-6-6m6 6-6 6"/></svg></a>). The live Theonix desktop loads without touching your disk.</p>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="card p-6">
+                  <div class="flex items-start gap-4">
+                    <span class="font-mono text-sm mt-0.5" style="color:var(--theo-cyan)">04</span>
+                    <div class="flex-1">
+                      <h3 class="font-display text-lg">Run Calamares</h3>
+                      <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Launch the <span class="text-white">Install Theonix OS</span> icon on the live desktop. The branded Calamares installer walks you through language, timezone, keyboard, partitioning (erase disk, install alongside, or manual), and creating your user account and bootloader.</p>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="card p-6">
+                  <div class="flex items-start gap-4">
+                    <span class="font-mono text-sm mt-0.5" style="color:var(--theo-cyan)">05</span>
+                    <div class="flex-1">
+                      <h3 class="font-display text-lg">Reboot</h3>
+                      <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">When the installer finishes, remove the USB stick and reboot. You&rsquo;ll land on the themed SDDM login screen and into your new Theonix OS desktop &mdash; ready to update and make your own.</p>
+                    </div>
+                  </div>
+                </li>
+              </ol>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 2. BOOT USB -->
+            <article id="boot-usb" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Firmware</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Booting the USB</h2>
+              <p class="text-muted mt-4 leading-relaxed">Most machines don&rsquo;t boot from USB automatically &mdash; you have to tell the firmware to. Right after powering on, tap the boot-menu or setup key repeatedly before the operating system starts loading.</p>
+              <p class="text-muted mt-4 leading-relaxed">The key varies by vendor. Common ones are <span class="font-mono text-[0.85rem]">F12</span>, <span class="font-mono text-[0.85rem]">F2</span>, <span class="font-mono text-[0.85rem]">Del</span> and <span class="font-mono text-[0.85rem]">Esc</span>; some laptops use <span class="font-mono text-[0.85rem]">F9</span> or <span class="font-mono text-[0.85rem]">F10</span>. Watch the splash screen for a &ldquo;Boot Menu&rdquo; or &ldquo;Setup&rdquo; hint.</p>
+              <div class="card p-0 mt-6 overflow-hidden">
+                <table class="table-clean">
+                  <thead><tr><th>Vendor</th><th>Boot menu</th><th>Firmware setup</th></tr></thead>
+                  <tbody>
+                    <tr><td>Dell</td><td class="font-mono">F12</td><td class="font-mono">F2</td></tr>
+                    <tr><td>HP</td><td class="font-mono">F9 / Esc</td><td class="font-mono">Esc / F10</td></tr>
+                    <tr><td>Lenovo</td><td class="font-mono">F12</td><td class="font-mono">F2 / Fn+F2</td></tr>
+                    <tr><td>ASUS</td><td class="font-mono">Esc / F8</td><td class="font-mono">Del / F2</td></tr>
+                    <tr><td>Acer</td><td class="font-mono">F12</td><td class="font-mono">F2 / Del</td></tr>
+                    <tr><td>MSI</td><td class="font-mono">F11</td><td class="font-mono">Del</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-muted mt-5 leading-relaxed">In the boot menu, select the entry that names your USB stick (often the brand or &ldquo;USB&rdquo;). If it appears twice, a <span class="text-white">UEFI</span>-prefixed entry boots in UEFI mode &mdash; the recommended choice on modern hardware.</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 3. BIOS vs UEFI -->
+            <article id="bios-uefi" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Firmware modes</p>
+              <h2 class="heading-2 font-display font-bold mt-3">BIOS vs UEFI</h2>
+              <p class="text-muted mt-4 leading-relaxed">Theonix OS boots on both legacy <span class="text-white">BIOS</span> and modern <span class="text-white">UEFI</span> firmware. UEFI is recommended: it supports large disks with GPT partitioning, faster boot paths and Secure Boot.</p>
+              <p class="text-muted mt-4 leading-relaxed">Not sure which you have? After installation you can check from a terminal &mdash; if this directory exists, you booted in UEFI mode:</p>
+              <div class="code-block mt-4"><code>ls /sys/firmware/efi &amp;&amp; echo UEFI || echo BIOS</code><button class="copy-btn" data-copy="ls /sys/firmware/efi && echo UEFI || echo BIOS" data-label="Copy">Copy</button></div>
+              <p class="text-muted mt-4 leading-relaxed">Firmware settings often label the mode as <em>UEFI</em>, <em>Legacy</em>, or <em>CSM</em> (Compatibility Support Module). For a fresh install on recent hardware, disable CSM / Legacy and boot the USB in UEFI mode so your installed system matches.</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 4. SECURE BOOT -->
+            <article id="secure-boot" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Firmware security</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Secure Boot</h2>
+              <p class="text-muted mt-4 leading-relaxed">Secure Boot only allows firmware-signed boot loaders to run. The Theonix live media is not signed with the keys shipped by your firmware vendor, so you may need to <span class="text-white">disable Secure Boot</span> to boot the installer.</p>
+              <p class="text-muted mt-4 leading-relaxed">To disable it, enter your firmware setup (see the vendor table above), find <em>Secure Boot</em> under a <em>Security</em> or <em>Boot</em> tab, set it to <span class="font-mono text-[0.85rem]">Disabled</span>, then save and exit. On some boards you must also set an administrator/supervisor password before the option becomes editable.</p>
+              <p class="text-muted mt-4 leading-relaxed">Re-enabling Secure Boot later is possible but takes extra work: you would need to sign the kernel and boot loader and enrol your own keys (for example with a Machine Owner Key). This is an advanced, optional step &mdash; many users simply leave Secure Boot off. Only re-enable it once you understand the signing your setup requires, or an unsigned kernel update can leave the machine unbootable.</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 5. DUAL BOOT -->
+            <article id="dual-boot" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Alongside another OS</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Dual boot</h2>
+              <p class="text-muted mt-4 leading-relaxed">You can run Theonix OS alongside Windows or another Linux distribution on the same machine and choose between them at boot.</p>
+              <ul class="mt-5 space-y-3 text-muted text-[0.95rem] leading-relaxed">
+                <li class="flex gap-3"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Back up first.</span> Repartitioning always carries some risk &mdash; copy anything important off the machine before you start.</span></li>
+                <li class="flex gap-3"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Free up space.</span> Inside the existing OS, shrink a partition to leave unallocated room for Theonix (aim for at least the recommended storage).</span></li>
+                <li class="flex gap-3"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Install alongside.</span> In Calamares, pick <em>Install alongside</em> and target the free space, or use manual partitioning if you want full control.</span></li>
+                <li class="flex gap-3"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">GRUB detects the rest.</span> Theonix installs the GRUB bootloader; with <span class="font-mono text-[0.85rem]">os-prober</span> it finds other installed systems and adds them to the boot menu.</span></li>
+              </ul>
+              <p class="text-muted mt-5 leading-relaxed">If another OS isn&rsquo;t listed after install, enable detection and regenerate the config:</p>
+              <div class="code-block mt-4"><code>sudo grub-mkconfig -o /boot/grub/grub.cfg</code><button class="copy-btn" data-copy="sudo grub-mkconfig -o /boot/grub/grub.cfg" data-label="Copy">Copy</button></div>
+              <p class="text-muted mt-3 text-[0.9rem] leading-relaxed">You may first need to uncomment <span class="font-mono text-[0.85rem]">GRUB_DISABLE_OS_PROBER=false</span> in <span class="font-mono text-[0.85rem]">/etc/default/grub</span>.</p>
+              <div class="card card-spot p-6 mt-6">
+                <h3 class="font-display text-lg flex items-center gap-2">
+                  <span class="icon-badge" style="width:2.2rem;height:2.2rem;border-radius:0.7rem"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg></span>
+                  Windows clock caveat
+                </h3>
+                <p class="text-muted mt-3 text-[0.95rem] leading-relaxed">Windows assumes the hardware clock is in local time, while Linux defaults to UTC &mdash; so dual-boot clocks can drift by your timezone offset. The cleanest fix is to make Linux use local time to match Windows:</p>
+                <div class="code-block mt-4"><code>timedatectl set-local-rtc 1 --adjust-system-clock</code><button class="copy-btn" data-copy="timedatectl set-local-rtc 1 --adjust-system-clock" data-label="Copy">Copy</button></div>
+              </div>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 6. PACKAGES -->
+            <article id="packages" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Software</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Package management</h2>
+              <p class="text-muted mt-4 leading-relaxed">Theonix OS installs software two complementary ways: <span class="text-white">Pacman</span>, the native Arch package manager backed by the official repos and the Theonix repository, and <span class="text-white">Flatpak</span> for sandboxed apps from Flathub.</p>
+
+              <div class="grid sm:grid-cols-2 gap-5 mt-7">
+                <div class="card p-6">
+                  <h3 class="font-display text-lg">Pacman</h3>
+                  <p class="text-muted mt-2 text-[0.9rem]">Native packages &mdash; run with <span class="font-mono text-[0.8rem]">sudo</span> to make changes.</p>
+                  <div class="mt-4 space-y-3">
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Install a package</p>
+                      <div class="code-block"><code>sudo pacman -S name</code><button class="copy-btn" data-copy="sudo pacman -S name" data-label="Copy">Copy</button></div>
+                    </div>
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Search the repositories</p>
+                      <div class="code-block"><code>pacman -Ss term</code><button class="copy-btn" data-copy="pacman -Ss term" data-label="Copy">Copy</button></div>
+                    </div>
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Remove a package &amp; its deps</p>
+                      <div class="code-block"><code>sudo pacman -Rns name</code><button class="copy-btn" data-copy="sudo pacman -Rns name" data-label="Copy">Copy</button></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card p-6">
+                  <h3 class="font-display text-lg">Flatpak</h3>
+                  <p class="text-muted mt-2 text-[0.9rem]">Sandboxed apps from Flathub, great for proprietary or newer builds.</p>
+                  <div class="mt-4 space-y-3">
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Install an app</p>
+                      <div class="code-block"><code>flatpak install flathub org.app</code><button class="copy-btn" data-copy="flatpak install flathub org.app" data-label="Copy">Copy</button></div>
+                    </div>
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Search Flathub</p>
+                      <div class="code-block"><code>flatpak search app</code><button class="copy-btn" data-copy="flatpak search app" data-label="Copy">Copy</button></div>
+                    </div>
+                    <div>
+                      <p class="text-faint text-[0.8rem] mb-1.5">Run an installed app</p>
+                      <div class="code-block"><code>flatpak run org.app</code><button class="copy-btn" data-copy="flatpak run org.app" data-label="Copy">Copy</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="text-muted mt-5 text-[0.9rem] leading-relaxed">You can also browse and install both Pacman and Flatpak software graphically with <span class="text-white">KDE Discover</span>.</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 7. UPDATES -->
+            <article id="updates" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Staying current</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Updates</h2>
+              <p class="text-muted mt-4 leading-relaxed">Theonix OS is a <span class="text-white">rolling release</span> &mdash; there are no big version upgrades. You install once and keep the system current with regular updates.</p>
+              <p class="text-muted mt-4 leading-relaxed">Update the full system (databases and packages) with a single command:</p>
+              <div class="code-block mt-4"><code>sudo pacman -Syu</code><button class="copy-btn" data-copy="sudo pacman -Syu" data-label="Copy">Copy</button></div>
+              <p class="text-muted mt-5 leading-relaxed">Keep your Flatpak apps fresh too:</p>
+              <div class="code-block mt-4"><code>flatpak update</code><button class="copy-btn" data-copy="flatpak update" data-label="Copy">Copy</button></div>
+              <p class="text-muted mt-5 leading-relaxed">Update regularly rather than saving up months of changes &mdash; smaller, frequent updates are less disruptive. Before a large update, it&rsquo;s good practice to skim the latest Arch news for any manual interventions, and avoid partial upgrades (never run <span class="font-mono text-[0.85rem]">-Sy</span> on its own to install a single package).</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 8. RECOVERY -->
+            <article id="recovery" class="scroll-mt-24 reveal">
+              <p class="eyebrow">When things break</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Recovery</h2>
+              <p class="text-muted mt-4 leading-relaxed">If the desktop won&rsquo;t start or a boot fails, you can usually repair the system without reinstalling.</p>
+
+              <h3 class="font-display text-lg mt-6">Boot to a TTY</h3>
+              <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">If graphics fail but the system boots, switch to a text console with <span class="font-mono text-[0.85rem]">Ctrl</span>+<span class="font-mono text-[0.85rem]">Alt</span>+<span class="font-mono text-[0.85rem]">F3</span> and log in. From there you can inspect logs, roll back a package or reconfigure the display.</p>
+
+              <h3 class="font-display text-lg mt-6">Chroot from the live USB</h3>
+              <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">Boot the Theonix live USB, then mount your installed root (and EFI partition, if UEFI) and enter it with <span class="font-mono text-[0.85rem]">arch-chroot</span>. Substitute your real partition names from <span class="font-mono text-[0.85rem]">lsblk</span>.</p>
+              <div class="code-block mt-4"><code>sudo mount /dev/sdXn /mnt &amp;&amp; sudo arch-chroot /mnt</code><button class="copy-btn" data-copy="sudo mount /dev/sdXn /mnt && sudo arch-chroot /mnt" data-label="Copy">Copy</button></div>
+
+              <h3 class="font-display text-lg mt-6">Reinstall GRUB</h3>
+              <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">From inside the chroot, reinstall the bootloader (UEFI example) and regenerate its config:</p>
+              <div class="code-block mt-4"><code>grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Theonix</code><button class="copy-btn" data-copy="grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Theonix" data-label="Copy">Copy</button></div>
+              <div class="code-block mt-3"><code>grub-mkconfig -o /boot/grub/grub.cfg</code><button class="copy-btn" data-copy="grub-mkconfig -o /boot/grub/grub.cfg" data-label="Copy">Copy</button></div>
+
+              <h3 class="font-display text-lg mt-6">Fix a broken update</h3>
+              <p class="text-muted mt-2 text-[0.95rem] leading-relaxed">If an interrupted update left the system inconsistent, from a TTY or chroot refresh the keyring, then complete the upgrade:</p>
+              <div class="code-block mt-4"><code>sudo pacman -Sy archlinux-keyring &amp;&amp; sudo pacman -Su</code><button class="copy-btn" data-copy="sudo pacman -Sy archlinux-keyring && sudo pacman -Su" data-label="Copy">Copy</button></div>
+              <p class="text-muted mt-3 text-[0.9rem] leading-relaxed">If a single recently upgraded package is the culprit, you can roll it back from the pacman cache in <span class="font-mono text-[0.85rem]">/var/cache/pacman/pkg/</span> with <span class="font-mono text-[0.85rem]">sudo pacman -U</span>.</p>
+            </article>
+
+            <div class="divider"></div>
+
+            <!-- 9. TROUBLESHOOT -->
+            <article id="troubleshoot" class="scroll-mt-24 reveal">
+              <p class="eyebrow">Common issues</p>
+              <h2 class="heading-2 font-display font-bold mt-3">Troubleshooting</h2>
+              <p class="text-muted mt-4 leading-relaxed">A few problems come up often. Expand a topic for the fix.</p>
+
+              <div class="mt-6 space-y-4">
+                <details class="card p-5">
+                  <summary class="faq-q"><span class="font-medium">The USB won&rsquo;t boot</span>
+                    <svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                  </summary>
+                  <div class="text-muted mt-3 text-[0.95rem] leading-relaxed space-y-2">
+                    <p>Work through these in order:</p>
+                    <ul class="space-y-1.5">
+                      <li class="flex gap-2"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Disable Secure Boot</span> in firmware &mdash; unsigned live media is blocked otherwise.</span></li>
+                      <li class="flex gap-2"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Re-flash the stick</span> using DD / image mode; a file-copy or incomplete write won&rsquo;t boot.</span></li>
+                      <li class="flex gap-2"><span style="color:var(--theo-cyan)">&bull;</span><span><span class="text-white">Verify the checksum</span> &mdash; a corrupt download fails silently. Re-download if the SHA256 doesn&rsquo;t match.</span></li>
+                      <li class="flex gap-2"><span style="color:var(--theo-cyan)">&bull;</span><span>Try another USB port (prefer a rear or USB 2.0 port) or a different stick.</span></li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="card p-5">
+                  <summary class="faq-q"><span class="font-medium">No Wi-Fi after install</span>
+                    <svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                  </summary>
+                  <div class="text-muted mt-3 text-[0.95rem] leading-relaxed space-y-2">
+                    <p>Connect from a terminal using NetworkManager&rsquo;s text UI:</p>
+                    <div class="code-block"><code>nmtui</code><button class="copy-btn" data-copy="nmtui" data-label="Copy">Copy</button></div>
+                    <p>Choose <em>Activate a connection</em>, pick your network and enter the password. If no wireless device appears at all, your adapter may need a firmware package (for example <span class="font-mono text-[0.85rem]">linux-firmware</span>) &mdash; connect over Ethernet or USB tethering once to install it.</p>
+                  </div>
+                </details>
+
+                <details class="card p-5">
+                  <summary class="faq-q"><span class="font-medium">NVIDIA black screen on boot</span>
+                    <svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                  </summary>
+                  <div class="text-muted mt-3 text-[0.95rem] leading-relaxed space-y-2">
+                    <p>At the GRUB menu, press <span class="font-mono text-[0.85rem]">e</span> to edit the boot entry, add <span class="font-mono text-[0.85rem]">nomodeset</span> to the <span class="font-mono text-[0.85rem]">linux</span> line, then boot with <span class="font-mono text-[0.85rem]">Ctrl</span>+<span class="font-mono text-[0.85rem]">X</span>. Once you reach the desktop, install the proprietary driver:</p>
+                    <div class="code-block"><code>sudo pacman -S nvidia</code><button class="copy-btn" data-copy="sudo pacman -S nvidia" data-label="Copy">Copy</button></div>
+                    <p>Reboot afterwards. The temporary <span class="font-mono text-[0.85rem]">nomodeset</span> option is only needed to get in the first time.</p>
+                  </div>
+                </details>
+              </div>
+            </article>
+
+            <!-- HELP NOTE -->
+            <div class="card card-spot p-8 reveal">
+              <p class="eyebrow">Still stuck?</p>
+              <h2 class="font-display text-2xl mt-3">Get a hand from the community</h2>
+              <p class="text-muted mt-3 leading-relaxed">If the docs didn&rsquo;t cover your case, ask on the forum or open an issue &mdash; include your hardware, what you tried and any error messages.</p>
+              <div class="flex flex-wrap gap-3 mt-6">
+                <a href="https://community.theonix.org/" rel="noopener" class="btn btn-ghost">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+                  Community forum
+                </a>
+                <a href="https://github.com/theonix-os/theonix/issues" rel="noopener" class="btn btn-ghost">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.09.68-.22.68-.48v-1.7c-2.78.62-3.37-1.2-3.37-1.2-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.36 1.12 2.94.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.35 4.79-4.58 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.02 10.02 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>
+                  GitHub issues
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+</body>
+</html>

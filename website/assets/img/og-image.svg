@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#070b14"/>
+      <stop offset="1" stop-color="#0a1224"/>
+    </linearGradient>
+    <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#22d3ee"/><stop offset="0.55" stop-color="#3b82f6"/><stop offset="1" stop-color="#6c63ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop stop-color="#22d3ee" stop-opacity="0.35"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="960" cy="150" r="360" fill="url(#glow)"/>
+  <g transform="translate(90,210)">
+    <path d="M60 4 108 30v54L60 110 12 84V30L60 4Z" stroke="url(#tg)" stroke-width="4" fill="rgba(34,211,238,0.08)"/>
+    <path d="M32 42h56M60 42v46" stroke="url(#tg)" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="230" y="288" font-family="Space Grotesk, Arial, sans-serif" font-size="76" font-weight="700" fill="#ffffff">Theonix OS</text>
+  <text x="232" y="352" font-family="Inter, Arial, sans-serif" font-size="34" fill="#9aa7c7">A modern Arch-based Linux distribution</text>
+  <g transform="translate(232,420)">
+    <rect width="290" height="62" rx="14" fill="url(#tg)"/>
+    <text x="145" y="40" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="600" fill="#04121a">Download Theonix OS</text>
+  </g>
+  <text x="90" y="592" font-family="JetBrains Mono, monospace" font-size="22" fill="#38bdf8">theonixos.xyz</text>
+</svg>

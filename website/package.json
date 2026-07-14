@@ -1,0 +1,14 @@
+{
+  "name": "theonix-os-website",
+  "version": "1.0.0",
+  "description": "Official website for Theonix OS — modern, AI-powered, Arch-based Linux distribution.",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./assets/css/theonix.min.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./assets/css/theonix.min.css --watch",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
