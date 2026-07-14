@@ -7,3 +7,15 @@
   
   # The directory containing the built HTML/CSS files to deploy
   publish = "."
+
+[[redirects]]
+  from = "/docs"
+  to = "/documentation.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/download"
+  to = "/download.html"
+  status = 301
+  force = true
