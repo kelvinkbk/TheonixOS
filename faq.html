@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ — Theonix OS</title>
+  <meta name="description" content="Frequently asked questions about Theonix OS — what it is, what it's based on, system requirements, installation, dual-boot, Secure Boot, updates, and where to get help." />
+  <meta name="keywords" content="Theonix OS FAQ, questions, Arch Linux, KDE Plasma 6, system requirements, dual boot, Secure Boot, updates" />
+  <meta name="author" content="Kelvin Benny Koshy" />
+  <meta name="theme-color" content="#06090f" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://theonixos.xyz/faq.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Theonix OS" />
+  <meta property="og:title" content="FAQ — Theonix OS" />
+  <meta property="og:description" content="Answers to common questions about Theonix OS." />
+  <meta property="og:url" content="https://theonixos.xyz/faq.html" />
+  <meta property="og:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FAQ — Theonix OS" />
+  <meta name="twitter:description" content="Answers to common questions about Theonix OS." />
+  <meta name="twitter:image" content="https://theonixos.xyz/assets/img/og-image.svg" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" /></noscript>
+
+  <link rel="stylesheet" href="assets/css/theonix.min.css" />
+  <script defer src="assets/js/components.js"></script>
+  <script defer src="assets/js/main.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is Theonix OS?", "acceptedAnswer": { "@type": "Answer", "text": "Theonix OS is a modern Linux distribution based on Arch Linux, featuring KDE Plasma 6 on Wayland, a rolling release model, a custom Calamares installer and its own package repository." } },
+      { "@type": "Question", "name": "Is Theonix OS free and open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Theonix OS is free to download and use, and is released under the GPL." } },
+      { "@type": "Question", "name": "What is Theonix OS based on?", "acceptedAnswer": { "@type": "Answer", "text": "It is based on Arch Linux and uses the Pacman package manager, with Flatpak also available." } },
+      { "@type": "Question", "name": "Which desktop environment does it use?", "acceptedAnswer": { "@type": "Answer", "text": "KDE Plasma 6, running on Wayland by default, with the custom Theonix theme and branding." } },
+      { "@type": "Question", "name": "Is Theonix OS a rolling release?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. You install once and receive continuous updates through Pacman, rather than upgrading between fixed versions." } },
+      { "@type": "Question", "name": "What are the system requirements?", "acceptedAnswer": { "@type": "Answer", "text": "Minimum: a dual-core 64-bit CPU, 4 GB RAM and 25 GB of storage. Recommended: a quad-core CPU, 8 GB RAM, a 50 GB SSD and a GPU supporting OpenGL 3.3." } },
+      { "@type": "Question", "name": "How do I install Theonix OS?", "acceptedAnswer": { "@type": "Answer", "text": "Download the ISO, verify its SHA256 checksum, write it to a USB stick, boot the live session, then run the Calamares installer. See the documentation for step-by-step instructions." } },
+      { "@type": "Question", "name": "Can I dual-boot Theonix with Windows?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Back up your data, leave free space for Theonix, and install alongside your existing OS. GRUB will detect other operating systems." } },
+      { "@type": "Question", "name": "Do I need to disable Secure Boot?", "acceptedAnswer": { "@type": "Answer", "text": "You may need to disable Secure Boot in your firmware to boot the live installation media." } },
+      { "@type": "Question", "name": "Does Theonix OS have an AI assistant?", "acceptedAnswer": { "@type": "Answer", "text": "Not yet. A local, privacy-respecting AI assistant is planned for a future release." } },
+      { "@type": "Question", "name": "How do I update Theonix OS?", "acceptedAnswer": { "@type": "Answer", "text": "Run 'sudo pacman -Syu' to update system packages, and 'flatpak update' for Flatpak applications." } },
+      { "@type": "Question", "name": "How do I get help or report a bug?", "acceptedAnswer": { "@type": "Answer", "text": "Ask on the community forum or open an issue on the Theonix GitHub repository." } }
+    ]
+  }
+  </script>
+  <link rel="preload" href="assets/img/logo.svg" as="image" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+</head>
+
+<body>
+  <div class="bg-space" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div data-site-header></div>
+
+  <main id="main">
+    <section class="pt-32 pb-12">
+      <div class="container-x">
+        <div class="max-w-3xl reveal">
+          <p class="eyebrow">FAQ</p>
+          <h1 class="heading-hero font-display font-bold mt-5">Frequently asked questions</h1>
+          <p class="lead mt-6">Short, honest answers about what Theonix OS is and how to run it. Can&rsquo;t find what you need? Ask the <a href="community.html" class="link-arrow" style="display:inline-flex">community</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pt-4">
+      <div class="container-x">
+        <div class="max-w-3xl space-y-10">
+
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold mb-5">General</h2>
+            <div class="space-y-3">
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">What is Theonix OS?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">A modern Linux distribution based on Arch Linux, with KDE&nbsp;Plasma&nbsp;6 on Wayland, a rolling release model, a custom Calamares installer and its own package repository.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Is it free and open source?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Yes &mdash; free to download and use, released under the GPL.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">What is it based on?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Arch Linux, using the Pacman package manager, with Flatpak available for sandboxed apps.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Which desktop does it use?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">KDE&nbsp;Plasma&nbsp;6 on Wayland, with the custom Theonix theme and branding.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Is it a rolling release?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Yes. Install once and keep updating &mdash; there are no fixed versions to reinstall over.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Does Theonix have an AI assistant?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Not yet. A local, privacy-respecting AI assistant is <span class="badge badge-soon">Planned</span> for a future release &mdash; it is not part of the current version.</p></details>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold mb-5">Installation</h2>
+            <div class="space-y-3">
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">What are the system requirements?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]"><span class="text-white">Minimum:</span> dual-core 64-bit CPU, 4&nbsp;GB RAM, 25&nbsp;GB storage. <span class="text-white">Recommended:</span> quad-core CPU, 8&nbsp;GB RAM, 50&nbsp;GB SSD, GPU with OpenGL&nbsp;3.3.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">How do I install it?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Download and <a href="verify.html" class="link-arrow" style="display:inline-flex">verify</a> the ISO, write it to a USB stick, boot the live session, and run the Calamares installer. See the <a href="documentation.html#install" class="link-arrow" style="display:inline-flex">documentation</a>.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Can I dual-boot with Windows?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Yes. Back up first, leave free space for Theonix and install alongside your existing OS &mdash; GRUB will detect other systems. See the <a href="documentation.html#dual-boot" class="link-arrow" style="display:inline-flex">dual-boot notes</a>.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">Do I need to disable Secure Boot?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">You may need to disable Secure Boot in your firmware to boot the live media. See the <a href="documentation.html#secure-boot" class="link-arrow" style="display:inline-flex">Secure Boot section</a>.</p></details>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <h2 class="heading-2 font-display font-bold mb-5">Usage &amp; support</h2>
+            <div class="space-y-3">
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">How do I update Theonix?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Update system packages with <span class="font-mono text-[0.85rem]">sudo pacman -Syu</span> and Flatpak apps with <span class="font-mono text-[0.85rem]">flatpak update</span>. As a rolling release, updating regularly is recommended.</p></details>
+              <details class="card p-6"><summary class="faq-q"><span class="font-medium">How do I get help or report a bug?</span><svg class="faq-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg></summary><p class="text-muted mt-3 text-[0.95rem]">Ask on the <a href="https://community.theonix.org/" rel="noopener" class="link-arrow" style="display:inline-flex">forum</a> or open an issue on <a href="https://github.com/theonix-os/theonix/issues" rel="noopener" class="link-arrow" style="display:inline-flex">GitHub</a>. See the <a href="community.html" class="link-arrow" style="display:inline-flex">community page</a> for all channels.</p></details>
+            </div>
+          </div>
+
+          <div class="card p-6 reveal text-center">
+            <p class="text-muted text-[0.95rem]">Still have a question? Join the <a href="community.html" class="link-arrow" style="display:inline-flex">community</a> or read the <a href="documentation.html" class="link-arrow" style="display:inline-flex">documentation</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+</body>
+</html>
