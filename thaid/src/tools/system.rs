@@ -51,8 +51,33 @@ pub async fn execute_system_tool(name: &str, args: &Value) -> Option<String> {
             }
         }
         "run_os_command" => {
-            if let Some(command) = args.get("command").and_then(|v| v.as_str()) {
-                let output = Command::new("bash").arg("-c").arg(command).output().await;
+            let mut command_to_run = None;
+            if let Some(cmd) = args.get("command").and_then(|v| v.as_str()) {
+                command_to_run = Some(cmd.to_string());
+            } else if let Some(cmd) = args.get("cmd").and_then(|v| v.as_str()) {
+                command_to_run = Some(cmd.to_string());
+            } else if let Some(cmd) = args.get("script").and_then(|v| v.as_str()) {
+                command_to_run = Some(cmd.to_string());
+            } else if let Some(cmd) = args.as_str() {
+                command_to_run = Some(cmd.to_string());
+            } else if let Some(obj) = args.as_object() {
+                // If the LLM dumped it in some other key
+                if let Some((_, val)) = obj.iter().next() {
+                    if let Some(s) = val.as_str() {
+                        command_to_run = Some(s.to_string());
+                    }
+                }
+            }
+
+            if let Some(command) = command_to_run {
+                // Wrap in timeout so launching GUI apps doesn't hang the AI permanently
+                let output = Command::new("timeout")
+                    .arg("5")
+                    .arg("bash")
+                    .arg("-c")
+                    .arg(&command)
+                    .output()
+                    .await;
 
                 match output {
                     Ok(out) => {
@@ -61,9 +86,11 @@ pub async fn execute_system_tool(name: &str, args: &Value) -> Option<String> {
 
                         if out.status.success() {
                             Some(format!("Success.\n{stdout}"))
+                        } else if out.status.code() == Some(124) {
+                            Some(format!("Command timed out after 5 seconds (this is normal if starting a long-running GUI app).\n{stdout}\n{stderr}"))
                         } else {
                             Some(format!(
-                                "Failed (code {}).\n{stderr}",
+                                "Failed (code {}).\n{stderr}\n{stdout}",
                                 out.status.code().unwrap_or(1)
                             ))
                         }
@@ -71,7 +98,7 @@ pub async fn execute_system_tool(name: &str, args: &Value) -> Option<String> {
                     Err(e) => Some(format!("Execution failed: {e}")),
                 }
             } else {
-                Some("Error: Missing command argument".to_string())
+                Some(format!("Error: Missing command argument. Received: {}", args))
             }
         }
         _ => None,
