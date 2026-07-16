@@ -22,13 +22,22 @@ impl WhisperTranscriber {
     /// Transcribe an audio file to text. The audio_path must be a WAV file.
     /// Returns the transcribed text.
     pub async fn transcribe(&self, audio_path: &PathBuf) -> Result<String> {
-        let model_path = format!(
+        let mut model_path = format!(
             "/usr/share/theonix/models/whisper/ggml-{}.bin",
             self.model_size
         );
 
         if !std::path::Path::new(&model_path).exists() {
-            anyhow::bail!("Whisper model not found at {model_path}");
+            if let Some(home) = dirs::home_dir() {
+                let local_path = home.join(format!(".local/share/theonix/models/whisper/ggml-{}.bin", self.model_size));
+                if local_path.exists() {
+                    model_path = local_path.to_string_lossy().to_string();
+                }
+            }
+        }
+
+        if !std::path::Path::new(&model_path).exists() {
+            anyhow::bail!("Whisper model not found at {model_path} or ~/.local/share/...");
         }
 
         info!(model = %self.model_size, path = %audio_path.display(), "Transcribing audio");
