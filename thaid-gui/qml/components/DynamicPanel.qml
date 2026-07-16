@@ -95,28 +95,34 @@ Item {
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 300 } }
 
-        Text {
-            id: chatText
-            anchors.centerIn: parent
-            width: parent.width
-            text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
-            color: "#eeeeee"
-            font.pixelSize: 16
-            font.family: "Inter, Roboto, sans-serif"
-            wrapMode: Text.WordWrap
-            font.weight: Font.Normal
-            lineHeight: 1.4
-            horizontalAlignment: Text.AlignHCenter
-            
-            // Listen to the python/DBus backend for real responses
-            Connections {
-                target: typeof thaidState !== "undefined" ? thaidState : null
-                function onResponseReceived(response) {
-                    chatText.text = "\"" + response + "\""
-                }
-                function onAmbientNotificationReceived(message) {
-                    chatText.text = "🔔 " + message
-                    thaidState.setState("chat")
+        ScrollView {
+            anchors.fill: parent
+            contentWidth: availableWidth
+            contentHeight: chatText.paintedHeight
+            clip: true
+
+            Text {
+                id: chatText
+                width: parent.width
+                text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
+                color: "#eeeeee"
+                font.pixelSize: 16
+                font.family: "Inter, Roboto, sans-serif"
+                wrapMode: Text.WordWrap
+                font.weight: Font.Normal
+                lineHeight: 1.4
+                horizontalAlignment: Text.AlignHCenter
+                
+                // Listen to the python/DBus backend for real responses
+                Connections {
+                    target: typeof thaidState !== "undefined" ? thaidState : null
+                    function onResponseReceived(response) {
+                        chatText.text = "\"" + response + "\""
+                    }
+                    function onAmbientNotificationReceived(message) {
+                        chatText.text = "🔔 " + message
+                        thaidState.setState("chat")
+                    }
                 }
             }
         }
@@ -143,37 +149,50 @@ Item {
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 300 } }
 
-        TextField {
-            id: typingInput
-            anchors.centerIn: parent
-            width: parent.width
-            placeholderText: "Type a command..."
-            color: "white"
-            placeholderTextColor: "#888"
-            font.pixelSize: 16
-            font.family: "Inter, Roboto, sans-serif"
-            
-            background: Item {} // Transparent background
-            
-            onAccepted: {
-                if (text.trim() !== "") {
-                    if (typeof thaidState !== "undefined") {
-                        thaidState.submitQuery(text)
-                        text = ""
-                    }
-                } else {
-                    if (typeof thaidState !== "undefined") {
-                        thaidState.setState("idle")
+        ScrollView {
+            anchors.fill: parent
+            contentWidth: availableWidth
+            clip: true
+
+            TextArea {
+                id: typingInput
+                width: parent.width
+                placeholderText: "Type a command..."
+                color: "white"
+                placeholderTextColor: "#888"
+                font.pixelSize: 16
+                font.family: "Inter, Roboto, sans-serif"
+                wrapMode: Text.WordWrap
+                
+                background: Item {} // Transparent background
+                
+                Keys.onReturnPressed: (event) => {
+                    if (event.modifiers & Qt.ShiftModifier) {
+                        // Allow Shift+Enter for new line
+                        event.accepted = false;
+                    } else {
+                        // Enter submits
+                        event.accepted = true;
+                        if (text.trim() !== "") {
+                            if (typeof thaidState !== "undefined") {
+                                thaidState.submitQuery(text)
+                                text = ""
+                            }
+                        } else {
+                            if (typeof thaidState !== "undefined") {
+                                thaidState.setState("idle")
+                            }
+                        }
                     }
                 }
-            }
-            
-            // Auto-focus when state becomes typing
-            Connections {
-                target: panelContainer
-                function onAiStateChanged() {
-                    if (panelContainer.aiState === "typing") {
-                        typingInput.forceActiveFocus()
+                
+                // Auto-focus when state becomes typing
+                Connections {
+                    target: panelContainer
+                    function onAiStateChanged() {
+                        if (panelContainer.aiState === "typing") {
+                            typingInput.forceActiveFocus()
+                        }
                     }
                 }
             }
@@ -212,12 +231,12 @@ Item {
         State {
             name: "chat"
             when: panelContainer.aiState === "chat"
-            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: Math.max(120, chatText.paintedHeight + 60); targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
+            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: Math.min(600, Math.max(120, chatText.paintedHeight + 60)); targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
         },
         State {
             name: "typing"
             when: panelContainer.aiState === "typing"
-            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 80; targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
+            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: Math.min(300, Math.max(80, typingInput.contentHeight + 40)); targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
         }
     ]
 }
