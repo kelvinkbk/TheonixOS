@@ -12,6 +12,9 @@ Item {
     width: targetWidth
     height: targetHeight
     
+    Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
+    Behavior on height { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
+    
     property int targetWidth: 40
     property int targetHeight: 40
     property int targetRadius: 20
@@ -29,8 +32,6 @@ Item {
         border.width: 1
 
         // Smooth physics-based spring animation for expansion
-        Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
-        Behavior on height { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
         Behavior on radius { NumberAnimation { duration: 400; easing.type: Easing.InOutQuad } }
     }
 

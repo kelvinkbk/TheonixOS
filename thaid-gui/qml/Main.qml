@@ -5,8 +5,8 @@ import "components"
 
 Window {
     id: root
-    width: dynamicPanel.width
-    height: dynamicPanel.height
+    width: 600
+    height: 300
     visible: true
     title: "THAID"
     
@@ -15,7 +15,8 @@ Window {
     flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     
     // Position fixed to bottom-center
-    property int targetY: Screen.desktopAvailableHeight - height - 40
+    // The window is statically sized to avoid Wayland resize tearing.
+    property int targetY: Screen.desktopAvailableHeight - height
     property int targetX: (Screen.desktopAvailableWidth - width) / 2
 
     x: targetX
@@ -67,6 +68,8 @@ Window {
     // The main container that handles the Orb and the expanding panel
     DynamicPanel {
         id: dynamicPanel
-        anchors.centerIn: parent
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 40
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 }
