@@ -48,7 +48,7 @@ impl WhisperTranscriber {
                 .arg("--model")
                 .arg(&model_path)
                 .arg("--language")
-                .arg("auto")
+                .arg("en")
                 .arg("--output-txt")
                 .arg("--no-prints")
                 .arg("-f")

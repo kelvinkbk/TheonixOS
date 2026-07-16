@@ -68,7 +68,7 @@ impl Tool for SetVolumeTool {
 pub struct LaunchAppTool;
 impl Tool for LaunchAppTool {
     fn name(&self) -> &str { "launch_app" }
-    fn description(&self) -> &str { "Launch an application safely by name." }
+    fn description(&self) -> &str { "Open or launch a graphical desktop application (e.g. Chrome, Firefox) by name." }
     fn schema(&self) -> Value {
         json!({
             "type": "function",
@@ -77,7 +77,7 @@ impl Tool for LaunchAppTool {
                 "description": self.description(),
                 "parameters": {
                     "type": "object",
-                    "properties": { "app_name": { "type": "string", "description": "The name of the executable to launch" } },
+                    "properties": { "app_name": { "type": "string", "description": "The name of the application to launch (e.g., 'chrome', 'firefox')" } },
                     "required": ["app_name"]
                 }
             }
@@ -86,7 +86,22 @@ impl Tool for LaunchAppTool {
     fn execute<'a>(&'a self, args: &'a Value) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
         Box::pin(async move {
             if let Some(app) = args.get("app_name").and_then(|v| v.as_str()) {
-                let _ = Command::new(app).spawn();
+                let app_lower = app.to_lowercase();
+                let binary = match app_lower.as_str() {
+                    "chrome" | "google chrome" => "(google-chrome-stable || google-chrome || chromium || chromium-browser)",
+                    "firefox" | "mozilla" => "(firefox || firefox-developer-edition || librewolf)",
+                    "discord" => "(discord || discord-canary || webcord)",
+                    "terminal" | "console" => "(konsole || alacritty || kitty || gnome-terminal || xterm)",
+                    "files" | "file manager" => "(dolphin || nautilus || thunar || pcmanfm)",
+                    "settings" => "(systemsettings || gnome-control-center || xfce4-settings-manager)",
+                    _ => app,
+                };
+                
+                let _ = Command::new("bash")
+                    .arg("-c")
+                    .arg(format!("{} &", binary))
+                    .spawn();
+                    
                 Some(format!("Launched application: {}", app))
             } else {
                 Some("Error: Missing app_name argument".to_string())
