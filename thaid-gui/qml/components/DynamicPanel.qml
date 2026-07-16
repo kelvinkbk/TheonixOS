@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import QtQuick.Controls
 
 Item {
     id: panelContainer
@@ -131,6 +132,53 @@ Item {
         }
     }
 
+    // Typing Card Content
+    Item {
+        id: contentTyping
+        anchors.fill: parent
+        anchors.margins: 20
+        anchors.leftMargin: 80
+        opacity: panelContainer.aiState === "typing" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 300 } }
+
+        TextField {
+            id: typingInput
+            anchors.centerIn: parent
+            width: parent.width
+            placeholderText: "Type a command..."
+            color: "white"
+            placeholderTextColor: "#888"
+            font.pixelSize: 16
+            font.family: "Inter, Roboto, sans-serif"
+            
+            background: Item {} // Transparent background
+            
+            onAccepted: {
+                if (text.trim() !== "") {
+                    if (typeof thaidState !== "undefined") {
+                        thaidState.submitQuery(text)
+                        text = ""
+                    }
+                } else {
+                    if (typeof thaidState !== "undefined") {
+                        thaidState.setState("idle")
+                    }
+                }
+            }
+            
+            // Auto-focus when state becomes typing
+            Connections {
+                target: panelContainer
+                function onAiStateChanged() {
+                    if (panelContainer.aiState === "typing") {
+                        typingInput.forceActiveFocus()
+                    }
+                }
+            }
+        }
+    }
+
     // --- State Machine ---
     property real orbOpacity: 1.0
 
@@ -164,6 +212,11 @@ Item {
             name: "chat"
             when: panelContainer.aiState === "chat"
             PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: Math.max(120, chatText.paintedHeight + 60); targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
+        },
+        State {
+            name: "typing"
+            when: panelContainer.aiState === "typing"
+            PropertyChanges { target: panelContainer; targetWidth: 340; targetHeight: 80; targetRadius: 24; orbXOffset: -140; orbScale: 0.6; orbOpacity: 0.3 }
         }
     ]
 }

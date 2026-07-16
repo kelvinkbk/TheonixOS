@@ -78,6 +78,11 @@ Item {
                     thaidState.toggleListening()
                 }
             }
+            onDoubleClicked: {
+                if (typeof thaidState !== "undefined") {
+                    thaidState.setState("typing")
+                }
+            }
         }
     }
 
@@ -87,7 +92,7 @@ Item {
     function updateParticles() {
         var state = orbContainer.aiState;
 
-        if (state === "idle" || state === "weather" || state === "chat") {
+        if (state === "idle" || state === "weather" || state === "chat" || state === "typing") {
             particleEngine.interval = 1000;
             for (var i = 0; i < particleRepeater.count; i++) {
                 var p = particleRepeater.itemAt(i);
@@ -166,7 +171,9 @@ Item {
         State { name: "thinking"; when: orbContainer.aiState === "thinking"
             PropertyChanges { target: orbContainer; currentSize: baseSize } },
         State { name: "speaking"; when: orbContainer.aiState === "speaking"
-            PropertyChanges { target: orbContainer; currentSize: expandedSize } }
+            PropertyChanges { target: orbContainer; currentSize: expandedSize } },
+        State { name: "typing"; when: orbContainer.aiState === "typing"
+            PropertyChanges { target: orbContainer; currentSize: baseSize } }
     ]
 
     transitions: [
