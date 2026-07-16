@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result};
 use rusqlite::{params, Connection};
+pub mod vector;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use tracing::{debug, info};

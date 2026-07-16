@@ -118,6 +118,7 @@ impl ModelManager {
         prompt: &str,
         model: Option<&str>,
         memory: &Arc<RwLock<ConversationStore>>,
+        tool_executor: &Arc<crate::services::tools::ToolExecutor>,
     ) -> Result<String> {
         let model_name = self.ensure_loaded(model).await?;
 
@@ -138,7 +139,7 @@ impl ModelManager {
             "content": prompt
         }));
 
-        let tools = serde_json::Value::Array(crate::tools::get_all_tools());
+        let tools = serde_json::Value::Array(tool_executor.get_all_tools());
 
         let payload = serde_json::json!({
             "model": model_name,
@@ -199,7 +200,7 @@ impl ModelManager {
 
                         info!(tool = %name, "Executing AI tool call");
                         if let Some(result_text) =
-                            crate::tools::execute_tool(name, &args, memory).await
+                            tool_executor.execute_tool(name, &args, memory).await
                         {
                             let mut t_res = serde_json::json!({
                                 "role": "tool",

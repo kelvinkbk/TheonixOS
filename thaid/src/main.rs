@@ -21,14 +21,8 @@ use tracing::info;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 mod config;
-mod dbus;
-mod error;
-mod hardware;
-mod memory;
-mod models;
-mod permissions;
-mod tools;
-mod voice;
+pub mod services;
+pub use services::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -95,6 +89,42 @@ async fn main() -> Result<()> {
         mgr_clone.run_idle_watcher().await;
     });
 
+    let permission_manager = std::sync::Arc::new(tokio::sync::RwLock::new(
+        crate::services::permissions::PermissionManager::new(),
+    ));
+
+    let mut executor = crate::services::tools::ToolExecutor::new(permission_manager.clone());
+    
+    // Register migrated trait-based tools
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::GetSystemInfoTool));
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::SetVolumeTool));
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::LaunchAppTool));
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::RunOsCommandTool));
+    
+    // Register Phase 4 Desktop tools
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::ReadClipboardTool));
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::SendNotificationTool));
+    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::KRunnerSearchTool));
+
+    let tool_executor = std::sync::Arc::new(executor);
+
+    let memory_arc = std::sync::Arc::new(tokio::sync::RwLock::new(memory));
+    
+    let event_bus = std::sync::Arc::new(crate::services::event_bus::EventBus::new());
+    
+    let metrics = std::sync::Arc::new(crate::services::metrics::MetricsService::new());
+
+    let container = crate::services::container::ServiceContainer::new(
+        permission_manager,
+        tool_executor,
+        memory_arc.clone(),
+        model_manager.clone(),
+        event_bus,
+        metrics,
+    );
+
+    let planner = crate::services::planner::Planner::new(container);
+
     // ---- D-Bus service registration ----------------------------------------
     let connection = zbus::connection::Builder::session()
         .context("Cannot connect to D-Bus session bus")?
@@ -102,7 +132,7 @@ async fn main() -> Result<()> {
         .context("Cannot acquire D-Bus name org.theonix.AI — another instance may be running")?
         .serve_at(
             "/org/theonix/AI",
-            dbus::AIInterface::new(config.clone(), model_manager.clone(), memory),
+            dbus::AIInterface::new(config.clone(), model_manager.clone(), memory_arc.clone(), planner),
         )
         .context("Failed to register D-Bus object")?
         .build()

@@ -12,29 +12,33 @@ use tracing::{error, info, warn};
 use uuid::Uuid;
 use zbus::interface;
 
-/// Implements the org.theonix.AI D-Bus interface.
-/// This is the primary interface for all AI operations.
+use crate::services::planner::Planner;
+
 pub struct AIInterface {
     config: ThaidConfig,
-    model_manager: Arc<ModelManager>,
-    memory: Arc<RwLock<ConversationStore>>,
+    planner: Planner,
     whisper: WhisperTranscriber,
     piper: PiperTts,
+    // Keep model_manager and memory for get_status and list_models
+    model_manager: Arc<ModelManager>,
+    memory: Arc<RwLock<ConversationStore>>,
 }
 
 impl AIInterface {
     pub fn new(
         config: ThaidConfig,
         model_manager: Arc<ModelManager>,
-        memory: ConversationStore,
+        memory: Arc<RwLock<ConversationStore>>,
+        planner: Planner,
     ) -> Self {
         let whisper = WhisperTranscriber::new(config.whisper_model.clone());
         let piper = PiperTts::new(config.piper_voice_path.clone());
 
         Self {
             config,
+            planner,
             model_manager,
-            memory: Arc::new(RwLock::new(memory)),
+            memory,
             whisper,
             piper,
         }
@@ -43,21 +47,12 @@ impl AIInterface {
 
 #[interface(name = "org.theonix.AI")]
 impl AIInterface {
-    /// Emit a proactive notification to the user's desktop.
     #[zbus(signal)]
     pub async fn ambient_notification(
         ctxt: &zbus::SignalContext<'_>,
         message: &str,
     ) -> zbus::Result<()>;
-    /// Send a text prompt and receive the full response synchronously.
-    ///
-    /// Parameters:
-    ///   prompt:  The user's text input
-    ///   options: Optional map of key-value options:
-    ///              "model"   — override the default model
-    ///              "session" — session ID for memory continuity
-    ///
-    /// Returns: The AI's response text
+
     async fn query(
         &self,
         prompt: String,
@@ -71,100 +66,18 @@ impl AIInterface {
 
         info!(prompt_len = prompt.len(), "Query received");
 
-        // Extract optional model override
-        let model_override: Option<String> = options
-            .get("model")
-            .and_then(|v| <&str>::try_from(v).ok())
-            .map(|s| s.to_string());
-
-        // Retrieve session context for memory continuity
-        let session_id: Option<String> = options
-            .get("session")
-            .and_then(|v| <&str>::try_from(v).ok())
-            .map(|s| s.to_string());
-
-        // Retrieve conversation history if session provided
-        let mut history = if let Some(ref sid) = session_id {
-            let memory = self.memory.read().await;
-            memory.get_history(sid).await.unwrap_or_default()
-        } else {
-            vec![]
-        };
-
-        // Fetch long-term memory facts and inject them as a system prompt
-        {
-            let memory = self.memory.read().await;
-            if let Ok(facts) = memory.get_all_facts().await {
-                if !facts.is_empty() {
-                    let mut facts_str = String::from("Here are some persistent facts you have learned about the user and MUST remember:\n");
-                    for (k, v) in facts {
-                        facts_str.push_str(&format!("- {}: {}\n", k, v));
-                    }
-                    // Insert at the beginning of the history so it acts as context
-                    history.insert(0, ("system".to_string(), facts_str));
-                }
-            }
-        }
-
-        // Instant Context Awareness (Phase 15)
-        // Fetch the currently active window via KWin to give THAID instant environmental awareness
-        let active_window_output = tokio::process::Command::new("bash")
-            .arg("-c")
-            .arg("qdbus org.kde.KWin /KWin supportInformation | grep -A 5 'Active Window'")
-            .output()
-            .await;
-
-        if let Ok(out) = active_window_output {
-            let info = String::from_utf8_lossy(&out.stdout).to_string();
-            if !info.trim().is_empty() {
-                let context_str = format!("ENVIRONMENT CONTEXT (For your awareness only, don't mention it unless relevant): The user's currently active window is:\n{}", info);
-                history.push(("system".to_string(), context_str));
-            }
-        }
-
-        // Multi-Agent Specialists Routing (Phase 12)
-        let lower_prompt = prompt.to_lowercase();
-        let routed_model = if model_override.is_some() {
-            model_override.clone()
-        } else if lower_prompt.contains("code")
-            || lower_prompt.contains("rust")
-            || lower_prompt.contains("python")
-            || lower_prompt.contains("bug")
-            || lower_prompt.contains("compile")
-            || lower_prompt.contains("error")
-            || lower_prompt.contains("script")
-        {
-            info!("Routing query to Coding Specialist (qwen2.5-coder:7b)");
-            Some("qwen2.5-coder:7b".to_string())
-        } else {
-            None // Falls back to default model
-        };
-
-        // Send to model manager (loads model lazily)
-        let response = self
-            .model_manager
-            .chat(&history, &prompt, routed_model.as_deref(), &self.memory)
-            .await
-            .map_err(|e| {
-                error!(error = %e, "Model query failed");
-                zbus::fdo::Error::Failed(format!("AI query failed: {e}"))
-            })?;
-
-        // Persist to conversation memory if session provided
-        if let Some(sid) = session_id {
-            let mut memory = self.memory.write().await;
-            if let Err(e) = memory.append_turn(&sid, &prompt, &response).await {
-                warn!(error = %e, "Failed to save conversation turn to memory");
-            } else if let Err(e) = memory
-                .enforce_limits(&sid, self.config.memory_max_turns)
-                .await
-            {
-                warn!(error = %e, "Failed to enforce conversation memory limits");
-            }
-        }
+        let response = self.planner.handle_query(prompt, options).await
+            .map_err(|e| zbus::fdo::Error::Failed(e))?;
 
         info!(response_len = response.len(), "Query completed");
         Ok(response)
+    }
+
+    /// Cancel an actively running query by its session ID
+    pub async fn cancel_query(&self, session_id: String) -> zbus::fdo::Result<()> {
+        info!(session_id = %session_id, "Cancelling query");
+        self.planner.cancel_query(&session_id).await;
+        Ok(())
     }
 
     /// Get the current daemon status.
