@@ -21,6 +21,9 @@ Item {
     property int orbXOffset: 0
     property real orbScale: 1.0
 
+    property int chatDynamicHeight: Math.min(600, Math.max(120, chatText.paintedHeight + 60))
+    property int typingDynamicHeight: Math.min(300, Math.max(80, typingInput.contentHeight + 40))
+
     // The Glassmorphism Base (The Void styling)
     Rectangle {
         id: panelBackground
@@ -104,6 +107,8 @@ Item {
             Text {
                 id: chatText
                 width: parent.width
+                height: Math.max(paintedHeight, parent.height)
+                verticalAlignment: Text.AlignVCenter
                 text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
                 color: "#eeeeee"
                 font.pixelSize: 16
@@ -157,6 +162,8 @@ Item {
             TextArea {
                 id: typingInput
                 width: parent.width
+                height: Math.max(contentHeight, parent.height)
+                verticalAlignment: TextInput.AlignVCenter
                 placeholderText: "Type a command..."
                 color: "white"
                 placeholderTextColor: "#888"
@@ -231,12 +238,12 @@ Item {
         State {
             name: "chat"
             when: panelContainer.aiState === "chat"
-            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: Math.min(600, Math.max(120, chatText.paintedHeight + 60)); targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
+            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: panelContainer.chatDynamicHeight; targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
         },
         State {
             name: "typing"
             when: panelContainer.aiState === "typing"
-            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: Math.min(300, Math.max(80, typingInput.contentHeight + 40)); targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
+            PropertyChanges { target: panelContainer; targetWidth: 400; targetHeight: panelContainer.typingDynamicHeight; targetRadius: 24; orbXOffset: -160; orbScale: 0.6; orbOpacity: 0.3 }
         }
     ]
 }
