@@ -8,6 +8,10 @@ license     = "GPL-2.0-only"
 repository  = "https://github.com/theonix-os/theonix"
 readme      = "README.md"
 
+[lib]
+name = "thaid"
+path = "src/lib.rs"
+
 [[bin]]
 name = "thaid"
 path = "src/main.rs"
@@ -21,6 +25,7 @@ tokio        = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 futures-util = "0.3"
 tokio-util   = "0.7"
+libloading   = "0.8"
 
 # HTTP client for Ollama REST API
 reqwest      = { version = "0.12", features = ["json", "stream"] }

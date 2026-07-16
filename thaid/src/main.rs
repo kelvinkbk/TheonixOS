@@ -93,6 +93,9 @@ async fn main() -> Result<()> {
         crate::services::permissions::PermissionManager::new(),
     ));
 
+    // Instantiate PluginManager early so it outlives ToolExecutor
+    let mut plugin_manager = crate::services::tools::plugin_manager::PluginManager::new();
+
     let mut executor = crate::services::tools::ToolExecutor::new(permission_manager.clone());
     
     // Register migrated trait-based tools
@@ -105,6 +108,20 @@ async fn main() -> Result<()> {
     executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::ReadClipboardTool));
     executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::SendNotificationTool));
     executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::KRunnerSearchTool));
+
+    // ---- Phase 5: Dynamic Plugin Loading ----
+    match plugin_manager.load_all_plugins() {
+        Ok(count) => {
+            info!("Loaded {} dynamic plugins", count);
+            for plugin in plugin_manager.get_plugins() {
+                for tool in plugin.tools() {
+                    info!("Registering dynamic tool: {}", tool.name());
+                    executor.register_tool(tool);
+                }
+            }
+        }
+        Err(e) => tracing::error!("Failed to load dynamic plugins: {}", e),
+    }
 
     let tool_executor = std::sync::Arc::new(executor);
 
