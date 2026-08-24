@@ -7,7 +7,7 @@ import os
 import urllib.parse
 from typing import List
 
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QSettings
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
@@ -100,8 +100,10 @@ class TheonixBrowserWindow(QMainWindow):
         self.bookmarks_mgr = BookmarksManager()
         self.downloads_mgr = DownloadsManager()
 
-        self.search_engine = "DuckDuckGo"
-        self.homepage = "https://duckduckgo.com"
+        # Preferences & Settings
+        self.browser_settings = QSettings("Theonix", "Browser")
+        self.search_engine = self.browser_settings.value("search_engine", "Google")
+        self.homepage = self.browser_settings.value("homepage", "https://google.com")
         self.closed_tabs_stack: List[str] = []
 
         central = QWidget()
@@ -268,10 +270,11 @@ class TheonixBrowserWindow(QMainWindow):
         if url == "theonix://newtab":
             recent = self.history_mgr.get_recent(limit=8)
             bmks = self.bookmarks_mgr.get_all()
+            new_tab_content = get_new_tab_html(bmks, recent, search_engine=self.search_engine)
             if not HAS_WEBENGINE:
-                view.browser.setHtml(get_new_tab_html(bmks, recent))
+                view.browser.setHtml(new_tab_content)
             else:
-                view.setHtml(get_new_tab_html(bmks, recent))
+                view.setHtml(new_tab_content)
         else:
             view.load_url(QUrl(url))
 
@@ -336,11 +339,11 @@ class TheonixBrowserWindow(QMainWindow):
         if not target:
             return
 
-        if not (target.startswith("http://") or target.startswith("https://") or target.startswith("theonix://")):
-            if "." in target and " " not in target:
+        if not (target.startswith("http://") or target.startswith("https://") or target.startswith("theonix://") or target.startswith("file://") or target.startswith("about:")):
+            if "." in target and " " not in target and not target.startswith("localhost"):
                 target = "https://" + target
             else:
-                tmpl = BrowserSettingsDialog.SEARCH_ENGINES.get(self.search_engine, "https://duckduckgo.com/?q={query}")
+                tmpl = BrowserSettingsDialog.SEARCH_ENGINES.get(self.search_engine, "https://www.google.com/search?q={query}")
                 target = tmpl.format(query=urllib.parse.quote(target))
 
         self._navigate_to(target)
@@ -352,10 +355,11 @@ class TheonixBrowserWindow(QMainWindow):
         if url == "theonix://newtab":
             recent = self.history_mgr.get_recent(limit=8)
             bmks = self.bookmarks_mgr.get_all()
+            new_tab_content = get_new_tab_html(bmks, recent, search_engine=self.search_engine)
             if not HAS_WEBENGINE:
-                view.browser.setHtml(get_new_tab_html(bmks, recent))
+                view.browser.setHtml(new_tab_content)
             else:
-                view.setHtml(get_new_tab_html(bmks, recent))
+                view.setHtml(new_tab_content)
         else:
             view.load_url(QUrl(url))
         self.url_bar.setText(url)
@@ -429,4 +433,18 @@ class TheonixBrowserWindow(QMainWindow):
         dlg = BrowserSettingsDialog(self.search_engine, self.homepage, self.history_mgr, self)
         if dlg.exec():
             self.search_engine = dlg.get_selected_engine()
-            self.homepage = dlg.get_homepage()
+            raw_home = dlg.get_homepage()
+            if raw_home and not (raw_home.startswith("http://") or raw_home.startswith("https://") or raw_home.startswith("theonix://")):
+                raw_home = "https://" + raw_home
+            self.homepage = raw_home or "https://google.com"
+
+            # Persist to disk
+            self.browser_settings.setValue("search_engine", self.search_engine)
+            self.browser_settings.setValue("homepage", self.homepage)
+
+            # Instantly update current tab if on startpage
+            view = self._get_current_view()
+            if view:
+                curr_url = self.url_bar.text().strip()
+                if curr_url == "theonix://newtab" or not curr_url:
+                    self._navigate_to("theonix://newtab")
