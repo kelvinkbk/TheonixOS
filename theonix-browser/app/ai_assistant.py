@@ -184,6 +184,7 @@ class AskTheonixDrawer(QFrame):
             self.chat_log.append(f"<b>You:</b> {prompt}\n")
             parts = prompt.split(" ", 2)
             target = parts[2] if len(parts) > 2 else "theonix://newtab"
+            target = target.strip("'\"<>` ")
             if not target.startswith(("http://", "https://", "theonix://")):
                 target = "https://" + target
             BrowserService.open_tab(target)

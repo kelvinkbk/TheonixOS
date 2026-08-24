@@ -278,6 +278,8 @@ class TheonixBrowserWindow(QMainWindow):
             else:
                 view.setHtml(new_tab_content)
         else:
+            if title == "New Tab" and url.startswith(("http://", "https://")):
+                title = QUrl(url).host() or "Loading..."
             view.load_url(QUrl(url))
 
         view.setProperty("current_url", url)
@@ -289,7 +291,14 @@ class TheonixBrowserWindow(QMainWindow):
     def _update_tab_title(self, view, title):
         idx = self.view_stack.indexOf(view)
         if idx != -1:
-            clean = title[:18] + ("..." if len(title) > 18 else "")
+            clean = (title or "").strip()
+            if not clean or clean == "about:blank":
+                url_str = view.property("current_url") or ""
+                if url_str.startswith("http"):
+                    clean = QUrl(url_str).host() or "Web"
+                else:
+                    clean = "New Tab"
+            clean = clean[:20] + ("..." if len(clean) > 20 else "")
             self.tab_bar.setTabText(idx, clean)
 
     def _update_tab_url(self, view, url: QUrl):
