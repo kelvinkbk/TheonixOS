@@ -65,24 +65,18 @@ class StreamWorker(QThread):
     chunk = pyqtSignal(str)
     done = pyqtSignal()
 
-    def __init__(self, prompt: str, model: str):
+    def __init__(self, prompt: str, model_id: str = "1.5b"):
         super().__init__()
         self.prompt = prompt
-        self.model = model
+        self.model_id = model_id
 
     def run(self):
+        messages = [{"role": "user", "content": self.prompt}]
         try:
-            p = subprocess.Popen(
-                ["ollama", "run", self.model, self.prompt],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            for line in p.stdout:
-                self.chunk.emit(line)
-            p.wait()
+            for token in AIService.stream_chat(messages, model_id=self.model_id):
+                self.chunk.emit(token)
         except Exception as e:
-            self.chunk.emit(f"\n[Error: {e}]\n")
+            self.chunk.emit(f"\n[AI Stream Error: {e}]\n")
         self.done.emit()
 
 
@@ -195,7 +189,8 @@ class TheonixMessagesWindow(QMainWindow):
         top_bar.addStretch()
 
         self.model_selector = QComboBox()
-        self.model_selector.addItems(["llama3.2:1b", "mistral", "deepseek-r1:1.5b", "phi3", "qwen2.5:1.5b"])
+        self.model_selector.addItem("⚡ Qwen 2.5-Coder 1.5B (Fast)", "1.5b")
+        self.model_selector.addItem("🧠 Qwen 3.5 4B (Quality)", "4b")
         top_bar.addWidget(QLabel("Model:"))
         top_bar.addWidget(self.model_selector)
 
@@ -322,8 +317,8 @@ class TheonixMessagesWindow(QMainWindow):
         self._load_history()
         self.chat_display.append("<br/><b style='color:#6C63FF;'>THAID:</b> <i>Thinking...</i><br/>")
 
-        model = self.model_selector.currentText()
-        self.worker = StreamWorker(text, model)
+        model_id = self.model_selector.currentData() or "1.5b"
+        self.worker = StreamWorker(text, model_id)
         self.current_ai_response = []
 
         def _on_chunk(c):

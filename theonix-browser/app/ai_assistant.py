@@ -10,31 +10,37 @@ from PyQt6.QtWidgets import (
     QTextEdit, QLineEdit, QGridLayout, QFrame
 )
 
-from theonix_core import Badge
+from theonix_core import Badge, AIService
 
 
 class AIWorkerThread(QThread):
     chunk_received = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, prompt: str, context: str = ""):
+    def __init__(self, prompt: str, context: str = "", model_id: str = "1.5b"):
         super().__init__()
         self.prompt = prompt
         self.context = context
+        self.model_id = model_id
 
     def run(self):
-        full_query = self.prompt
+        messages = []
+        system_prompt = (
+            "You are THAID, the intelligent native AI assistant built into Theonix OS. "
+            "Help the user analyze, summarize, code, or extract insights cleanly and accurately."
+        )
+
+        user_content = self.prompt
         if self.context:
-            full_query = f"Context from web page:\n\"\"\"\n{self.context}\n\"\"\"\n\nUser request: {self.prompt}"
+            user_content = f"Webpage Context:\n```\n{self.context[:6000]}\n```\n\nUser Question/Request:\n{self.prompt}"
+
+        messages.append({"role": "user", "content": user_content})
 
         try:
-            cmd = ["ollama", "run", "llama3.2:1b", full_query]
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            for line in p.stdout:
-                self.chunk_received.emit(line)
-            p.wait()
+            for token in AIService.stream_chat(messages, model_id=self.model_id, system_prompt=system_prompt):
+                self.chunk_received.emit(token)
         except Exception as e:
-            self.chunk_received.emit(f"\n[THAID Connection Error: {e}. Ensure Ollama is active.]\n")
+            self.chunk_received.emit(f"\n[THAID Connection Error: {e}]\n")
         self.finished.emit()
 
 

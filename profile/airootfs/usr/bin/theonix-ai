@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+"""
+Theonix Local AI Server Manager (THAID Backend).
+Manages high-speed local GGUF models (Qwen2.5-Coder 1.5B and Qwen3.5 4B) using llamafile / llama-server.
+"""
+
+import argparse
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+import urllib.request
+
+HOST = "127.0.0.1"
+PORT = 8080
+API_STATUS = f"http://{HOST}:{PORT}/v1/models"
+
+MODEL_PATHS = [
+    os.path.expanduser("/home/k/Desktop/local ai"),
+    os.path.expanduser("~/.local/share/theonix/models"),
+    "/usr/share/theonix/models"
+]
+
+
+def find_files(model_id="1.5b"):
+    bin_path = None
+    model_name = "Qwen2.5-Coder-1.5B-Q4_K_M.gguf" if model_id == "1.5b" else "Qwen3.5-4B-Q4_0.gguf"
+    model_path = None
+
+    for base in MODEL_PATHS:
+        if not os.path.exists(base):
+            continue
+        for cand_bin in ["llamafile.exe", "llamafile", "llama-server"]:
+            p = os.path.join(base, cand_bin)
+            if os.path.exists(p) and not bin_path:
+                bin_path = p
+        cand_m1 = os.path.join(base, "models", model_name)
+        cand_m2 = os.path.join(base, model_name)
+        if os.path.exists(cand_m1):
+            model_path = cand_m1
+        elif os.path.exists(cand_m2):
+            model_path = cand_m2
+
+    return bin_path, model_path
+
+
+def is_running():
+    try:
+        req = urllib.request.Request(API_STATUS, headers={"User-Agent": "Theonix-AI"})
+        with urllib.request.urlopen(req, timeout=1.0) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+def stop_server():
+    print("Stopping existing local AI server...")
+    subprocess.run(["pkill", "-f", "llamafile"], stderr=subprocess.DEVNULL)
+    time.sleep(1)
+
+
+def start_server(model_id="1.5b"):
+    if is_running():
+        print(f"Local AI server is already running on http://{HOST}:{PORT}")
+        return True
+
+    bin_p, model_p = find_files(model_id)
+    if not bin_p or not model_p:
+        print(f"Error: Model or llamafile binary not found for '{model_id}' in search paths:")
+        for p in MODEL_PATHS:
+            print(f" - {p}")
+        return False
+
+    ctx = 8192 if model_id == "1.5b" else 16384
+    cmd = [
+        "sh", bin_p,
+        "--server",
+        "--host", HOST,
+        "--port", str(PORT),
+        "-m", model_p,
+        "-c", str(ctx),
+        "-ngl", "999"
+    ]
+
+    print(f"Starting Theonix Local AI Server with {os.path.basename(model_p)} on port {PORT}...")
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+    for i in range(15):
+        time.sleep(0.5)
+        if is_running():
+            print(f"✓ Theonix AI Server is ONLINE on http://{HOST}:{PORT}")
+            return True
+        sys.stdout.write(".")
+        sys.stdout.flush()
+
+    print("\nServer launch timed out.")
+    return False
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Theonix Local AI Service Manager")
+    parser.add_argument("action", choices=["start", "stop", "restart", "status", "switch"], default="status", nargs="?")
+    parser.add_argument("--model", choices=["1.5b", "4b"], default="1.5b", help="Model to load: 1.5b (Fast) or 4b (Quality)")
+
+    args = parser.parse_args()
+
+    if args.action == "status":
+        running = is_running()
+        print("=" * 45)
+        print(f"  Theonix AI Daemon (THAID)")
+        print(f"  Status: {'🟢 ONLINE' if running else '🔴 OFFLINE'}")
+        print(f"  Endpoint: http://{HOST}:{PORT}")
+        print("=" * 45)
+    elif args.action == "start":
+        start_server(args.model)
+    elif args.action == "stop":
+        stop_server()
+        print("Local AI server stopped.")
+    elif args.action == "restart":
+        stop_server()
+        start_server(args.model)
+    elif args.action == "switch":
+        stop_server()
+        start_server(args.model)
+
+
+if __name__ == "__main__":
+    main()

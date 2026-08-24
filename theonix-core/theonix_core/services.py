@@ -3,6 +3,7 @@ Theonix Core Services — Shared Platform Services for Package Management, Telem
 """
 
 import enum
+import json
 import os
 import platform
 import re
@@ -10,6 +11,8 @@ import shutil
 import sqlite3
 import subprocess
 import threading
+import time
+import urllib.request
 from typing import Dict, List, Optional, Tuple, Any
 
 UACL_DB_PATH = os.path.expanduser("~/.config/theonix/uacl.db")
@@ -216,30 +219,179 @@ class SystemService:
 
 
 class AIService:
-    """Client for local Ollama and THAID AI engine."""
+    """
+    High-Performance Local AI Service for Theonix OS.
+    Integrates directly with local Qwen GGUF models via llamafile / llama-server
+    with OpenAI-compatible streaming API on http://127.0.0.1:8080.
+    """
 
-    @staticmethod
-    def is_available() -> bool:
+    LOCAL_HOST = "127.0.0.1"
+    LOCAL_PORT = 8080
+    API_URL = f"http://127.0.0.1:{LOCAL_PORT}/v1/chat/completions"
+
+    MODEL_PATHS = [
+        os.path.expanduser("/home/k/Desktop/local ai"),
+        os.path.expanduser("~/.local/share/theonix/models"),
+        "/usr/share/theonix/models",
+    ]
+
+    @classmethod
+    def _find_binary_and_model(cls, model_id: str = "1.5b") -> Tuple[Optional[str], Optional[str]]:
+        bin_path = None
+        model_filename = "Qwen2.5-Coder-1.5B-Q4_K_M.gguf" if model_id == "1.5b" else "Qwen3.5-4B-Q4_0.gguf"
+        model_path = None
+
+        for base in cls.MODEL_PATHS:
+            if not os.path.exists(base):
+                continue
+            # Look for llamafile executable
+            for cand_bin in ["llamafile.exe", "llamafile", "llama-server"]:
+                p = os.path.join(base, cand_bin)
+                if os.path.exists(p) and not bin_path:
+                    bin_path = p
+            # Look for model
+            cand_m1 = os.path.join(base, "models", model_filename)
+            cand_m2 = os.path.join(base, model_filename)
+            if os.path.exists(cand_m1):
+                model_path = cand_m1
+            elif os.path.exists(cand_m2):
+                model_path = cand_m2
+
+        return bin_path, model_path
+
+    @classmethod
+    def is_server_running(cls) -> bool:
         try:
-            res = subprocess.run(["ollama", "list"], capture_output=True, timeout=2)
+            req = urllib.request.Request(f"http://{cls.LOCAL_HOST}:{cls.LOCAL_PORT}/v1/models", headers={"User-Agent": "TheonixOS"})
+            with urllib.request.urlopen(req, timeout=1.2) as resp:
+                return resp.status == 200
+        except Exception:
+            return False
+
+    @classmethod
+    def is_available(cls) -> bool:
+        if cls.is_server_running():
+            return True
+        bin_p, mod_p = cls._find_binary_and_model()
+        if bin_p and mod_p:
+            return True
+        try:
+            res = subprocess.run(["ollama", "list"], capture_output=True, timeout=1)
             return res.returncode == 0
         except Exception:
             return False
 
-    @staticmethod
-    def get_models() -> List[str]:
-        models = []
+    @classmethod
+    def ensure_server_running(cls, model_id: str = "1.5b") -> bool:
+        """Starts the local llamafile/Qwen server in background if not already active."""
+        if cls.is_server_running():
+            return True
+
+        bin_path, model_path = cls._find_binary_and_model(model_id)
+        if not bin_path or not model_path:
+            return False
+
+        ctx_size = 8192 if model_id == "1.5b" else 16384
+        cmd = [
+            "sh", bin_path,
+            "--server",
+            "--host", cls.LOCAL_HOST,
+            "--port", str(cls.LOCAL_PORT),
+            "-m", model_path,
+            "-c", str(ctx_size),
+            "-ngl", "999"
+        ]
+
         try:
-            res = subprocess.run(["ollama", "list"], capture_output=True, text=True, timeout=5)
-            lines = res.stdout.strip().splitlines()
-            if len(lines) > 1:
-                for l in lines[1:]:
-                    p = l.split()
-                    if p:
-                        models.append(p[0])
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True
+            )
+            # Poll for up to 8 seconds for server to be ready
+            for _ in range(16):
+                time.sleep(0.5)
+                if cls.is_server_running():
+                    return True
         except Exception:
             pass
-        return models
+
+        return False
+
+    @classmethod
+    def stream_chat(cls, messages: List[Dict[str, str]], model_id: str = "1.5b", system_prompt: Optional[str] = None):
+        """
+        Yields tokens in real-time from the local high-speed AI engine.
+        Falls back to Ollama or simple response if server is unlaunchable.
+        """
+        if not cls.is_server_running():
+            cls.ensure_server_running(model_id)
+
+        all_msgs = []
+        if system_prompt:
+            all_msgs.append({"role": "system", "content": system_prompt})
+        all_msgs.extend(messages)
+
+        if cls.is_server_running():
+            payload = json.dumps({
+                "messages": all_msgs,
+                "stream": True,
+                "temperature": 0.6,
+                "max_tokens": 4096
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                cls.API_URL,
+                data=payload,
+                headers={"Content-Type": "application/json"}
+            )
+
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    for raw_line in resp:
+                        line = raw_line.decode("utf-8").strip()
+                        if not line or not line.startswith("data:"):
+                            continue
+                        data_str = line[5:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            chunk_json = json.loads(data_str)
+                            choices = chunk_json.get("choices", [])
+                            if choices:
+                                delta = choices[0].get("delta", {})
+                                content = delta.get("content", "")
+                                if content:
+                                    yield content
+                        except Exception:
+                            continue
+                return
+            except Exception as e:
+                yield f"\n[AI Stream Error: {e}]\n"
+                return
+
+        # Fallback to Ollama if local llamafile is unavailable
+        try:
+            last_prompt = messages[-1]["content"] if messages else ""
+            p = subprocess.Popen(
+                ["ollama", "run", "llama3.2:1b", last_prompt],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            for line in p.stdout:
+                yield line
+            p.wait()
+        except Exception:
+            yield "\n[THAID Local AI engine is starting or not configured. Place Qwen GGUF models in /home/k/Desktop/local ai/]\n"
+
+    @classmethod
+    def get_models(cls) -> List[Dict[str, str]]:
+        return [
+            {"id": "1.5b", "name": "⚡ Qwen 2.5-Coder 1.5B (Ultra-Fast Coder)"},
+            {"id": "4b", "name": "🧠 Qwen 3.5 4B (High Quality Reasoning)"}
+        ]
 
 
 class UACLService:
@@ -248,3 +400,4 @@ class UACLService:
     @staticmethod
     def launch(target_path: str):
         subprocess.Popen(["theonix-uacl", "launch", "--path", target_path])
+
