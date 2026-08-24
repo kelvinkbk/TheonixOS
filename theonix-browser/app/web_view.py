@@ -83,9 +83,60 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
             self.load(url)
         else:
             self._current_url = url
-            self.browser.setHtml(f"<div style='color:white;padding:30px;'><h3>Loading: {url.toString()}</h3><p>Install python-pyqt6-webengine for real Chromium Blink web engine rendering.</p></div>")
+            from .new_tab_page import get_new_tab_html
+            url_str = url.toString()
+            if url_str == "theonix://newtab":
+                html = get_new_tab_html()
+            else:
+                domain = url.host() or url_str
+                html = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{
+                            background-color: #07090E;
+                            color: #F8FAFC;
+                            font-family: 'Segoe UI', system-ui, sans-serif;
+                            padding: 40px;
+                            margin: 0;
+                        }}
+                        .card {{
+                            background-color: #121826;
+                            border: 1px solid #1E2638;
+                            border-radius: 12px;
+                            padding: 24px;
+                            max-width: 760px;
+                            margin: 0 auto;
+                        }}
+                        h2 {{
+                            color: #FFFFFF;
+                            margin-top: 0;
+                        }}
+                        .url-text {{
+                            color: #00FFAA;
+                            font-weight: bold;
+                            word-break: break-all;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div style="font-size: 28px; margin-bottom: 12px;">🌐</div>
+                        <h2>Navigating to <span class="url-text">{domain}</span></h2>
+                        <p style="color: #94A3B8; font-size: 14px; margin-top: 8px; line-height: 1.6;">
+                            Resource URL: <a href="{url_str}" style="color: #00D4FF;">{url_str}</a>
+                        </p>
+                        <p style="color: #64748B; font-size: 12.5px; margin-top: 16px; border-top: 1px solid #1E2638; padding-top: 14px;">
+                            💡 <b>Note:</b> In the final ISO image, <code style="color: #00FFAA;">python-pyqt6-webengine</code> delivers native Chromium/Blink hardware-accelerated rendering for all websites.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+            self.browser.setHtml(html)
             self.url_updated.emit(url)
-            self.title_updated.emit(url.host() or "Web Page")
+            self.title_updated.emit(url.host() or "New Tab")
             self.load_progress_changed.emit(100)
 
     def current_url(self) -> QUrl:

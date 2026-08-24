@@ -238,7 +238,7 @@ class TheonixBrowserWindow(QMainWindow):
         self._setup_shortcuts()
 
         # Initial Tab
-        self.add_tab("https://duckduckgo.com", "DuckDuckGo")
+        self.add_tab("theonix://newtab", "New Tab")
 
     def _setup_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+T"), self, lambda: self.add_tab("theonix://newtab", "New Tab"))
