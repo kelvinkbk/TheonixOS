@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Theonix Browser — Fast, Ultra-Dark Glassmorphic Web Browser for Theonix OS
-Features multi-tab navigation, privacy shields, and integrated THAID AI Assistant.
+Features multi-tab navigation, bookmarks bar, keyboard shortcuts, and THAID AI Assistant.
 """
 
 import os
@@ -9,7 +9,7 @@ import sys
 import subprocess
 import threading
 from PyQt6.QtCore import Qt, QUrl, QSize, pyqtSignal, QThread
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QFont, QColor, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTabWidget, QLabel, QSplitter, QTextEdit,
@@ -55,6 +55,21 @@ QPushButton.NavBtn {
 
 QPushButton.NavBtn:hover {
     background-color: rgba(255, 255, 255, 0.12);
+    color: #00FFAA;
+}
+
+/* Bookmark Chips */
+QPushButton.BmkBtn {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+QPushButton.BmkBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
     color: #00FFAA;
 }
 
@@ -141,6 +156,21 @@ QPushButton#AISendBtn {
     font-weight: bold;
     padding: 8px 14px;
 }
+
+QPushButton.AIPill {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+QPushButton.AIPill:hover {
+    background-color: rgba(108, 99, 255, 0.25);
+    color: #FFFFFF;
+    border-color: #00FFAA;
+}
 """
 
 HOME_URL = "https://duckduckgo.com"
@@ -207,7 +237,7 @@ class TheonixBrowserWindow(QMainWindow):
 
         self.url_bar = QLineEdit()
         self.url_bar.setObjectName("UrlBar")
-        self.url_bar.setPlaceholderText("Search or enter web address...")
+        self.url_bar.setPlaceholderText("Search or enter web address (Ctrl+L)...")
         self.url_bar.returnPressed.connect(self._on_url_entered)
         self.toolbar.addWidget(self.url_bar)
 
@@ -222,6 +252,28 @@ class TheonixBrowserWindow(QMainWindow):
         self.new_tab_btn.clicked.connect(lambda: self.add_tab(HOME_URL, "New Tab"))
         self.toolbar.addWidget(self.new_tab_btn)
 
+        # Bookmarks Bar
+        bmk_bar = QFrame()
+        bmk_bar.setStyleSheet("background-color: #0A0D15; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 4px 12px;")
+        bmk_layout = QHBoxLayout(bmk_bar)
+        bmk_layout.setContentsMargins(0, 0, 0, 0)
+        bmk_layout.setSpacing(6)
+
+        bookmarks = [
+            ("⚡ Theonix OS", "https://theonixos.xyz"),
+            ("📖 Arch Wiki", "https://wiki.archlinux.org"),
+            ("🟣 Flathub", "https://flathub.org"),
+            ("🐙 GitHub", "https://github.com/kelvinkbk/TheonixOS"),
+            ("🔍 DuckDuckGo", "https://duckduckgo.com"),
+        ]
+        for b_name, b_url in bookmarks:
+            b_btn = QPushButton(b_name)
+            b_btn.setProperty("class", "BmkBtn")
+            b_btn.clicked.connect(lambda _, u=b_url: self._navigate_to(u))
+            bmk_layout.addWidget(b_btn)
+        bmk_layout.addStretch()
+        main_layout.addWidget(bmk_bar)
+
         # Splitter: Tabs + AI Sidebar
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         
@@ -234,7 +286,7 @@ class TheonixBrowserWindow(QMainWindow):
         # AI Sidebar
         self.ai_sidebar = QFrame()
         self.ai_sidebar.setObjectName("AISidebar")
-        self.ai_sidebar.setFixedWidth(320)
+        self.ai_sidebar.setFixedWidth(330)
         ai_layout = QVBoxLayout(self.ai_sidebar)
         ai_layout.setContentsMargins(14, 14, 14, 14)
         ai_layout.setSpacing(10)
@@ -243,14 +295,31 @@ class TheonixBrowserWindow(QMainWindow):
         ai_header.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
         ai_layout.addWidget(ai_header)
 
-        q_row = QHBoxLayout()
-        sum_btn = QPushButton("Summarize")
-        sum_btn.clicked.connect(self._ai_summarize)
-        code_btn = QPushButton("Extract Code")
-        code_btn.clicked.connect(self._ai_extract_code)
-        q_row.addWidget(sum_btn)
-        q_row.addWidget(code_btn)
-        ai_layout.addLayout(q_row)
+        # Quick action pills
+        pills_grid = QGridLayout()
+        pills_grid.setSpacing(6)
+        
+        p1 = QPushButton("📝 Summarize")
+        p1.setProperty("class", "AIPill")
+        p1.clicked.connect(lambda: self._quick_prompt("Summarize the key information of this webpage concisely."))
+
+        p2 = QPushButton("💻 Extract Code")
+        p2.setProperty("class", "AIPill")
+        p2.clicked.connect(lambda: self._quick_prompt("Extract all code snippets, shell commands, and syntax blocks."))
+
+        p3 = QPushButton("🔍 Explain Simply")
+        p3.setProperty("class", "AIPill")
+        p3.clicked.connect(lambda: self._quick_prompt("Explain the main concepts in simple terms with bullet points."))
+
+        p4 = QPushButton("🌐 Translate")
+        p4.setProperty("class", "AIPill")
+        p4.clicked.connect(lambda: self._quick_prompt("Translate the content to clear English."))
+
+        pills_grid.addWidget(p1, 0, 0)
+        pills_grid.addWidget(p2, 0, 1)
+        pills_grid.addWidget(p3, 1, 0)
+        pills_grid.addWidget(p4, 1, 1)
+        ai_layout.addLayout(pills_grid)
 
         self.ai_chat_log = QTextEdit()
         self.ai_chat_log.setObjectName("AIChatLog")
@@ -276,6 +345,12 @@ class TheonixBrowserWindow(QMainWindow):
         self.ai_sidebar.setVisible(False)
 
         main_layout.addWidget(self.splitter)
+
+        # Keyboard shortcuts
+        QShortcut(QKeySequence("Ctrl+T"), self, lambda: self.add_tab(HOME_URL, "New Tab"))
+        QShortcut(QKeySequence("Ctrl+W"), self, lambda: self._close_tab(self.tabs.currentIndex()))
+        QShortcut(QKeySequence("Ctrl+R"), self, self._nav_reload)
+        QShortcut(QKeySequence("Ctrl+L"), self, lambda: (self.url_bar.setFocus(), self.url_bar.selectAll()))
 
         self.add_tab(HOME_URL, "DuckDuckGo")
 
@@ -349,6 +424,10 @@ class TheonixBrowserWindow(QMainWindow):
     def _toggle_ai_sidebar(self):
         self.ai_sidebar.setVisible(not self.ai_sidebar.isVisible())
 
+    def _quick_prompt(self, p_text):
+        self.ai_input.setText(p_text)
+        self._send_ai_prompt()
+
     def _send_ai_prompt(self):
         text = self.ai_input.text().strip()
         if not text:
@@ -361,17 +440,10 @@ class TheonixBrowserWindow(QMainWindow):
         self.ai_worker.chunk_received.connect(lambda chunk: self.ai_chat_log.append(chunk))
         self.ai_worker.start()
 
-    def _ai_summarize(self):
-        self.ai_input.setText("Please summarize the main points of this topic.")
-        self._send_ai_prompt()
-
-    def _ai_extract_code(self):
-        self.ai_input.setText("Extract and format all code snippets and commands.")
-        self._send_ai_prompt()
-
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     app.setStyleSheet(THEME_QSS)
     win = TheonixBrowserWindow()
     win.show()

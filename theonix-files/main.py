@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
 Theonix Files — Ultra-Dark Glassmorphic File Manager for Theonix OS
-Features breadcrumb navigation, quick places, and automatic UACL compatibility.
+Features breadcrumb path navigation, live file search, dotfiles toggle, and automatic UACL compatibility.
 """
 
 import os
 import shutil
 import subprocess
 import sys
-from PyQt6.QtCore import Qt, QDir, QModelIndex
-from PyQt6.QtGui import QFont, QFileSystemModel
+import time
+from PyQt6.QtCore import Qt, QDir, QModelIndex, QSortFilterProxyModel
+from PyQt6.QtGui import QFont, QFileSystemModel, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTreeView, QLabel, QSplitter, QHeaderView,
@@ -66,16 +67,16 @@ QFrame#TopBar {
     padding: 8px 14px;
 }
 
-QLineEdit#PathBar {
+QLineEdit#PathBar, QLineEdit#SearchBox {
     background-color: rgba(14, 18, 28, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 7px 16px;
+    padding: 7px 14px;
     color: #FFFFFF;
     font-size: 13px;
 }
 
-QLineEdit#PathBar:focus {
+QLineEdit#PathBar:focus, QLineEdit#SearchBox:focus {
     border: 1px solid #00FFAA;
 }
 
@@ -126,6 +127,13 @@ QHeaderView::section {
     font-weight: bold;
     font-size: 12px;
 }
+
+/* Inspector Drawer */
+QFrame#Inspector {
+    background-color: #0B0E17;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px;
+}
 """
 
 
@@ -134,9 +142,10 @@ class TheonixFilesWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Theonix Files")
         self.setMinimumSize(980, 640)
-        self.resize(1100, 720)
+        self.resize(1120, 740)
         self.history = []
         self.history_idx = -1
+        self.show_hidden = False
 
         central = QWidget()
         central.setObjectName("CentralWidget")
@@ -172,6 +181,18 @@ class TheonixFilesWindow(QMainWindow):
         self.path_bar.returnPressed.connect(self._on_path_entered)
         t_layout.addWidget(self.path_bar, 1)
 
+        self.search_box = QLineEdit()
+        self.search_box.setObjectName("SearchBox")
+        self.search_box.setPlaceholderText("Filter files (Ctrl+F)...")
+        self.search_box.setFixedWidth(160)
+        self.search_box.textChanged.connect(self._on_filter_text_changed)
+        t_layout.addWidget(self.search_box)
+
+        self.hidden_btn = QPushButton("👁️ Dotfiles")
+        self.hidden_btn.setProperty("class", "TopNavBtn")
+        self.hidden_btn.clicked.connect(self._toggle_hidden)
+        t_layout.addWidget(self.hidden_btn)
+
         term_btn = QPushButton("Terminal")
         term_btn.setProperty("class", "TopNavBtn")
         term_btn.clicked.connect(self._open_terminal)
@@ -179,8 +200,8 @@ class TheonixFilesWindow(QMainWindow):
 
         main_layout.addWidget(top_bar)
 
-        # Splitter: Sidebar + File List
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        # Splitter: Sidebar + File List + Inspector
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Places sidebar container
         sidebar_box = QWidget()
@@ -229,20 +250,26 @@ class TheonixFilesWindow(QMainWindow):
             sb_layout.addWidget(btn)
 
         sb_layout.addStretch()
-        splitter.addWidget(sidebar_box)
+        self.splitter.addWidget(sidebar_box)
 
-        # File Tree Model
-        self.model = QFileSystemModel()
-        self.model.setRootPath("")
-        self.model.setFilter(QDir.Filter.AllEntries | QDir.Filter.NoDotAndDotDot)
+        # File Tree Model with Proxy Filter
+        self.base_model = QFileSystemModel()
+        self.base_model.setRootPath("")
+        self._update_filter_flags()
+
+        self.proxy_model = QSortFilterProxyModel(self)
+        self.proxy_model.setSourceModel(self.base_model)
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.proxy_model.setRecursiveFilteringEnabled(True)
 
         self.tree = QTreeView()
         self.tree.setObjectName("FileView")
-        self.tree.setModel(self.model)
+        self.tree.setModel(self.proxy_model)
         self.tree.setAnimated(True)
         self.tree.setIndentation(16)
         self.tree.setSortingEnabled(True)
         self.tree.doubleClicked.connect(self._on_item_double_clicked)
+        self.tree.clicked.connect(self._on_item_selected)
         self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self._show_context_menu)
 
@@ -251,22 +278,78 @@ class TheonixFilesWindow(QMainWindow):
         self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.tree.header().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
-        splitter.addWidget(self.tree)
-        splitter.setSizes([230, 870])
-        main_layout.addWidget(splitter, 1)
+        self.splitter.addWidget(self.tree)
+
+        # Inspector Panel
+        self.inspector = QFrame()
+        self.inspector.setObjectName("Inspector")
+        self.inspector.setFixedWidth(240)
+        ins_layout = QVBoxLayout(self.inspector)
+        ins_layout.setContentsMargins(14, 16, 14, 16)
+        ins_layout.setSpacing(12)
+
+        ins_hdr = QLabel("ℹ️ File Properties")
+        ins_hdr.setStyleSheet("font-size: 14px; font-weight: bold; color: #00FFAA;")
+        ins_layout.addWidget(ins_hdr)
+
+        self.ins_icon = QLabel("📁")
+        self.ins_icon.setStyleSheet("font-size: 38px; text-align: center;")
+        self.ins_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ins_layout.addWidget(self.ins_icon)
+
+        self.ins_name = QLabel("Select a file or directory")
+        self.ins_name.setStyleSheet("font-size: 13px; font-weight: bold; color: #FFFFFF;")
+        self.ins_name.setWordWrap(True)
+        ins_layout.addWidget(self.ins_name)
+
+        self.ins_detail = QLabel("No item selected.")
+        self.ins_detail.setStyleSheet("color: #94A3B8; font-size: 12px;")
+        self.ins_detail.setWordWrap(True)
+        ins_layout.addWidget(self.ins_detail)
+
+        self.ins_uacl_btn = QPushButton("🚀 Run with UACL")
+        self.ins_uacl_btn.setProperty("class", "TopNavBtn")
+        self.ins_uacl_btn.setVisible(False)
+        ins_layout.addWidget(self.ins_uacl_btn)
+
+        ins_layout.addStretch()
+        self.splitter.addWidget(self.inspector)
+
+        self.splitter.setSizes([230, 680, 210])
+        main_layout.addWidget(self.splitter, 1)
 
         self.btn_group.idClicked.connect(self._on_place_selected)
         first_btn = self.btn_group.button(0)
         if first_btn:
             first_btn.setChecked(True)
 
+        # Shortcuts
+        QShortcut(QKeySequence("Ctrl+F"), self, lambda: self.search_box.setFocus())
+        QShortcut(QKeySequence("Ctrl+H"), self, self._toggle_hidden)
+        QShortcut(QKeySequence("F4"), self, self._open_terminal)
+
         self._navigate_to(user_home)
+
+    def _update_filter_flags(self):
+        filters = QDir.Filter.AllEntries | QDir.Filter.NoDotAndDotDot
+        if self.show_hidden:
+            filters |= QDir.Filter.Hidden
+        self.base_model.setFilter(filters)
+
+    def _toggle_hidden(self):
+        self.show_hidden = not self.show_hidden
+        self._update_filter_flags()
+        self.hidden_btn.setStyleSheet("color: #00FFAA;" if self.show_hidden else "color: #94A3B8;")
+
+    def _on_filter_text_changed(self, text):
+        self.proxy_model.setFilterFixedString(text)
 
     def _navigate_to(self, path: str, record_history: bool = True):
         if not os.path.exists(path):
             return
-        index = self.model.index(path)
-        self.tree.setRootIndex(index)
+        src_index = self.base_model.index(path)
+        proxy_index = self.proxy_model.mapFromSource(src_index)
+        self.tree.setRootIndex(proxy_index)
         self.path_bar.setText(path)
 
         if record_history:
@@ -304,8 +387,42 @@ class TheonixFilesWindow(QMainWindow):
         cur = self.path_bar.text()
         subprocess.Popen(["konsole", "--workdir", cur])
 
+    def _on_item_selected(self, index: QModelIndex):
+        src_idx = self.proxy_model.mapToSource(index)
+        path = self.base_model.filePath(src_idx)
+        name = os.path.basename(path) or "/"
+        self.ins_name.setText(name)
+
+        if os.path.isdir(path):
+            self.ins_icon.setText("📁")
+            try:
+                count = len(os.listdir(path))
+                self.ins_detail.setText(f"Folder\nItems: {count}\nPath: {path}")
+            except Exception:
+                self.ins_detail.setText(f"Folder\nPath: {path}")
+            self.ins_uacl_btn.setVisible(False)
+        else:
+            lower = name.lower()
+            if lower.endswith((".exe", ".msi", ".deb", ".appimage")):
+                self.ins_icon.setText("⚙️")
+                self.ins_uacl_btn.setVisible(True)
+                self.ins_uacl_btn.clicked.disconnect() if self.ins_uacl_btn.receivers(self.ins_uacl_btn.clicked) > 0 else None
+                self.ins_uacl_btn.clicked.connect(lambda: subprocess.Popen(["theonix-uacl", "launch", "--path", path]))
+            else:
+                self.ins_icon.setText("📄")
+                self.ins_uacl_btn.setVisible(False)
+
+            try:
+                sz = os.path.getsize(path)
+                sz_str = f"{sz / 1024:.1f} KB" if sz < 1024**2 else f"{sz / 1024**2:.1f} MB"
+                mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(os.path.getmtime(path)))
+                self.ins_detail.setText(f"File Size: {sz_str}\nModified: {mtime}\nPath: {path}")
+            except Exception:
+                self.ins_detail.setText(f"Path: {path}")
+
     def _on_item_double_clicked(self, index: QModelIndex):
-        path = self.model.filePath(index)
+        src_idx = self.proxy_model.mapToSource(index)
+        path = self.base_model.filePath(src_idx)
         if os.path.isdir(path):
             self._navigate_to(path)
         else:
@@ -320,7 +437,8 @@ class TheonixFilesWindow(QMainWindow):
         menu = QMenu(self)
 
         if index.isValid():
-            path = self.model.filePath(index)
+            src_idx = self.proxy_model.mapToSource(index)
+            path = self.base_model.filePath(src_idx)
             open_act = menu.addAction("Open")
             open_act.triggered.connect(lambda: self._on_item_double_clicked(index))
 

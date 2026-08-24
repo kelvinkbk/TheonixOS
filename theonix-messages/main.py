@@ -2,9 +2,11 @@
 """
 Theonix Messages — Ultra-Dark Glassmorphic AI Assistant & Chat Hub
 Connects directly to local THAID daemon & Ollama models for private, rapid AI chat.
+Features quick prompt chips, Markdown chat rendering, conversation export, and model controls.
 """
 
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -13,7 +15,7 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTextEdit, QScrollArea, QFrame,
-    QComboBox, QButtonGroup
+    QComboBox, QButtonGroup, QFileDialog, QMessageBox, QInputDialog
 )
 
 DB_PATH = os.path.expanduser("~/.config/theonix/messages.db")
@@ -69,6 +71,22 @@ QTextEdit#ChatDisplay {
     padding: 18px;
     color: #F8FAFC;
     font-size: 13.5px;
+}
+
+/* Quick Action Chips */
+QPushButton.PromptChip {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+QPushButton.PromptChip:hover {
+    background-color: rgba(108, 99, 255, 0.25);
+    color: #FFFFFF;
+    border-color: #00FFAA;
 }
 
 /* Input Area */
@@ -138,6 +156,28 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+
+def format_markdown(text: str) -> str:
+    """Format basic markdown code blocks and inline formatting to styled HTML."""
+    # Escape basic HTML
+    formatted = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    # Code blocks: ```lang ... ```
+    def _code_block_repl(m):
+        code = m.group(1)
+        return f"<pre style='background:#07090E;padding:12px;border-radius:8px;border:1px solid rgba(0,255,170,0.25);font-family:monospace;color:#00FFAA;margin:8px 0;'>{code}</pre>"
+    formatted = re.sub(r"```(?:[a-zA-Z0-9_-]+)?\n(.*?)```", _code_block_repl, formatted, flags=re.DOTALL)
+
+    # Inline code: `...`
+    formatted = re.sub(r"`([^`]+)`", r"<code style='background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#00FFAA;font-family:monospace;'>\1</code>", formatted)
+
+    # Bold: **...**
+    formatted = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", formatted)
+
+    # Newlines to breaks
+    formatted = formatted.replace("\n", "<br/>")
+    return formatted
 
 
 class StreamWorker(QThread):
@@ -243,7 +283,7 @@ class TheonixMessagesWindow(QMainWindow):
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(28, 20, 28, 20)
-        right_layout.setSpacing(16)
+        right_layout.setSpacing(14)
 
         # Top Bar
         top_bar = QHBoxLayout()
@@ -257,6 +297,11 @@ class TheonixMessagesWindow(QMainWindow):
         top_bar.addWidget(QLabel("Model:"))
         top_bar.addWidget(self.model_selector)
 
+        export_btn = QPushButton("Export .md")
+        export_btn.setProperty("class", "ActionBtn")
+        export_btn.clicked.connect(self._export_chat)
+        top_bar.addWidget(export_btn)
+
         clear_btn = QPushButton("Clear")
         clear_btn.setProperty("class", "ActionBtn")
         clear_btn.clicked.connect(self._clear_history)
@@ -267,6 +312,25 @@ class TheonixMessagesWindow(QMainWindow):
         self.chat_display.setObjectName("ChatDisplay")
         self.chat_display.setReadOnly(True)
         right_layout.addWidget(self.chat_display, 1)
+
+        # Quick Action Prompt Chips
+        chips_row = QHBoxLayout()
+        chips_row.setSpacing(8)
+        
+        prompt_chips = [
+            ("⚡ Snapshot Btrfs", "Show me how to snapshot Btrfs before updates."),
+            ("🐧 Linux System Info", "Explain how to check memory, kernel, and hardware on Theonix OS."),
+            ("🐍 Python Script", "Write a Python script to monitor system temperature and disk usage."),
+            ("🛠️ Git Conflict Help", "How do I safely resolve a git merge conflict step by step?"),
+        ]
+        for c_label, c_prompt in prompt_chips:
+            c_btn = QPushButton(c_label)
+            c_btn.setProperty("class", "PromptChip")
+            c_btn.clicked.connect(lambda _, p=c_prompt: self._insert_prompt(p))
+            chips_row.addWidget(c_btn)
+
+        chips_row.addStretch()
+        right_layout.addLayout(chips_row)
 
         bottom_box = QHBoxLayout()
         bottom_box.setSpacing(12)
@@ -291,6 +355,10 @@ class TheonixMessagesWindow(QMainWindow):
         if first_btn:
             first_btn.setChecked(True)
         self._load_history()
+
+    def _insert_prompt(self, prompt_text: str):
+        self.msg_input.setText(prompt_text)
+        self._send_message()
 
     def _on_thread_changed(self, idx):
         tid = self.thread_btn_map.get(idx, "thaid_system")
@@ -324,16 +392,16 @@ class TheonixMessagesWindow(QMainWindow):
             self.chat_display.setHtml(
                 "<div style='color:#64748B;padding:30px;text-align:center;font-family:sans-serif;'>"
                 "<h3 style='color:#FFFFFF;margin-bottom:8px;'>Theonix Messages &amp; AI Workspace</h3>"
-                "<p>Private local intelligence running directly on your device.</p>"
+                "<p>Private local intelligence running directly on your device with Ollama &amp; THAID.</p>"
                 "</div>"
             )
         else:
             html = ""
             for sender, content, ts in rows:
                 if sender == "user":
-                    html += f"<div style='margin-bottom:14px;'><b style='color:#00FFAA;'>You:</b><br/><span style='color:#F8FAFC;'>{content}</span></div>"
+                    html += f"<div style='margin-bottom:14px;'><b style='color:#00FFAA;'>You:</b><br/><span style='color:#F8FAFC;'>{format_markdown(content)}</span></div>"
                 else:
-                    html += f"<div style='margin-bottom:16px;background:rgba(20,26,40,0.85);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);'><b style='color:#6C63FF;'>THAID:</b><br/><span style='color:#E2E8F0;'>{content}</span></div>"
+                    html += f"<div style='margin-bottom:16px;background:rgba(20,26,40,0.85);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);'><b style='color:#6C63FF;'>THAID:</b><br/><span style='color:#E2E8F0;'>{format_markdown(content)}</span></div>"
             self.chat_display.setHtml(html)
 
     def _send_message(self):
@@ -366,10 +434,30 @@ class TheonixMessagesWindow(QMainWindow):
             cur.execute("INSERT INTO messages (thread_id, sender, content) VALUES (?, ?, ?)", (self.current_thread, "assistant", full_ans))
             conn.commit()
             conn.close()
+            self._load_history()
 
         self.worker.chunk.connect(_on_chunk)
         self.worker.done.connect(_on_done)
         self.worker.start()
+
+    def _export_chat(self):
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT sender, content, timestamp FROM messages WHERE thread_id = ? ORDER BY id ASC", (self.current_thread,))
+        rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            QMessageBox.information(self, "Export", "Chat thread is empty.")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export Chat", os.path.expanduser(f"~/chat_{self.current_thread}.md"), "Markdown Files (*.md)")
+        if file_path:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(f"# Theonix Messages Export — {self.current_thread}\n\n")
+                for s, c, ts in rows:
+                    f.write(f"### {s.upper()} ({ts})\n\n{c}\n\n---\n\n")
+            QMessageBox.information(self, "Export", f"Chat exported successfully to {file_path}")
 
     def _clear_history(self):
         conn = sqlite3.connect(DB_PATH)

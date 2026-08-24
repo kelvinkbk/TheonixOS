@@ -2,6 +2,7 @@
 """
 Theonix Store — Ultra-Dark Glassmorphic Software Center & App Discovery Hub
 Built for Theonix OS. Unified catalog for Pacman, Flatpak, and UACL apps.
+Features app detail cards, multi-source backend filtering, and package management.
 """
 
 import os
@@ -15,7 +16,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QProgressBar,
     QScrollArea, QFrame, QStackedWidget, QMessageBox, QGridLayout,
-    QButtonGroup
+    QButtonGroup, QDialog, QTextEdit
 )
 
 UACL_DB = os.path.expanduser("~/.config/theonix/uacl.db")
@@ -63,6 +64,29 @@ QPushButton.NavBtn:checked {
     font-weight: 700;
 }
 
+/* Filter Chips */
+QPushButton.FilterChip {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton.FilterChip:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+}
+
+QPushButton.FilterChip:checked {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.4), rgba(0, 255, 170, 0.3));
+    border: 1px solid #00FFAA;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
 /* Scroll Area */
 QScrollArea {
     border: none;
@@ -103,7 +127,7 @@ QFrame.AppCard {
 }
 
 QFrame.AppCard:hover {
-    border: 1px solid rgba(0, 255, 170, 0.25);
+    border: 1px solid rgba(0, 255, 170, 0.3);
     background-color: rgba(24, 32, 50, 0.85);
 }
 
@@ -196,6 +220,8 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Development",
         "icon": "💻",
+        "version": "1.92.0",
+        "size": "95 MB",
         "desc": "Powerful, extensible code editor with integrated Git, debugging, and terminal.",
     },
     {
@@ -204,7 +230,9 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "AI & Tools",
         "icon": "🧠",
-        "desc": "Run large language models locally and privately on your machine.",
+        "version": "0.3.12",
+        "size": "32 MB",
+        "desc": "Run large language models locally and privately on your machine with GPU support.",
     },
     {
         "name": "Blender 3D",
@@ -212,6 +240,8 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Graphics & Media",
         "icon": "🎨",
+        "version": "4.2.1",
+        "size": "240 MB",
         "desc": "Free and open-source 3D creation suite supporting modeling, animation, and rendering.",
     },
     {
@@ -220,6 +250,8 @@ FEATURED_APPS = [
         "source": "flatpak",
         "category": "Communication",
         "icon": "💬",
+        "version": "0.0.60",
+        "size": "85 MB",
         "desc": "All-in-one voice and text chat for gamers, communities, and developer teams.",
     },
     {
@@ -228,6 +260,8 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Gaming",
         "icon": "🎮",
+        "version": "1.0.0.79",
+        "size": "65 MB",
         "desc": "The ultimate online game platform with Proton compatibility for thousands of titles.",
     },
     {
@@ -236,6 +270,8 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Productivity",
         "icon": "📄",
+        "version": "24.8.0",
+        "size": "180 MB",
         "desc": "Feature-rich open source office suite including Writer, Calc, and Impress.",
     },
     {
@@ -244,6 +280,8 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Graphics & Media",
         "icon": "🖼️",
+        "version": "2.10.38",
+        "size": "115 MB",
         "desc": "Advanced photo retouching, image composition, and graphic authoring software.",
     },
     {
@@ -252,9 +290,85 @@ FEATURED_APPS = [
         "source": "pacman",
         "category": "Graphics & Media",
         "icon": "🎬",
+        "version": "3.0.21",
+        "size": "45 MB",
         "desc": "Universal media player that plays most multimedia files, discs, and network streams.",
     },
 ]
+
+
+class AppDetailDialog(QDialog):
+    def __init__(self, app_data: dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"{app_data['name']} — Details")
+        self.setMinimumSize(540, 380)
+        self.setStyleSheet(THEME_QSS)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(28, 28, 28, 28)
+        layout.setSpacing(16)
+
+        # Header
+        top_row = QHBoxLayout()
+        icon = QLabel(app_data.get("icon", "📦"))
+        icon.setStyleSheet("font-size: 40px; background: rgba(14, 18, 28, 0.9); border-radius: 14px; padding: 8px;")
+        icon.setFixedSize(60, 60)
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        top_row.addWidget(icon)
+
+        title_box = QVBoxLayout()
+        name = QLabel(app_data["name"])
+        name.setStyleSheet("font-size: 20px; font-weight: 800; color: #FFFFFF;")
+        pkg = QLabel(f"Package: {app_data.get('pkg', app_data['name'])} · {app_data.get('source', 'pacman').upper()}")
+        pkg.setStyleSheet("color: #00FFAA; font-size: 12.5px; font-weight: bold;")
+        title_box.addWidget(name)
+        title_box.addWidget(pkg)
+        top_row.addLayout(title_box)
+        top_row.addStretch()
+        layout.addLayout(top_row)
+
+        # Description
+        desc_card = QFrame()
+        desc_card.setProperty("class", "AppCard")
+        d_layout = QVBoxLayout(desc_card)
+        desc_text = QLabel(app_data.get("desc", "No description provided."))
+        desc_text.setStyleSheet("color: #F8FAFC; font-size: 13.5px; line-height: 1.5;")
+        desc_text.setWordWrap(True)
+        d_layout.addWidget(desc_text)
+
+        meta_row = QHBoxLayout()
+        meta_row.addWidget(QLabel(f"<b>Version:</b> {app_data.get('version', '1.0')}"))
+        meta_row.addWidget(QLabel(f"<b>Size:</b> {app_data.get('size', 'Standard')}"))
+        meta_row.addWidget(QLabel("<b>License:</b> GPL / MIT"))
+        meta_row.addStretch()
+        d_layout.addLayout(meta_row)
+        layout.addWidget(desc_card)
+
+        # Buttons
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.setProperty("class", "ActionBtn")
+        close_btn.clicked.connect(self.accept)
+        
+        install_btn = QPushButton("Install Package")
+        install_btn.setProperty("class", "InstallBtn")
+        install_btn.clicked.connect(lambda: self._install(app_data))
+
+        btn_row.addWidget(close_btn)
+        btn_row.addWidget(install_btn)
+        layout.addLayout(btn_row)
+
+    def _install(self, data):
+        self.accept()
+        pkg = data.get("pkg", data["name"])
+        src = data.get("source", "pacman")
+        if src == "pacman":
+            subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-S", "--needed", pkg])
+        elif src == "flatpak":
+            subprocess.Popen(["konsole", "-e", "flatpak", "install", "-y", "flathub", pkg])
+        else:
+            subprocess.Popen(["theonix-uacl", "launch", "--name", pkg])
 
 
 class AppCard(QFrame):
@@ -303,11 +417,20 @@ class AppCard(QFrame):
 
         layout.addLayout(v_box, 1)
 
+        details_btn = QPushButton("Details")
+        details_btn.setProperty("class", "ActionBtn")
+        details_btn.clicked.connect(self._open_details)
+        layout.addWidget(details_btn)
+
         btn = QPushButton("Install")
         btn.setProperty("class", "InstallBtn")
-        btn.setFixedWidth(100)
+        btn.setFixedWidth(90)
         btn.clicked.connect(self._install_app)
         layout.addWidget(btn)
+
+    def _open_details(self):
+        dlg = AppDetailDialog(self.data, self.parent_window)
+        dlg.exec()
 
     def _install_app(self):
         pkg = self.data.get("pkg", self.data["name"])
@@ -384,6 +507,7 @@ class TheonixStoreWindow(QMainWindow):
         self.setMinimumSize(1020, 700)
         self.resize(1120, 760)
         self.worker = None
+        self.active_filter = "all"
 
         central = QWidget()
         central.setObjectName("CentralWidget")
@@ -446,7 +570,7 @@ class TheonixStoreWindow(QMainWindow):
         content_area = QWidget()
         content_layout = QVBoxLayout(content_area)
         content_layout.setContentsMargins(32, 24, 32, 24)
-        content_layout.setSpacing(18)
+        content_layout.setSpacing(16)
 
         # Top Bar
         top_row = QHBoxLayout()
@@ -468,6 +592,23 @@ class TheonixStoreWindow(QMainWindow):
         top_row.addWidget(mgr_btn)
         content_layout.addLayout(top_row)
 
+        # Backend Filter Chips
+        chips_row = QHBoxLayout()
+        chips_row.setSpacing(8)
+        self.chip_group = QButtonGroup(self)
+        self.chip_group.setExclusive(True)
+
+        filter_options = [("All Sources", "all"), ("📦 Pacman / Arch", "pacman"), ("🟣 Flatpak", "flatpak"), ("🪟 Windows / UACL", "uacl")]
+        for c_idx, (c_label, c_id) in enumerate(filter_options):
+            chip = QPushButton(c_label)
+            chip.setProperty("class", "FilterChip")
+            chip.setCheckable(True)
+            self.chip_group.addButton(chip, c_idx)
+            chips_row.addWidget(chip)
+
+        chips_row.addStretch()
+        content_layout.addLayout(chips_row)
+
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -480,10 +621,25 @@ class TheonixStoreWindow(QMainWindow):
         main_layout.addWidget(content_area, 1)
 
         self.btn_group.idClicked.connect(self._on_category_changed)
+        self.chip_group.idClicked.connect(self._on_filter_changed)
+
         first_btn = self.btn_group.button(0)
         if first_btn:
             first_btn.setChecked(True)
+        first_chip = self.chip_group.button(0)
+        if first_chip:
+            first_chip.setChecked(True)
+
         self._load_featured_or_category(0)
+
+    def _on_filter_changed(self, idx):
+        filters = ["all", "pacman", "flatpak", "uacl"]
+        self.active_filter = filters[idx] if idx < len(filters) else "all"
+        query = self.search_input.text().strip()
+        if query:
+            self._trigger_search()
+        else:
+            self._load_featured_or_category(self.btn_group.checkedId())
 
     def _on_category_changed(self, idx):
         self.search_input.clear()
@@ -511,8 +667,9 @@ class TheonixStoreWindow(QMainWindow):
             self.cards_layout.addWidget(hdr)
 
             for app_data in FEATURED_APPS:
-                card = AppCard(app_data, self)
-                self.cards_layout.addWidget(card)
+                if self.active_filter == "all" or app_data.get("source") == self.active_filter:
+                    card = AppCard(app_data, self)
+                    self.cards_layout.addWidget(card)
 
         elif idx == 6:
             hdr = QLabel("Installed Applications")
@@ -540,8 +697,9 @@ class TheonixStoreWindow(QMainWindow):
 
             filtered = [a for a in FEATURED_APPS if cat_name.lower() in a.get("category", "").lower()]
             for app_data in filtered:
-                card = AppCard(app_data, self)
-                self.cards_layout.addWidget(card)
+                if self.active_filter == "all" or app_data.get("source") == self.active_filter:
+                    card = AppCard(app_data, self)
+                    self.cards_layout.addWidget(card)
 
         self.cards_layout.addStretch()
 
@@ -561,13 +719,17 @@ class TheonixStoreWindow(QMainWindow):
         lbl.setStyleSheet("color: #94A3B8;")
         self.cards_layout.addWidget(lbl)
 
-        self.worker = StoreWorker(query, "all")
+        self.worker = StoreWorker(query, self.active_filter)
         self.worker.results_ready.connect(self._on_search_results)
         self.worker.start()
 
     def _on_search_results(self, results):
         self._clear_cards()
         query = self.search_input.text().strip()
+        
+        if self.active_filter != "all":
+            results = [r for r in results if r.get("source") == self.active_filter]
+
         hdr = QLabel(f"Search Results for '{query}' ({len(results)} matches)")
         hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #00FFAA;")
         self.cards_layout.addWidget(hdr)
