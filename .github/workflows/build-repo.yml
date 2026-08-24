@@ -93,8 +93,21 @@ jobs:
             cd /workdir/packages/theonix-store
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
-            
 
+            # Build theonix-settings
+            cd /workdir/packages/theonix-settings
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+
+            # Build theonix-files
+            cd /workdir/packages/theonix-files
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+
+            # Build theonix-browser
+            cd /workdir/packages/theonix-browser
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
             
             # Build theonix-release
             cd /workdir/packages/theonix-release

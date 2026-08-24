@@ -34,14 +34,15 @@ jobs:
       - name: Build ISO
         run: |
           mkdir -p out
+          # Ensure loop devices and kernel modules are available
+          sudo modprobe loop || true
+          for i in $(seq 0 7); do
+            [ -e /dev/loop$i ] || sudo mknod -m 0660 /dev/loop$i b 7 $i
+          done
           # Run container with required privileges for mkarchiso
           docker run --rm \
-            --cap-add SYS_ADMIN \
-            --cap-add MKNOD \
-            --device /dev/loop0 \
-            --device /dev/loop1 \
-            --device /dev/loop-control \
-            --security-opt apparmor:unconfined \
+            --privileged \
+            -v /dev:/dev \
             -v ${{ github.workspace }}:/workdir \
             theonix-builder /bin/bash scripts/build_iso.sh
             
