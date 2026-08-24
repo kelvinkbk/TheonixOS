@@ -251,6 +251,56 @@ class PackageService:
                     pass
         return sorted(apps, key=lambda x: x["name"].lower())
 
+    @staticmethod
+    def check_updates() -> List[Dict[str, Any]]:
+        """Scans for available system (pacman) and Flatpak updates."""
+        updates = []
+        # 1. Check Pacman updates (via checkupdates or pacman -Qu)
+        try:
+            res = subprocess.run(["checkupdates"], capture_output=True, text=True, timeout=8)
+            if res.returncode == 0:
+                for line in res.stdout.strip().splitlines()[:50]:
+                    parts = line.split()
+                    if len(parts) >= 4:
+                        pkg_name = parts[0]
+                        old_ver = parts[1]
+                        new_ver = parts[3]
+                        updates.append({
+                            "name": pkg_name,
+                            "pkg": pkg_name,
+                            "old_version": old_ver,
+                            "version": new_ver,
+                            "source": "pacman",
+                            "icon": "📦",
+                            "desc": f"Upgrade available: {old_ver} → {new_ver}"
+                        })
+        except Exception:
+            pass
+
+        # 2. Check Flatpak updates
+        try:
+            res_fp = subprocess.run(["flatpak", "remote-ls", "--updates", "--columns=application,name,version"], capture_output=True, text=True, timeout=5)
+            if res_fp.returncode == 0:
+                for line in res_fp.stdout.strip().splitlines()[:20]:
+                    parts = line.split("\t")
+                    if len(parts) >= 2:
+                        app_id = parts[0].strip()
+                        app_name = parts[1].strip()
+                        app_ver = parts[2].strip() if len(parts) > 2 else "Latest"
+                        updates.append({
+                            "name": app_name or app_id,
+                            "pkg": app_id,
+                            "old_version": "Installed",
+                            "version": app_ver,
+                            "source": "flatpak",
+                            "icon": "🌐",
+                            "desc": f"Flathub container update: {app_ver}"
+                        })
+        except Exception:
+            pass
+
+        return updates
+
 
 class SearchService:
     """Advanced search query parser for files, directories, and system settings."""

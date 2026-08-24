@@ -1,30 +1,33 @@
 #!/usr/bin/env python3
 """
 Theonix Store — Unified Software Center & App Marketplace for Theonix OS.
-Powered by theonix_core platform services with 'Run on Theonix' compatibility rating.
+Powered by theonix_core platform services with Tri-Engine Discovery (Arch, Flatpak, UACL),
+THAID AI App Recommendations, In-App Uninstaller, and Live System Updates.
 """
 
 import os
+import shutil
 import sqlite3
 import subprocess
 import sys
 import threading
+from typing import Optional, List, Dict, Any
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
 
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QProgressBar,
     QScrollArea, QFrame, QStackedWidget, QMessageBox, QGridLayout,
-    QButtonGroup, QDialog, QTextEdit
+    QButtonGroup, QDialog, QTextEdit, QSplitter
 )
 
 from theonix_core import (
     THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
     SearchBar, apply_theonix_style,
-    PackageService, CompatibilityRating, UACLService
+    PackageService, CompatibilityRating, UACLService, AIService
 )
 
 FEATURED_APPS = [
@@ -37,6 +40,7 @@ FEATURED_APPS = [
         "icon": "💻",
         "version": "1.92.0",
         "size": "95 MB",
+        "rating": "⭐ 4.9",
         "desc": "Industry-standard code editor with built-in debugging, Git, extensions, and terminal.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Official Arch Linux native package (100% performance)"
@@ -49,6 +53,7 @@ FEATURED_APPS = [
         "icon": "🪟",
         "version": "8.6.9",
         "size": "15 MB",
+        "rating": "⭐ 4.8",
         "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
@@ -61,6 +66,7 @@ FEATURED_APPS = [
         "icon": "📁",
         "version": "6.3.4",
         "size": "11 MB",
+        "rating": "⭐ 4.7",
         "desc": "Popular Windows graphical SFTP, FTP, WebDAV, and S3 file transfer client.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Seamless Windows network tool running via UACL"
@@ -73,6 +79,7 @@ FEATURED_APPS = [
         "icon": "🐬",
         "version": "12.8.0",
         "size": "18 MB",
+        "rating": "⭐ 4.8",
         "desc": "Fast and lightweight Windows GUI for MariaDB, MySQL, Microsoft SQL, and PostgreSQL.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Direct database connection via UACL"
@@ -85,6 +92,7 @@ FEATURED_APPS = [
         "icon": "🐍",
         "version": "2024.2",
         "size": "480 MB",
+        "rating": "⭐ 4.8",
         "desc": "Intelligent Python IDE with smart code inspection, refactoring, and debugger.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux Java/JVM IDE"
@@ -97,6 +105,7 @@ FEATURED_APPS = [
         "icon": "⌨️",
         "version": "0.10.1",
         "size": "18 MB",
+        "rating": "⭐ 5.0",
         "desc": "Hyperextensible Vim-based modal text editor with Lua plugin architecture and LSP.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Ultra-fast native C binary"
@@ -109,6 +118,7 @@ FEATURED_APPS = [
         "icon": "🤖",
         "version": "4.3.0",
         "size": "85 MB",
+        "rating": "⭐ 4.9",
         "desc": "Free and open-source 2D and 3D cross-platform game engine with Vulkan renderer.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Vulkan accelerated native game engine"
@@ -121,6 +131,7 @@ FEATURED_APPS = [
         "icon": "🐙",
         "version": "10.1.0",
         "size": "110 MB",
+        "rating": "⭐ 4.7",
         "desc": "Visual Git client with interactive merge conflict resolver and worktree management.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed Flathub container"
@@ -133,6 +144,7 @@ FEATURED_APPS = [
         "icon": "🗄️",
         "version": "24.1.5",
         "size": "98 MB",
+        "rating": "⭐ 4.8",
         "desc": "Universal database manager for PostgreSQL, MySQL, SQLite, Oracle, and Redis.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux database IDE"
@@ -147,6 +159,7 @@ FEATURED_APPS = [
         "icon": "✨",
         "version": "2.0.0",
         "size": "12 MB",
+        "rating": "⭐ 5.0",
         "desc": "Theonix OS system-level neural assistant for autonomous control, code generation, and browsing.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Built-in Theonix OS core service"
@@ -159,6 +172,7 @@ FEATURED_APPS = [
         "icon": "🧠",
         "version": "0.3.12",
         "size": "32 MB",
+        "rating": "⭐ 4.9",
         "desc": "Run large language models locally on CPU/GPU with zero cloud telemetry.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Hardware accelerated native inference engine"
@@ -171,6 +185,7 @@ FEATURED_APPS = [
         "icon": "🔮",
         "version": "0.3.2",
         "size": "140 MB",
+        "rating": "⭐ 4.8",
         "desc": "Discover, download, and experiment with local LLMs with a rich chat and API interface.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed container with CUDA/ROCm offload"
@@ -183,6 +198,7 @@ FEATURED_APPS = [
         "icon": "🎙️",
         "version": "20231117",
         "size": "45 MB",
+        "rating": "⭐ 4.9",
         "desc": "High-accuracy neural voice transcription and multi-language translation model.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "PyTorch accelerated audio model"
@@ -197,6 +213,7 @@ FEATURED_APPS = [
         "icon": "🖌️",
         "version": "5.0.13",
         "size": "65 MB",
+        "rating": "⭐ 4.8",
         "desc": "Classic Windows photo editing and digital drawing suite with layer support.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Direct rendering through Theonix UACL"
@@ -209,6 +226,7 @@ FEATURED_APPS = [
         "icon": "🎵",
         "version": "2.1.5",
         "size": "6 MB",
+        "rating": "⭐ 4.9",
         "desc": "Ultra-lightweight and customizable Windows audio player with gapless playback and DSP.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Direct PipeWire/WASAPI audio via UACL"
@@ -221,6 +239,7 @@ FEATURED_APPS = [
         "icon": "👁️",
         "version": "4.67",
         "size": "5 MB",
+        "rating": "⭐ 4.7",
         "desc": "Blazing fast Windows image viewer and batch converter for graphics and RAW files.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Native performance via UACL"
@@ -233,6 +252,7 @@ FEATURED_APPS = [
         "icon": "🎨",
         "version": "4.2.1",
         "size": "240 MB",
+        "rating": "⭐ 5.0",
         "desc": "Comprehensive 3D creation suite: modeling, sculpting, VFX, animation, and Cycles rendering.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Vulkan & OptiX accelerated native Linux package"
@@ -245,6 +265,7 @@ FEATURED_APPS = [
         "icon": "🖼️",
         "version": "2.10.38",
         "size": "115 MB",
+        "rating": "⭐ 4.7",
         "desc": "Advanced photo retouching, image composition, and graphic design authoring software.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Official Arch Linux native application"
@@ -257,6 +278,7 @@ FEATURED_APPS = [
         "icon": "🖌️",
         "version": "5.2.3",
         "size": "180 MB",
+        "rating": "⭐ 4.9",
         "desc": "Professional painting program for concept artists, illustrators, and matte painters.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Qt6 Wayland native creative application"
@@ -269,6 +291,7 @@ FEATURED_APPS = [
         "icon": "📐",
         "version": "1.3.2",
         "size": "130 MB",
+        "rating": "⭐ 4.8",
         "desc": "Professional vector graphics editor for SVG illustration, typography, and iconography.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux vector suite"
@@ -281,6 +304,7 @@ FEATURED_APPS = [
         "icon": "📹",
         "version": "30.2.2",
         "size": "60 MB",
+        "rating": "⭐ 4.9",
         "desc": "Live streaming and screen video recording with PipeWire capture and NVENC/VAAPI.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Hardware encoder accelerated"
@@ -293,6 +317,7 @@ FEATURED_APPS = [
         "icon": "🎬",
         "version": "3.0.21",
         "size": "45 MB",
+        "rating": "⭐ 4.9",
         "desc": "Universal media player that plays most multimedia files, codecs, and network streams.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "High performance PipeWire and VAAPI accelerated"
@@ -307,6 +332,7 @@ FEATURED_APPS = [
         "icon": "📦",
         "version": "24.07",
         "size": "2 MB",
+        "rating": "⭐ 4.9",
         "desc": "High-compression file archiver with 7z, ZIP, RAR, TAR, GZ, and ISO support.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Ultra-fast execution through Theonix UACL"
@@ -319,6 +345,7 @@ FEATURED_APPS = [
         "icon": "📄",
         "version": "11.18.0",
         "size": "34 MB",
+        "rating": "⭐ 4.8",
         "desc": "Free Windows PDF toolkit: merge, compress, split, convert, and sign PDF documents.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "All PDF utilities working smoothly in UACL"
@@ -331,6 +358,7 @@ FEATURED_APPS = [
         "icon": "📚",
         "version": "7.01",
         "size": "3.5 MB",
+        "rating": "⭐ 4.7",
         "desc": "Classic Windows RAR and ZIP compression manager with recovery record capabilities.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Full Win32 UI integrated into Theonix desktop"
@@ -343,6 +371,7 @@ FEATURED_APPS = [
         "icon": "📑",
         "version": "24.8.0",
         "size": "160 MB",
+        "rating": "⭐ 4.8",
         "desc": "Full office productivity suite including Writer, Calc spreadsheets, Impress presentations, and Draw.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux office suite"
@@ -355,6 +384,7 @@ FEATURED_APPS = [
         "icon": "💎",
         "version": "1.6.7",
         "size": "85 MB",
+        "rating": "⭐ 5.0",
         "desc": "Second brain and Markdown note-taking app with bidirectional graph linking.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed Flathub container"
@@ -367,6 +397,7 @@ FEATURED_APPS = [
         "icon": "✉️",
         "version": "128.1.0",
         "size": "70 MB",
+        "rating": "⭐ 4.7",
         "desc": "Full-featured secure email, calendar, and address book client with PGP encryption.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Official Arch Linux email client"
@@ -379,6 +410,7 @@ FEATURED_APPS = [
         "icon": "🛡️",
         "version": "2024.7.1",
         "size": "85 MB",
+        "rating": "⭐ 5.0",
         "desc": "End-to-end encrypted password manager and 2FA authenticator for all devices.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux secure vault"
@@ -393,6 +425,7 @@ FEATURED_APPS = [
         "icon": "⚔️",
         "version": "2.33.0",
         "size": "5 MB",
+        "rating": "⭐ 4.7",
         "desc": "Blizzard launcher for World of Warcraft, Overwatch 2, Diablo IV, and Hearthstone.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Configured with Proton DXVK compatibility profile"
@@ -405,6 +438,7 @@ FEATURED_APPS = [
         "icon": "🎮",
         "version": "16.12.0",
         "size": "55 MB",
+        "rating": "⭐ 4.6",
         "desc": "Official Epic Games Launcher for Fortnite, Unreal Engine marketplace, and weekly free games.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Proton VKD3D DirectX 12 compatibility layer"
@@ -417,6 +451,7 @@ FEATURED_APPS = [
         "icon": "🚀",
         "version": "13.250",
         "size": "8 MB",
+        "rating": "⭐ 4.5",
         "desc": "Electronic Arts PC gaming platform for EA Sports FC, Apex Legends, and The Sims.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "UACL Gaming runtime prefix"
@@ -429,6 +464,7 @@ FEATURED_APPS = [
         "icon": "🌀",
         "version": "144.0",
         "size": "210 MB",
+        "rating": "⭐ 4.4",
         "desc": "Ubisoft gaming client for Assassin's Creed, Rainbow Six Siege, and Far Cry.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "Proton DXVK accelerated launcher"
@@ -441,6 +477,7 @@ FEATURED_APPS = [
         "icon": "🧱",
         "version": "2.635",
         "size": "160 MB",
+        "rating": "⭐ 4.8",
         "desc": "Global virtual universe and gaming sandbox running smoothly through Theonix UACL.",
         "compat": CompatibilityRating.UACL_COMPATIBLE,
         "compat_desc": "DirectX 11 translation via UACL"
@@ -453,6 +490,7 @@ FEATURED_APPS = [
         "icon": "🎮",
         "version": "1.0.0.79",
         "size": "65 MB",
+        "rating": "⭐ 5.0",
         "desc": "The ultimate gaming platform with Proton DXVK/VKD3D compatibility for thousands of titles.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native client with Vulkan translation layers"
@@ -465,6 +503,7 @@ FEATURED_APPS = [
         "icon": "⚔️",
         "version": "2.14.1",
         "size": "95 MB",
+        "rating": "⭐ 4.8",
         "desc": "Native GUI launcher for Epic Games, GOG, and Amazon Prime with Proton wine prefix manager.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed Flathub gaming client"
@@ -477,6 +516,7 @@ FEATURED_APPS = [
         "icon": "🕹️",
         "version": "0.5.17",
         "size": "25 MB",
+        "rating": "⭐ 4.8",
         "desc": "Open gaming platform to install and manage Windows, Linux, emulator, and console games.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Linux gaming manager"
@@ -489,6 +529,7 @@ FEATURED_APPS = [
         "icon": "👾",
         "version": "1.19.1",
         "size": "40 MB",
+        "rating": "⭐ 4.9",
         "desc": "Frontend for game engines and classic console emulators with low latency and shaders.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Native Vulkan/OpenGL emulator engine"
@@ -501,6 +542,7 @@ FEATURED_APPS = [
         "icon": "💬",
         "version": "0.0.60",
         "size": "85 MB",
+        "rating": "⭐ 4.8",
         "desc": "Voice, video, and text communication service for gaming, developers, and communities.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed Flathub container with PipeWire audio"
@@ -508,11 +550,248 @@ FEATURED_APPS = [
 ]
 
 
+class THAIDStoreWorker(QThread):
+    chunk_received = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def __init__(self, prompt: str):
+        super().__init__()
+        self.prompt = prompt
+
+    def run(self):
+        system_msg = (
+            "You are THAID, the intelligent AI software consultant for Theonix OS.\n"
+            "Help users find the best Linux native packages, Flathub containers, or Windows UACL compatibility apps.\n"
+            "Be concise, enthusiastic, and provide clear software recommendations with reason and advantages."
+        )
+        messages = [
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": self.prompt}
+        ]
+        try:
+            for token in AIService.stream_chat(messages, model_id="1.5b"):
+                self.chunk_received.emit(token)
+        except Exception as e:
+            self.chunk_received.emit(f"\n[THAID Connection Error: {e}]\n")
+        self.finished.emit()
+
+
+class PackageUninstallWorker(QThread):
+    log_received = pyqtSignal(str)
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, app_data: dict):
+        super().__init__()
+        self.app_data = app_data
+        self.pkg = app_data.get("pkg", app_data["name"])
+        self.source = app_data.get("source", "pacman")
+
+    def run(self):
+        if self.source in ["pacman", "arch"]:
+            cmd = ["pkexec", "pacman", "-Rns", "--noconfirm", self.pkg]
+        elif self.source == "flatpak":
+            cmd = ["flatpak", "uninstall", "-y", "--user", self.pkg]
+        elif self.source == "uacl":
+            uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
+            local_exe = os.path.join(uacl_cache_dir, self.pkg)
+            if os.path.exists(local_exe):
+                try:
+                    os.remove(local_exe)
+                except Exception:
+                    pass
+            self.finished.emit(True, f"Removed UACL cache for {self.pkg}")
+            return
+        else:
+            self.finished.emit(False, "Unknown package source.")
+            return
+
+        try:
+            self.log_received.emit(f"🗑️ Removing application package: {self.pkg}\n")
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            for line in proc.stdout:
+                self.log_received.emit(line)
+            proc.wait()
+            if proc.returncode == 0:
+                self.finished.emit(True, f"✓ Successfully removed {self.pkg}")
+            else:
+                self.finished.emit(False, f"Uninstall exited with code {proc.returncode}")
+        except Exception as e:
+            self.finished.emit(False, f"Uninstall error: {e}")
+
+
+class AppUninstallDialog(QDialog):
+    """In-App Package Uninstaller Dialog."""
+    def __init__(self, app_data: dict, parent=None):
+        super().__init__(parent)
+        self.app_data = app_data
+        self.setWindowTitle(f"Uninstalling {app_data['name']}")
+        self.setMinimumSize(480, 340)
+        self.setStyleSheet("""
+            QDialog { background-color: #0B0E17; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; }
+            QLabel { color: #F8FAFC; }
+            QTextEdit { background-color: #07090E; border: 1px solid #1E2638; border-radius: 8px; color: #FF7777; font-family: monospace; font-size: 11.5px; }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(14)
+
+        hdr = QHBoxLayout()
+        icon = QLabel(app_data.get("icon", "📦"))
+        icon.setStyleSheet("font-size: 32px;")
+        hdr.addWidget(icon)
+
+        t_box = QVBoxLayout()
+        self.title_lbl = QLabel(f"Uninstalling {app_data['name']}...")
+        self.title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF;")
+        self.status_lbl = QLabel("Removing binaries and cleaning dependencies...")
+        self.status_lbl.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+        t_box.addWidget(self.title_lbl)
+        t_box.addWidget(self.status_lbl)
+        hdr.addLayout(t_box)
+        hdr.addStretch()
+        layout.addLayout(hdr)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setFixedHeight(6)
+        layout.addWidget(self.progress_bar)
+
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        layout.addWidget(self.log_view)
+
+        self.btn_row = QHBoxLayout()
+        self.btn_row.addStretch()
+        self.close_btn = QPushButton("Cancel")
+        self.close_btn.setProperty("class", "ActionBtn")
+        self.close_btn.clicked.connect(self.reject)
+        self.btn_row.addWidget(self.close_btn)
+        layout.addLayout(self.btn_row)
+
+        self.worker = PackageUninstallWorker(app_data)
+        self.worker.log_received.connect(lambda t: self.log_view.append(t.strip()))
+        self.worker.finished.connect(self._on_finished)
+        self.worker.start()
+
+    def _on_finished(self, success: bool, msg: str):
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(100 if success else 0)
+        self.close_btn.setText("Close")
+        if success:
+            self.title_lbl.setText(f"✓ {self.app_data['name']} Uninstalled")
+            self.status_lbl.setText("Application removed from system.")
+            self.status_lbl.setStyleSheet("color: #00FFAA; font-weight: bold;")
+        else:
+            self.title_lbl.setText("Uninstall Incomplete")
+            self.status_lbl.setText(msg)
+            self.status_lbl.setStyleSheet("color: #FF5555;")
+
+
+class UpdateAllWorker(QThread):
+    log_received = pyqtSignal(str)
+    finished = pyqtSignal(bool, str)
+
+    def run(self):
+        try:
+            self.log_received.emit("🔄 Synchronizing Arch Linux package repositories...\n")
+            proc1 = subprocess.Popen(
+                ["pkexec", "pacman", "-Syu", "--noconfirm"],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+            )
+            for line in proc1.stdout:
+                self.log_received.emit(line)
+            proc1.wait()
+
+            self.log_received.emit("\n🌐 Updating Flathub container packages...\n")
+            proc2 = subprocess.Popen(
+                ["flatpak", "update", "-y", "--user"],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+            )
+            for line in proc2.stdout:
+                self.log_received.emit(line)
+            proc2.wait()
+
+            self.finished.emit(True, "All packages and containers are fully up-to-date.")
+        except Exception as e:
+            self.finished.emit(False, f"Update error: {e}")
+
+
+class UpdateAllDialog(QDialog):
+    """Modern System Update Progress Modal."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Updating Theonix System")
+        self.setMinimumSize(540, 380)
+        self.setStyleSheet("""
+            QDialog { background-color: #0B0E17; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; }
+            QLabel { color: #F8FAFC; }
+            QTextEdit { background-color: #07090E; border: 1px solid #1E2638; border-radius: 8px; color: #00FFAA; font-family: monospace; font-size: 11.5px; }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(14)
+
+        hdr = QHBoxLayout()
+        icon = QLabel("⚡")
+        icon.setStyleSheet("font-size: 32px; background: rgba(0,255,170,0.12); border-radius: 12px; padding: 4px;")
+        hdr.addWidget(icon)
+
+        t_box = QVBoxLayout()
+        self.title_lbl = QLabel("Upgrading System Packages & Flatpaks...")
+        self.title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF;")
+        self.status_lbl = QLabel("Downloading latest package deltas...")
+        self.status_lbl.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+        t_box.addWidget(self.title_lbl)
+        t_box.addWidget(self.status_lbl)
+        hdr.addLayout(t_box)
+        hdr.addStretch()
+        layout.addLayout(hdr)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setFixedHeight(6)
+        layout.addWidget(self.progress_bar)
+
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        layout.addWidget(self.log_view)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        self.close_btn = QPushButton("Cancel")
+        self.close_btn.setProperty("class", "ActionBtn")
+        self.close_btn.clicked.connect(self.reject)
+        btn_row.addWidget(self.close_btn)
+        layout.addLayout(btn_row)
+
+        self.worker = UpdateAllWorker()
+        self.worker.log_received.connect(lambda t: self.log_view.append(t.strip()))
+        self.worker.finished.connect(self._on_finished)
+        self.worker.start()
+
+    def _on_finished(self, success: bool, msg: str):
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(100 if success else 0)
+        self.close_btn.setText("Close")
+        if success:
+            self.title_lbl.setText("✓ System Up to Date")
+            self.status_lbl.setText(msg)
+            self.status_lbl.setStyleSheet("color: #00FFAA; font-weight: bold;")
+        else:
+            self.title_lbl.setText("Update Incomplete")
+            self.status_lbl.setText(msg)
+            self.status_lbl.setStyleSheet("color: #FF5555;")
+
+
 class AppDetailDialog(QDialog):
     def __init__(self, app_data: dict, parent=None):
         super().__init__(parent)
+        self.app_data = app_data
+        self.parent_window = parent
         self.setWindowTitle(f"{app_data['name']} — Details")
-        self.setMinimumSize(560, 420)
+        self.setMinimumSize(580, 440)
         self.setStyleSheet(THEONIX_THEME_QSS)
 
         layout = QVBoxLayout(self)
@@ -544,6 +823,8 @@ class AppDetailDialog(QDialog):
         h_badge_row = QHBoxLayout()
         h_badge_row.addWidget(compat_badge)
         h_badge_row.addWidget(QLabel(f"Source: {app_data.get('source', 'pacman').upper()}"))
+        if app_data.get("rating"):
+            h_badge_row.addWidget(QLabel(app_data["rating"]))
         h_badge_row.addStretch()
 
         title_box.addWidget(name)
@@ -567,7 +848,7 @@ class AppDetailDialog(QDialog):
         meta_row = QHBoxLayout()
         meta_row.addWidget(QLabel(f"<b>Version:</b> {app_data.get('version', '1.0')}"))
         meta_row.addWidget(QLabel(f"<b>Size:</b> {app_data.get('size', 'Standard')}"))
-        meta_row.addWidget(QLabel("<b>License:</b> GPL / MIT"))
+        meta_row.addWidget(QLabel("<b>License:</b> GPL / Open Source"))
         meta_row.addStretch()
         d_layout.addLayout(meta_row)
         layout.addWidget(desc_card)
@@ -605,10 +886,8 @@ class PackageInstallWorker(QThread):
 
     def run(self):
         if self.source == "pacman":
-            # Use pkexec with database refresh (-Sy) to always fetch fresh mirror links
             cmd = ["pkexec", "pacman", "-Sy", "--needed", "--noconfirm", self.pkg]
         elif self.source == "flatpak":
-            # User-level flatpak installs without requiring root permissions
             cmd = ["flatpak", "install", "-y", "--user", "flathub", self.pkg]
         elif self.source == "uacl":
             uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
@@ -665,7 +944,6 @@ class AppInstallDialog(QDialog):
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(14)
 
-        # Header
         hdr = QHBoxLayout()
         icon = QLabel(app_data.get("icon", "📦"))
         icon.setStyleSheet("font-size: 32px;")
@@ -682,9 +960,8 @@ class AppInstallDialog(QDialog):
         hdr.addStretch()
         layout.addLayout(hdr)
 
-        # Progress bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0) # Indeterminate pulsating
+        self.progress_bar.setRange(0, 0)
         self.progress_bar.setFixedHeight(6)
         self.progress_bar.setStyleSheet("""
             QProgressBar { background-color: #121826; border-radius: 3px; border: none; }
@@ -692,12 +969,10 @@ class AppInstallDialog(QDialog):
         """)
         layout.addWidget(self.progress_bar)
 
-        # Live log output
         self.log_view = QTextEdit()
         self.log_view.setReadOnly(True)
         layout.addWidget(self.log_view)
 
-        # Actions
         self.btn_row = QHBoxLayout()
         self.btn_row.addStretch()
 
@@ -714,7 +989,6 @@ class AppInstallDialog(QDialog):
         self.btn_row.addWidget(self.close_btn)
         layout.addLayout(self.btn_row)
 
-        # Start background installation
         self.worker = PackageInstallWorker(app_data)
         self.worker.log_received.connect(self._on_log)
         self.worker.finished.connect(self._on_finished)
@@ -808,6 +1082,12 @@ class AppCard(GlassCard):
 
         h_title.addWidget(src_badge)
         h_title.addWidget(badge)
+
+        if self.data.get("rating"):
+            rating_lbl = QLabel(self.data["rating"])
+            rating_lbl.setStyleSheet("color: #FFD700; font-weight: bold; font-size: 12px;")
+            h_title.addWidget(rating_lbl)
+
         h_title.addStretch()
         v_box.addLayout(h_title)
 
@@ -826,9 +1106,16 @@ class AppCard(GlassCard):
         if is_installed:
             launch_btn = QPushButton("🚀 Launch")
             launch_btn.setProperty("class", "PrimaryBtn")
-            launch_btn.setFixedWidth(100)
+            launch_btn.setFixedWidth(95)
             launch_btn.clicked.connect(self._launch_app)
             layout.addWidget(launch_btn)
+
+            uninst_btn = QPushButton("🗑️")
+            uninst_btn.setProperty("class", "ActionBtn")
+            uninst_btn.setToolTip("Uninstall application")
+            uninst_btn.setFixedWidth(38)
+            uninst_btn.clicked.connect(self._uninstall_app)
+            layout.addWidget(uninst_btn)
         else:
             btn = QPushButton("Install")
             btn.setProperty("class", "PrimaryBtn")
@@ -842,6 +1129,10 @@ class AppCard(GlassCard):
 
     def _install_app(self):
         dlg = AppInstallDialog(self.data, self.parent_window)
+        dlg.exec()
+
+    def _uninstall_app(self):
+        dlg = AppUninstallDialog(self.data, self.parent_window)
         dlg.exec()
 
     def _launch_app(self):
@@ -874,9 +1165,10 @@ class TheonixStoreWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Theonix Store")
-        self.setMinimumSize(1020, 700)
-        self.resize(1140, 760)
+        self.setMinimumSize(1080, 720)
+        self.resize(1180, 780)
         self.worker = None
+        self.ai_worker = None
         self.active_filter = "all"
 
         central = QWidget()
@@ -890,7 +1182,7 @@ class TheonixStoreWindow(QMainWindow):
         # Sidebar Container
         sidebar_box = QWidget()
         sidebar_box.setObjectName("SidebarContainer")
-        sidebar_box.setFixedWidth(250)
+        sidebar_box.setFixedWidth(240)
         sb_layout = QVBoxLayout(sidebar_box)
         sb_layout.setContentsMargins(0, 18, 0, 18)
         sb_layout.setSpacing(4)
@@ -935,17 +1227,21 @@ class TheonixStoreWindow(QMainWindow):
         # Right Content Area
         content_area = QWidget()
         content_layout = QVBoxLayout(content_area)
-        content_layout.setContentsMargins(32, 24, 32, 24)
-        content_layout.setSpacing(16)
+        content_layout.setContentsMargins(28, 20, 28, 20)
+        content_layout.setSpacing(14)
 
         # Top Bar
         top_row = QHBoxLayout()
-        self.search_input = SearchBar("Search thousands of packages, Flatpaks, and UACL Windows apps...")
+        self.search_input = SearchBar("Search packages, Flatpaks, and UACL Windows apps...")
         self.search_input.returnPressed.connect(self._trigger_search)
 
         search_btn = QPushButton("Search")
         search_btn.setProperty("class", "PrimaryBtn")
         search_btn.clicked.connect(self._trigger_search)
+
+        self.ai_btn = QPushButton("✨ Ask THAID")
+        self.ai_btn.setProperty("class", "PrimaryBtn")
+        self.ai_btn.clicked.connect(self._toggle_ai_drawer)
 
         mgr_btn = QPushButton("Installed Apps")
         mgr_btn.setProperty("class", "ActionBtn")
@@ -953,6 +1249,7 @@ class TheonixStoreWindow(QMainWindow):
 
         top_row.addWidget(self.search_input, 1)
         top_row.addWidget(search_btn)
+        top_row.addWidget(self.ai_btn)
         top_row.addWidget(mgr_btn)
         content_layout.addLayout(top_row)
 
@@ -974,10 +1271,13 @@ class TheonixStoreWindow(QMainWindow):
             chip.setCheckable(True)
             self.chip_group.addButton(chip, c_idx)
             chips_row.addWidget(chip)
-
         chips_row.addStretch()
         content_layout.addLayout(chips_row)
 
+        # Main Splitter for Content & THAID Drawer
+        self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        # Scrollable Cards View
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -985,8 +1285,48 @@ class TheonixStoreWindow(QMainWindow):
         self.cards_layout = QVBoxLayout(self.scroll_content)
         self.cards_layout.setSpacing(12)
         self.scroll.setWidget(self.scroll_content)
-        content_layout.addWidget(self.scroll)
+        self.main_splitter.addWidget(self.scroll)
 
+        # THAID AI Recommendations Sidebar
+        self.ai_sidebar = QFrame()
+        self.ai_sidebar.setStyleSheet("background-color: #080A10; border-left: 1px solid rgba(255,255,255,0.08); padding: 14px;")
+        self.ai_sidebar.setFixedWidth(300)
+        ai_layout = QVBoxLayout(self.ai_sidebar)
+        ai_layout.setContentsMargins(12, 14, 12, 14)
+        ai_layout.setSpacing(10)
+
+        ai_hdr = QHBoxLayout()
+        ai_title = QLabel("🤖 THAID Advisor")
+        ai_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #00FFAA;")
+        ai_hdr.addWidget(ai_title)
+        ai_hdr.addStretch()
+        ai_hdr.addWidget(Badge("AI ONLINE", "cyan"))
+        ai_layout.addLayout(ai_hdr)
+
+        self.ai_log = QTextEdit()
+        self.ai_log.setReadOnly(True)
+        self.ai_log.setStyleSheet(
+            "background-color: rgba(14, 18, 28, 0.9); border: 1px solid rgba(255,255,255,0.08); "
+            "border-radius: 8px; color: #F8FAFC; padding: 8px; font-size: 12px; line-height: 1.4;"
+        )
+        self.ai_log.setPlaceholderText("Ask THAID to recommend software for tasks, workflows, or alternatives...")
+        ai_layout.addWidget(self.ai_log)
+
+        ai_input_row = QHBoxLayout()
+        self.ai_input = QLineEdit()
+        self.ai_input.setPlaceholderText("e.g. Best tool for recording video?")
+        self.ai_input.returnPressed.connect(self._send_ai_query)
+        ai_send = QPushButton("Ask")
+        ai_send.setProperty("class", "PrimaryBtn")
+        ai_send.clicked.connect(self._send_ai_query)
+        ai_input_row.addWidget(self.ai_input)
+        ai_input_row.addWidget(ai_send)
+        ai_layout.addLayout(ai_input_row)
+
+        self.main_splitter.addWidget(self.ai_sidebar)
+        self.ai_sidebar.setVisible(False)
+
+        content_layout.addWidget(self.main_splitter, 1)
         main_layout.addWidget(content_area, 1)
 
         self.btn_group.idClicked.connect(self._on_category_changed)
@@ -1001,6 +1341,22 @@ class TheonixStoreWindow(QMainWindow):
 
         self._load_featured_or_category(0)
 
+    def _toggle_ai_drawer(self):
+        self.ai_sidebar.setVisible(not self.ai_sidebar.isVisible())
+
+    def _send_ai_query(self):
+        text = self.ai_input.text().strip()
+        if not text:
+            return
+        self.ai_input.clear()
+        self.ai_sidebar.setVisible(True)
+        self.ai_log.append(f"<b>You:</b> {text}\n")
+        self.ai_log.append("<b>THAID:</b> <i>Thinking & finding recommendations...</i>\n")
+
+        self.ai_worker = THAIDStoreWorker(text)
+        self.ai_worker.chunk_received.connect(lambda c: self.ai_log.append(c))
+        self.ai_worker.start()
+
     def _open_installed_manager(self):
         btn = self.btn_group.button(6)
         if btn:
@@ -1010,11 +1366,15 @@ class TheonixStoreWindow(QMainWindow):
     def _on_filter_changed(self, idx):
         filters = ["all", "pacman", "flatpak", "uacl"]
         self.active_filter = filters[idx] if idx < len(filters) else "all"
-        query = self.search_input.text().strip()
-        if query:
-            self._trigger_search()
-        else:
-            self._load_featured_or_category(self.btn_group.checkedId())
+        checked_btn = self.btn_group.checkedId()
+        self._load_featured_or_category(checked_btn if checked_btn >= 0 else 0)
+
+    def _clear_cards(self):
+        while self.cards_layout.count():
+            item = self.cards_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
     def _on_category_changed(self, idx):
         self.search_input.clear()
@@ -1061,14 +1421,30 @@ class TheonixStoreWindow(QMainWindow):
                 self.cards_layout.addWidget(card)
 
         elif idx == 7:
-            hdr = QLabel("Pending Software Updates")
+            updates = PackageService.check_updates()
+            hdr = QLabel(f"🔄 Pending Software Updates ({len(updates)} available)")
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
-            
-            up_btn = QPushButton("🚀 Launch System Updater")
-            up_btn.setProperty("class", "PrimaryBtn")
-            up_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-Syu"]))
-            self.cards_layout.addWidget(up_btn)
+
+            up_btn_row = QHBoxLayout()
+            up_all_btn = QPushButton("⚡ Update All Packages & Containers")
+            up_all_btn.setProperty("class", "PrimaryBtn")
+            up_all_btn.clicked.connect(self._run_update_all)
+            up_btn_row.addWidget(up_all_btn)
+            up_btn_row.addStretch()
+            self.cards_layout.addLayout(up_btn_row)
+
+            if updates:
+                for u in updates:
+                    card = AppCard(u, self)
+                    self.cards_layout.addWidget(card)
+            else:
+                card = GlassCard()
+                c_lay = QVBoxLayout(card)
+                ok_lbl = QLabel("✨ Your system is fully up to date! Zero pending package updates.")
+                ok_lbl.setStyleSheet("color: #00FFAA; font-weight: bold; font-size: 14px;")
+                c_lay.addWidget(ok_lbl)
+                self.cards_layout.addWidget(card)
 
         else:
             cat_name = self.btn_group.button(idx).text().split("  ")[1]
@@ -1087,6 +1463,11 @@ class TheonixStoreWindow(QMainWindow):
 
         self.cards_layout.addStretch()
 
+    def _run_update_all(self):
+        dlg = UpdateAllDialog(self)
+        dlg.exec()
+        self._load_featured_or_category(7)
+
     def _trigger_search(self):
         query = self.search_input.text().strip()
         if not query:
@@ -1099,7 +1480,7 @@ class TheonixStoreWindow(QMainWindow):
         hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #00FFAA;")
         self.cards_layout.addWidget(hdr)
 
-        lbl = QLabel("Searching repositories...")
+        lbl = QLabel("Searching repositories across Arch, Flatpak, and UACL...")
         lbl.setStyleSheet("color: #94A3B8;")
         self.cards_layout.addWidget(lbl)
 
@@ -1109,31 +1490,20 @@ class TheonixStoreWindow(QMainWindow):
 
     def _on_search_results(self, results):
         self._clear_cards()
-        query = self.search_input.text().strip()
-        
-        if self.active_filter != "all":
-            results = [r for r in results if r.get("source") == self.active_filter]
-
-        hdr = QLabel(f"Search Results for '{query}' ({len(results)} matches)")
+        hdr = QLabel(f"Results ({len(results)} found)")
         hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #00FFAA;")
         self.cards_layout.addWidget(hdr)
 
         if not results:
-            none_lbl = QLabel("No packages matched your query.")
-            none_lbl.setStyleSheet("color: #94A3B8; font-size: 14px; margin-top: 10px;")
-            self.cards_layout.addWidget(none_lbl)
+            empty_lbl = QLabel("No matching applications found. Try searching with different keywords.")
+            empty_lbl.setStyleSheet("color: #94A3B8;")
+            self.cards_layout.addWidget(empty_lbl)
         else:
-            for item in results:
-                card = AppCard(item, self)
+            for data in results:
+                card = AppCard(data, self)
                 self.cards_layout.addWidget(card)
 
         self.cards_layout.addStretch()
-
-    def _clear_cards(self):
-        while self.cards_layout.count():
-            child = self.cards_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
 
 
 def main():
