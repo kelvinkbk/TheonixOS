@@ -1,0 +1,7 @@
+[Greeter]
+WallpaperPlugin=org.kde.image
+
+[Greeter][Wallpaper][org.kde.image][General]
+FillMode=2
+Image=file:///usr/share/wallpapers/Theonix/contents/images/3840x2160.png
+PreviewImage=file:///usr/share/wallpapers/Theonix/contents/images/3840x2160.png

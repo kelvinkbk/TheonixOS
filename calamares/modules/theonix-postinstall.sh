@@ -139,14 +139,24 @@ echo "Welcome to Theonix OS" > /etc/motd
 echo "Theonix OS \r (\l)" > /etc/issue
 echo "  Cleaned MOTD branding"
 
-# ---- 9. Disable secondary KDE Splash (seamless desktop load) ----------------
+# ---- 9. Disable secondary KDE Splash & set Lock Screen Wallpaper -------------
 mkdir -p /etc/xdg
 cat > /etc/xdg/ksplashrc << 'SPLASH_EOF'
 [KSplash]
 Engine=none
 Theme=None
 SPLASH_EOF
-echo "  Disabled secondary KDE splash screen for seamless login"
+
+cat > /etc/xdg/kscreenlockerrc << 'LOCK_EOF'
+[Greeter]
+WallpaperPlugin=org.kde.image
+
+[Greeter][Wallpaper][org.kde.image][General]
+FillMode=2
+Image=file:///usr/share/wallpapers/Theonix/contents/images/3840x2160.png
+PreviewImage=file:///usr/share/wallpapers/Theonix/contents/images/3840x2160.png
+LOCK_EOF
+echo "  Configured Theonix Lock Screen and disabled secondary KDE splash"
 
 # ---- 9. Write Theonix OS os-release additions -------------------------------
 cat >> /etc/os-release << 'OSREL_EOF'
