@@ -6,11 +6,19 @@ pkgdesc="Native AI Chat & Messaging Hub for Theonix OS"
 arch=('any')
 url="https://github.com/kelvinkbk/TheonixOS"
 license=('GPL3')
-depends=('python' 'python-pyqt6' 'ollama')
-source=("main.py" "org.theonix.Messages.desktop")
-sha256sums=('SKIP' 'SKIP')
+depends=('python' 'python-pyqt6')
+source=("local-source::git+file://${PWD%/*/*}/.git")
+md5sums=('SKIP')
+
+prepare() {
+    if [ -d "$srcdir/../../../theonix-messages" ]; then
+        cp -r "$srcdir/../../../theonix-messages" "$srcdir/"
+    elif [ -d "$srcdir/local-source/theonix-messages" ]; then
+        cp -r "$srcdir/local-source/theonix-messages" "$srcdir/"
+    fi
+}
 
 package() {
-    install -Dm755 "${srcdir}/main.py" "${pkgdir}/usr/local/bin/theonix-messages"
-    install -Dm644 "${srcdir}/org.theonix.Messages.desktop" "${pkgdir}/usr/share/applications/org.theonix.Messages.desktop"
+    install -Dm755 "$srcdir/theonix-messages/main.py" "$pkgdir/usr/local/bin/theonix-messages"
+    install -Dm644 "$srcdir/theonix-messages/org.theonix.Messages.desktop" "$pkgdir/usr/share/applications/org.theonix.Messages.desktop"
 }

@@ -8,9 +8,18 @@ url="https://github.com/kelvinkbk/TheonixOS"
 license=('GPL-3.0-or-later')
 depends=('python' 'python-pyqt6')
 makedepends=('python-setuptools')
-source=()
+source=("local-source::git+file://${PWD%/*/*}/.git")
+md5sums=('SKIP')
+
+prepare() {
+    if [ -d "$srcdir/../../../theonix-core" ]; then
+        cp -r "$srcdir/../../../theonix-core" "$srcdir/"
+    elif [ -d "$srcdir/local-source/theonix-core" ]; then
+        cp -r "$srcdir/local-source/theonix-core" "$srcdir/"
+    fi
+}
 
 package() {
-    cd "${srcdir}/../../theonix-core"
-    python setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+    cd "$srcdir/theonix-core"
+    python setup.py install --root="${pkgdir}" --optimize=1
 }

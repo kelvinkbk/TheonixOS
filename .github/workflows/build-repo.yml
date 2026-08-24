@@ -104,8 +104,19 @@ jobs:
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
 
+            # Build theonix-core
+            cd /workdir/packages/theonix-core
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+            sudo pacman -U --noconfirm *.pkg.tar.zst
+
             # Build theonix-browser
             cd /workdir/packages/theonix-browser
+            sudo -u builduser makepkg -s --noconfirm
+            cp *.pkg.tar.zst /workdir/repo/x86_64/
+
+            # Build theonix-messages
+            cd /workdir/packages/theonix-messages
             sudo -u builduser makepkg -s --noconfirm
             cp *.pkg.tar.zst /workdir/repo/x86_64/
             
