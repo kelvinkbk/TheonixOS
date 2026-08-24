@@ -312,37 +312,62 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 12
 
-            Repeater {
-                model: [
-                    { text: "Restart",   action: function() { sddm.reboot()    } },
-                    { text: "Shut Down", action: function() { sddm.powerOff()  } }
-                ]
+            C.Button {
+                id: restartBtn
+                height: 36
+                width: 100
+                text: "Restart"
+                visible: sddm.canReboot
 
-                delegate: C.Button {
-                    height: 36
-                    width: 100
-                    
-                    contentItem: Text {
-                        text: modelData.text
-                        color: "white"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font {
-                            pixelSize: 13
-                            family:    "Inter"
-                            weight:    Font.Medium
-                        }
+                contentItem: Text {
+                    text: restartBtn.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font {
+                        pixelSize: 13
+                        family: "Inter"
+                        weight: Font.Medium
                     }
-
-                    background: Rectangle {
-                        color: parent.hovered ? Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725) : Qt.rgba(0.0, 0.0, 0.0, 0.4)
-                        radius: 8
-                        border { color: Qt.rgba(1.0, 1.0, 1.0, 0.14901960784313725); width: 1 }
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                    }
-
-                    onClicked: modelData.action()
                 }
+
+                background: Rectangle {
+                    color: restartBtn.hovered ? Qt.rgba(1.0, 1.0, 1.0, 0.15) : Qt.rgba(0.0, 0.0, 0.0, 0.4)
+                    radius: 8
+                    border { color: Qt.rgba(1.0, 1.0, 1.0, 0.15); width: 1 }
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                onClicked: sddm.reboot()
+            }
+
+            C.Button {
+                id: shutdownBtn
+                height: 36
+                width: 100
+                text: "Shut Down"
+                visible: sddm.canPowerOff
+
+                contentItem: Text {
+                    text: shutdownBtn.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font {
+                        pixelSize: 13
+                        family: "Inter"
+                        weight: Font.Medium
+                    }
+                }
+
+                background: Rectangle {
+                    color: shutdownBtn.hovered ? Qt.rgba(1.0, 1.0, 1.0, 0.15) : Qt.rgba(0.0, 0.0, 0.0, 0.4)
+                    radius: 8
+                    border { color: Qt.rgba(1.0, 1.0, 1.0, 0.15); width: 1 }
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                onClicked: sddm.powerOff()
             }
         }
     }

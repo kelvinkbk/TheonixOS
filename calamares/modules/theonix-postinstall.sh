@@ -139,6 +139,15 @@ echo "Welcome to Theonix OS" > /etc/motd
 echo "Theonix OS \r (\l)" > /etc/issue
 echo "  Cleaned MOTD branding"
 
+# ---- 9. Disable secondary KDE Splash (seamless desktop load) ----------------
+mkdir -p /etc/xdg
+cat > /etc/xdg/ksplashrc << 'SPLASH_EOF'
+[KSplash]
+Engine=none
+Theme=None
+SPLASH_EOF
+echo "  Disabled secondary KDE splash screen for seamless login"
+
 # ---- 9. Write Theonix OS os-release additions -------------------------------
 cat >> /etc/os-release << 'OSREL_EOF'
 
