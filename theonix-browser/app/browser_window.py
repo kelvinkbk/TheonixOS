@@ -7,8 +7,8 @@ import os
 import urllib.parse
 from typing import List
 
-from PyQt6.QtCore import Qt, QUrl, QKeySequence
-from PyQt6.QtGui import QIcon, QShortcut
+from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QLabel, QSplitter, QStackedWidget, QTabBar, QFrame, QMessageBox,
