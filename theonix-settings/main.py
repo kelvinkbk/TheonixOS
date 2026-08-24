@@ -676,7 +676,24 @@ class TouchpadGesturesPage(QWidget):
         except Exception:
             pass
 
-        # 3. Trigger KWin reload
+        # 3. Live D-Bus apply to active KWin Input Devices
+        try:
+            res = subprocess.run(['qdbus6', 'org.kde.KWin'], capture_output=True, text=True, timeout=2)
+            for line in res.stdout.strip().splitlines():
+                if line.startswith('/org/kde/KWin/InputDevice/'):
+                    dev_path = line.strip()
+                    is_tp = subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Get', 'org.kde.KWin.InputDevice', 'touchpad'], capture_output=True, text=True, timeout=1)
+                    if 'true' in is_tp.stdout.lower():
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'tapToClick', f'(b {str(tap_click).lower()})'], timeout=1)
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'naturalScroll', f'(b {str(natural_scroll).lower()})'], timeout=1)
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'clickMethodClickfinger', '(b true)'], timeout=1)
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'scrollTwoFinger', '(b true)'], timeout=1)
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'tapAndDrag', f'(b {str(tap_drag).lower()})'], timeout=1)
+                        subprocess.run(['qdbus6', 'org.kde.KWin', dev_path, 'org.freedesktop.DBus.Properties.Set', 'org.kde.KWin.InputDevice', 'disableWhileTyping', f'(b {str(dwt).lower()})'], timeout=1)
+        except Exception:
+            pass
+
+        # 4. Trigger KWin reload
         try:
             subprocess.run(["qdbus6", "org.kde.KWin", "/KWin", "reconfigure"], timeout=2)
         except Exception:
