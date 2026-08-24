@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Theonix Gesture Router Daemon — Centroid-based Multi-Touch Gestures for Touchpads.
+Provides bidirectional 3-finger swipe UP (Open Task View) and swipe DOWN (Close Task View / Show Desktop).
 """
 
 import os
@@ -30,6 +31,18 @@ BTN_TOOL_TRIPLETAP = 0x14e
 BTN_TOOL_QUADTAP = 0x14f
 
 
+def is_overview_open() -> bool:
+    try:
+        res = subprocess.run([
+            "qdbus6", "org.kde.KWin", "/Effects",
+            "org.freedesktop.DBus.Properties.Get", "org.kde.kwin.Effects", "activeEffects"
+        ], capture_output=True, text=True, timeout=0.15)
+        text = res.stdout.lower()
+        return "overview" in text or "desktopgrid" in text
+    except Exception:
+        return False
+
+
 class TouchpadRouter:
     def __init__(self, dev_path: str):
         self.dev_path = dev_path
@@ -41,7 +54,7 @@ class TouchpadRouter:
         self.gesture_done = False
         self.touch_start_time = 0
         self.last_action_time = 0
-        self.threshold = 90  # Centroid distance in pixels to trigger gesture
+        self.threshold = 85  # Ultra-responsive sensitivity (85px)
 
     def open(self):
         try:
@@ -52,7 +65,7 @@ class TouchpadRouter:
 
     def trigger(self, shortcut: str):
         now = time.time()
-        if now - self.last_action_time < 0.35:
+        if now - self.last_action_time < 0.32:
             return
         self.last_action_time = now
         self.gesture_done = True
@@ -130,7 +143,7 @@ class TouchpadRouter:
                                 dx = cx - sx
                                 dy = cy - sy
 
-                                # Check 3-finger gestures
+                                # --- 3-FINGER GESTURES ---
                                 if is_3_fingers and not is_4_fingers:
                                     # Horizontal swipe -> App switcher (Alt+Tab)
                                     if abs(dx) > self.threshold and abs(dx) > abs(dy) * 1.1:
@@ -138,14 +151,20 @@ class TouchpadRouter:
                                             self.trigger("Walk Through Windows")
                                         else:
                                             self.trigger("Walk Through Windows (Reverse)")
-                                    # Vertical swipe UP -> Task View / Overview
-                                    elif dy < -self.threshold and abs(dy) > abs(dx) * 1.1:
-                                        self.trigger("Overview")
-                                    # Vertical swipe DOWN -> Show Desktop
-                                    elif dy > self.threshold and abs(dy) > abs(dx) * 1.1:
-                                        self.trigger("Show Desktop")
 
-                                # Check 4-finger gestures
+                                    # Vertical swipe UP -> Open Task View / Overview
+                                    elif dy < -self.threshold and abs(dy) > abs(dx) * 1.1:
+                                        if not is_overview_open():
+                                            self.trigger("Overview")
+
+                                    # Vertical swipe DOWN -> If in Overview: Close Overview! Else: Show Desktop!
+                                    elif dy > self.threshold and abs(dy) > abs(dx) * 1.1:
+                                        if is_overview_open():
+                                            self.trigger("Overview")  # Exits Overview back to active windows
+                                        else:
+                                            self.trigger("Show Desktop")
+
+                                # --- 4-FINGER GESTURES ---
                                 elif is_4_fingers:
                                     # Horizontal swipe -> Switch Virtual Desktops
                                     if abs(dx) > self.threshold and abs(dx) > abs(dy) * 1.1:
@@ -153,9 +172,17 @@ class TouchpadRouter:
                                             self.trigger("Switch One Desktop to the Right")
                                         else:
                                             self.trigger("Switch One Desktop to the Left")
+
                                     # Vertical swipe UP -> Workspaces Grid View
                                     elif dy < -self.threshold and abs(dy) > abs(dx) * 1.1:
                                         self.trigger("Grid View")
+
+                                    # Vertical swipe DOWN -> If in Grid: Close Grid!
+                                    elif dy > self.threshold and abs(dy) > abs(dx) * 1.1:
+                                        if is_overview_open():
+                                            self.trigger("Grid View")
+                                        else:
+                                            self.trigger("Show Desktop")
 
         except BlockingIOError:
             pass
