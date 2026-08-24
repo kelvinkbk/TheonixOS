@@ -98,7 +98,34 @@ class PackageService:
         except Exception:
             pass
 
-        # 2. Search UACL Applications
+        # 2. Search Flatpak (Flathub)
+        try:
+            res_fp = subprocess.run(
+                ["flatpak", "search", query, "--columns=application,name,description,version"],
+                capture_output=True, text=True, timeout=5
+            )
+            for line in res_fp.stdout.strip().splitlines()[:25]:
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    app_id = parts[0].strip()
+                    app_title = parts[1].strip()
+                    app_desc = parts[2].strip() if len(parts) > 2 else f"Flathub sandboxed container ({app_title})"
+                    app_ver = parts[3].strip() if len(parts) > 3 else "Latest"
+                    compat, reason = PackageService.evaluate_compatibility(app_id, "flatpak")
+                    results.append({
+                        "name": app_title or app_id,
+                        "pkg": app_id,
+                        "version": app_ver,
+                        "source": "flatpak",
+                        "icon": "🌐",
+                        "desc": app_desc,
+                        "compat": compat,
+                        "compat_desc": reason
+                    })
+        except Exception:
+            pass
+
+        # 3. Search UACL Applications
         if os.path.exists(UACL_DB_PATH):
             try:
                 conn = sqlite3.connect(UACL_DB_PATH)

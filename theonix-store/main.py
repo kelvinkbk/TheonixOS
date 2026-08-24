@@ -397,6 +397,10 @@ class AppCard(GlassCard):
         title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #FFFFFF;")
         h_title.addWidget(title_lbl)
 
+        pkg = self.data.get("pkg", self.data["name"])
+        src = self.data.get("source", "pacman")
+        is_installed = self.data.get("installed") or PackageService.is_installed(pkg, src)
+
         compat_val = self.data.get("compat", CompatibilityRating.NATIVE)
         if compat_val == CompatibilityRating.NATIVE:
             badge = Badge("NATIVE", "green")
@@ -405,14 +409,23 @@ class AppCard(GlassCard):
         else:
             badge = Badge("CONFIG", "yellow")
 
-        pkg = self.data.get("pkg", self.data["name"])
-        src = self.data.get("source", "pacman")
-        is_installed = self.data.get("installed") or PackageService.is_installed(pkg, src)
+        # Source engine badge
+        if src in ["pacman", "arch"]:
+            src_badge = Badge("📦 Arch (pacman)", "blue")
+        elif src in ["flatpak", "flathub"]:
+            src_badge = Badge("🌐 Flathub (Flatpak)", "purple")
+        elif src == "uacl":
+            src_badge = Badge("🪟 Windows (UACL)", "cyan")
+        elif src == "aur":
+            src_badge = Badge("⚡ AUR", "yellow")
+        else:
+            src_badge = Badge(src.upper(), "indigo")
 
         if is_installed:
             inst_badge = Badge("✓ INSTALLED", "green")
             h_title.addWidget(inst_badge)
 
+        h_title.addWidget(src_badge)
         h_title.addWidget(badge)
         h_title.addStretch()
         v_box.addLayout(h_title)
