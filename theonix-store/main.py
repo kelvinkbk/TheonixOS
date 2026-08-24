@@ -223,8 +223,8 @@ class PackageInstallWorker(QThread):
 
     def run(self):
         if self.source == "pacman":
-            # Use pkexec for native GUI polkit authentication (no terminal needed)
-            cmd = ["pkexec", "pacman", "-S", "--needed", "--noconfirm", self.pkg]
+            # Use pkexec with database refresh (-Sy) to always fetch fresh mirror links
+            cmd = ["pkexec", "pacman", "-Sy", "--needed", "--noconfirm", self.pkg]
         elif self.source == "flatpak":
             # User-level flatpak installs without requiring root permissions
             cmd = ["flatpak", "install", "-y", "--user", "flathub", self.pkg]
