@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Store
+Comment=Discover and install native, Flatpak, and UACL software for Theonix OS
+Exec=/usr/local/bin/theonix-store
+Icon=system-software-install
+Terminal=false
+Type=Application
+Categories=System;PackageManager;
+StartupNotify=true

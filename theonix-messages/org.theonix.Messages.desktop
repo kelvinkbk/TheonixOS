@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Messages
+Comment=AI assistant, local chat, and notes for Theonix OS
+Exec=/usr/local/bin/theonix-messages
+Icon=chat-message-new
+Terminal=false
+Type=Application
+Categories=Utility;Network;Chat;
+StartupNotify=true

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Files
+Comment=Modern file manager with integrated UACL compatibility for Theonix OS
+Exec=/usr/local/bin/theonix-files
+Icon=system-file-manager
+Terminal=false
+Type=Application
+Categories=System;FileManager;
+StartupNotify=true

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Theonix Browser
+Comment=Fast, AI-augmented web browser for Theonix OS
+Exec=/usr/local/bin/theonix-browser
+Icon=web-browser
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+StartupNotify=true

@@ -161,6 +161,10 @@ theonix-config
 theonix-uacl
 theonix-app-manager
 theonix-store
+theonix-settings
+theonix-browser
+theonix-messages
+theonix-files
 
 # Pacman provider pins (avoid interactive prompts during ISO build)
 noto-fonts

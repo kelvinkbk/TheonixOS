@@ -1,0 +1,16 @@
+# Maintainer: The Theonix Project <team@theonix.org>
+pkgname=theonix-messages
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native AI Chat & Messaging Hub for Theonix OS"
+arch=('any')
+url="https://github.com/theonix-os/theonix"
+license=('GPL3')
+depends=('python' 'python-pyqt6' 'ollama')
+source=("main.py" "org.theonix.Messages.desktop")
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "${srcdir}/main.py" "${pkgdir}/usr/local/bin/theonix-messages"
+    install -Dm644 "${srcdir}/org.theonix.Messages.desktop" "${pkgdir}/usr/share/applications/org.theonix.Messages.desktop"
+}

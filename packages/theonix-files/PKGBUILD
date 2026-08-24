@@ -1,0 +1,16 @@
+# Maintainer: The Theonix Project <team@theonix.org>
+pkgname=theonix-files
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native Modern File Manager for Theonix OS"
+arch=('any')
+url="https://github.com/theonix-os/theonix"
+license=('GPL3')
+depends=('python' 'python-pyqt6' 'konsole')
+source=("main.py" "org.theonix.Files.desktop")
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "${srcdir}/main.py" "${pkgdir}/usr/local/bin/theonix-files"
+    install -Dm644 "${srcdir}/org.theonix.Files.desktop" "${pkgdir}/usr/share/applications/org.theonix.Files.desktop"
+}

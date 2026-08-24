@@ -1,0 +1,16 @@
+# Maintainer: The Theonix Project <team@theonix.org>
+pkgname=theonix-settings
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native System Settings & Control Center for Theonix OS"
+arch=('any')
+url="https://github.com/theonix-os/theonix"
+license=('GPL3')
+depends=('python' 'python-pyqt6' 'networkmanager' 'pipewire' 'ollama')
+source=("main.py" "org.theonix.Settings.desktop")
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "${srcdir}/main.py" "${pkgdir}/usr/local/bin/theonix-settings"
+    install -Dm644 "${srcdir}/org.theonix.Settings.desktop" "${pkgdir}/usr/share/applications/org.theonix.Settings.desktop"
+}

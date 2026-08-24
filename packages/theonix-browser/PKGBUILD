@@ -1,0 +1,17 @@
+# Maintainer: The Theonix Project <team@theonix.org>
+pkgname=theonix-browser
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native AI-Augmented Web Browser for Theonix OS"
+arch=('any')
+url="https://github.com/theonix-os/theonix"
+license=('GPL3')
+depends=('python' 'python-pyqt6')
+optdepends=('python-pyqt6-webengine: Chromium-based web rendering engine')
+source=("main.py" "org.theonix.Browser.desktop")
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "${srcdir}/main.py" "${pkgdir}/usr/local/bin/theonix-browser"
+    install -Dm644 "${srcdir}/org.theonix.Browser.desktop" "${pkgdir}/usr/share/applications/org.theonix.Browser.desktop"
+}
