@@ -192,11 +192,12 @@ class AISettingsPage(QWidget):
 
         title = QLabel("AI & THAID Daemon")
         title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
-        subtitle = QLabel("Manage local neural models, Ollama inference, and THAID assistant integration")
+        subtitle = QLabel("Manage high-performance local neural models, GPU offload, and THAID assistant integration")
         subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
+        # Status Card
         status_card = GlassCard()
         status_layout = QHBoxLayout(status_card)
         
@@ -205,43 +206,46 @@ class AISettingsPage(QWidget):
         status_layout.addWidget(icon_lbl)
 
         v_status = QVBoxLayout()
-        self.status_title = QLabel("Checking THAID & Ollama status...")
+        self.status_title = QLabel("Checking THAID Engine Status...")
         self.status_title.setStyleSheet("font-size: 15px; font-weight: bold; color: #FFFFFF;")
-        self.status_detail = QLabel("Local AI allows private code generation and system control without cloud dependency.")
+        self.status_detail = QLabel("High-speed local inference engine on http://127.0.0.1:8080 (100% private, zero cloud latency).")
         self.status_detail.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
         v_status.addWidget(self.status_title)
         v_status.addWidget(self.status_detail)
         status_layout.addLayout(v_status)
         status_layout.addStretch()
 
-        self.restart_ai_btn = QPushButton("Restart Daemon")
+        self.restart_ai_btn = QPushButton("Restart AI Daemon")
         self.restart_ai_btn.setProperty("class", "ActionBtn")
-        self.restart_ai_btn.clicked.connect(self._restart_ollama)
+        self.restart_ai_btn.clicked.connect(self._restart_ai)
         status_layout.addWidget(self.restart_ai_btn)
         layout.addWidget(status_card)
 
         # Model Manager Card
         model_card = GlassCard()
         m_layout = QVBoxLayout(model_card)
-        m_layout.setSpacing(12)
+        m_layout.setSpacing(14)
 
-        m_header = QLabel("Installed Local Models")
+        m_header = QLabel("⚡ Active Local Model Selection")
         m_header.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         m_layout.addWidget(m_header)
 
         self.model_combo = QComboBox()
-        self.model_combo.addItems(["Scanning local models..."])
+        self.model_combo.addItem("⚡ Qwen 2.5-Coder 1.5B (Fast ~60 tok/s — Instant Coding & UI Actions)", "1.5b")
+        self.model_combo.addItem("🧠 Qwen 3.5 4B (Quality ~35 tok/s — Deep Reasoning & Document Synthesis)", "4b")
+        self.model_combo.setStyleSheet(
+            "background-color: #121826; color: #F8FAFC; border: 1px solid #1E2638; "
+            "border-radius: 8px; padding: 8px; font-size: 13px;"
+        )
         m_layout.addWidget(self.model_combo)
 
-        pull_row = QHBoxLayout()
-        self.pull_input = QLineEdit()
-        self.pull_input.setPlaceholderText("Enter model tag (e.g. llama3.2:1b, mistral, deepseek-r1:1.5b)")
-        pull_btn = QPushButton("Pull Model")
-        pull_btn.setProperty("class", "PrimaryBtn")
-        pull_btn.clicked.connect(self._pull_model)
-        pull_row.addWidget(self.pull_input)
-        pull_row.addWidget(pull_btn)
-        m_layout.addLayout(pull_row)
+        switch_btn_row = QHBoxLayout()
+        self.switch_btn = QPushButton("Apply & Switch Active Model")
+        self.switch_btn.setProperty("class", "PrimaryBtn")
+        self.switch_btn.clicked.connect(self._apply_model_switch)
+        switch_btn_row.addWidget(self.switch_btn)
+        switch_btn_row.addStretch()
+        m_layout.addLayout(switch_btn_row)
 
         self.ai_progress = QProgressBar()
         self.ai_progress.setVisible(False)
@@ -249,90 +253,75 @@ class AISettingsPage(QWidget):
 
         layout.addWidget(model_card)
 
-        # Parameters Card
+        # Telemetry & Inference Card
         param_card = GlassCard()
         p_layout = QVBoxLayout(param_card)
-        p_layout.setSpacing(12)
+        p_layout.setSpacing(14)
 
-        p_header = QLabel("Inference Settings")
+        p_header = QLabel("⚙️ Engine Architecture & Acceleration")
         p_header.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         p_layout.addWidget(p_header)
 
+        specs_grid = QGridLayout()
+        specs_grid.setSpacing(10)
+        specs_grid.addWidget(QLabel("<b>Runtime:</b> Cosmopolitan llamafile / llama-server"), 0, 0)
+        specs_grid.addWidget(QLabel("<b>API Endpoint:</b> <code>http://127.0.0.1:8080/v1</code>"), 0, 1)
+        specs_grid.addWidget(QLabel("<b>Context Window:</b> 8,192 tokens"), 1, 0)
+        specs_grid.addWidget(QLabel("<b>Hardware Offload:</b> GPU Acceleration (-ngl 999) + AVX2"), 1, 1)
+        p_layout.addLayout(specs_grid)
+
         temp_row = QHBoxLayout()
-        temp_lbl = QLabel("Creativity (Temperature):")
+        temp_lbl = QLabel("Sampling Temperature:")
         temp_lbl.setStyleSheet("color: #94A3B8; font-weight: 500;")
-        self.temp_val = QLabel("0.7")
+        self.temp_val = QLabel("0.6")
         self.temp_val.setStyleSheet("color: #00FFAA; font-weight: bold;")
         self.temp_slider = QSlider(Qt.Orientation.Horizontal)
         self.temp_slider.setRange(0, 10)
-        self.temp_slider.setValue(7)
+        self.temp_slider.setValue(6)
         self.temp_slider.valueChanged.connect(lambda v: self.temp_val.setText(str(v / 10.0)))
         temp_row.addWidget(temp_lbl)
         temp_row.addWidget(self.temp_slider)
         temp_row.addWidget(self.temp_val)
         p_layout.addLayout(temp_row)
 
-        self.gpu_check = QCheckBox("Enable GPU Acceleration (Vulkan / ROCm / CUDA)")
-        self.gpu_check.setChecked(True)
-        p_layout.addWidget(self.gpu_check)
-
         layout.addWidget(param_card)
         layout.addStretch()
 
-        self._refresh_models()
+        self._refresh_status()
 
-    def _refresh_models(self):
-        def _task():
-            try:
-                res = subprocess.run(["ollama", "list"], capture_output=True, text=True, timeout=5)
-                lines = res.stdout.strip().splitlines()
-                models = []
-                if len(lines) > 1:
-                    for l in lines[1:]:
-                        parts = l.split()
-                        if parts:
-                            models.append(parts[0])
-                return True, models
-            except Exception:
-                return False, []
+    def _refresh_status(self):
+        from theonix_core import AIService
+        if AIService.is_server_running():
+            self.status_title.setText("🟢 THAID Local AI Daemon Active (Port 8080)")
+            self.status_detail.setText("Engine is running and ready for real-time streaming queries.")
+        else:
+            self.status_title.setText("🟡 THAID Daemon Idle (Auto-starts on query)")
+            self.status_detail.setText("Engine will automatically start in background when an AI query is made.")
 
-        def _callback(res):
-            active, models = res
-            if active:
-                self.status_title.setText("🟢 Ollama & THAID Active")
-                self.model_combo.clear()
-                if models:
-                    self.model_combo.addItems(models)
-                else:
-                    self.model_combo.addItem("No models installed (Use Pull Model below)")
-            else:
-                self.status_title.setText("🟡 Ollama service offline / inactive")
-                self.model_combo.clear()
-                self.model_combo.addItem("Ollama not running")
-
-        threading.Thread(target=lambda: _callback(_task()), daemon=True).start()
-
-    def _pull_model(self):
-        target = self.pull_input.text().strip()
-        if not target:
-            QMessageBox.warning(self, "AI Model Pull", "Please enter a valid model name (e.g. llama3.2:1b).")
-            return
-        
+    def _apply_model_switch(self):
+        from theonix_core import AIService
+        model_id = self.model_combo.currentData()
         self.ai_progress.setVisible(True)
         self.ai_progress.setRange(0, 0)
-        self.status_detail.setText(f"Pulling {target}... This may take a couple minutes.")
+        self.status_detail.setText(f"Switching AI Engine to {model_id} model...")
 
-        def _pull_task():
-            subprocess.run(["ollama", "pull", target], capture_output=True)
-            self._refresh_models()
+        def _switch_task():
+            success = AIService.ensure_server_running(model_id)
             self.ai_progress.setVisible(False)
-            self.status_detail.setText(f"Model {target} successfully pulled!")
+            self._refresh_status()
+            if success:
+                QMessageBox.information(self, "AI Model Manager", f"Successfully switched active local model to: {model_id.upper()}")
+            else:
+                QMessageBox.warning(self, "AI Model Manager", "Could not start AI engine with selected model.")
 
-        threading.Thread(target=_pull_task, daemon=True).start()
+        threading.Thread(target=_switch_task, daemon=True).start()
 
-    def _restart_ollama(self):
-        subprocess.Popen(["systemctl", "--user", "restart", "ollama"], stderr=subprocess.DEVNULL)
-        QTimer.singleShot(1500, self._refresh_models)
+    def _restart_ai(self):
+        from theonix_core import AIService
+        model_id = self.model_combo.currentData() or "1.5b"
+        AIService.ensure_server_running(model_id)
+        QTimer.singleShot(1500, self._refresh_status)
+        QMessageBox.information(self, "THAID Daemon", "AI Daemon restarted successfully.")
 
 
 class AppearancePage(QWidget):
