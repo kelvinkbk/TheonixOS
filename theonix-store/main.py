@@ -14,8 +14,8 @@ from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QProgressBar,
-    QScrollArea, QFrame, QStackedWidget, QListWidget, QListWidgetItem,
-    QMessageBox, QGridLayout
+    QScrollArea, QFrame, QStackedWidget, QMessageBox, QGridLayout,
+    QButtonGroup
 )
 
 UACL_DB = os.path.expanduser("~/.config/theonix/uacl.db")
@@ -31,39 +31,36 @@ QWidget#CentralWidget {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Sidebar Navigation */
+/* Sidebar Container */
 QWidget#SidebarContainer {
     background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-QListWidget#CategoryNav {
+/* Sidebar Navigation Buttons */
+QPushButton.NavBtn {
     background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 8px;
-}
-
-QListWidget#CategoryNav::item {
     color: #94A3B8;
-    height: 44px;
-    padding-left: 14px;
-    margin: 2px 4px;
+    border: none;
+    border-left: 3px solid transparent;
     border-radius: 8px;
+    padding: 10px 16px;
     font-size: 13.5px;
     font-weight: 500;
+    text-align: left;
+    margin: 2px 10px;
 }
 
-QListWidget#CategoryNav::item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+QPushButton.NavBtn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
     color: #FFFFFF;
 }
 
-QListWidget#CategoryNav::item:selected {
-    background: rgba(108, 99, 255, 0.18);
+QPushButton.NavBtn:checked {
+    background-color: rgba(108, 99, 255, 0.2);
     border-left: 3px solid #00FFAA;
     color: #FFFFFF;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Scroll Area */
@@ -161,7 +158,7 @@ QLabel.BadgeUACL {
 }
 
 /* Buttons */
-QPushButton {
+QPushButton.ActionBtn {
     background-color: rgba(255, 255, 255, 0.06);
     color: #F8FAFC;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -171,7 +168,7 @@ QPushButton {
     font-weight: 600;
 }
 
-QPushButton:hover {
+QPushButton.ActionBtn:hover {
     background-color: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.2);
     color: #FFFFFF;
@@ -181,7 +178,10 @@ QPushButton.InstallBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
     color: #0B0E14;
     border: none;
+    border-radius: 8px;
     font-weight: 700;
+    padding: 8px 16px;
+    font-size: 13px;
 }
 
 QPushButton.InstallBtn:hover {
@@ -393,34 +393,29 @@ class TheonixStoreWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Sidebar Container with Brand Tag
+        # Sidebar Container
         sidebar_box = QWidget()
         sidebar_box.setObjectName("SidebarContainer")
         sidebar_box.setFixedWidth(250)
         sb_layout = QVBoxLayout(sidebar_box)
-        sb_layout.setContentsMargins(0, 16, 0, 16)
-        sb_layout.setSpacing(12)
+        sb_layout.setContentsMargins(0, 18, 0, 18)
+        sb_layout.setSpacing(4)
 
         # Brand header
         brand_row = QHBoxLayout()
-        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_row.setContentsMargins(20, 0, 20, 14)
         brand_icon = QLabel("🛍️")
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
         brand_tag = QLabel("STORE")
-        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(108,99,255,0.2); color: #A78BFA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(108,99,255,0.2); color: #A78BFA; padding: 2px 6px; border-radius: 4px;")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
         brand_row.addWidget(brand_tag)
         brand_row.addStretch()
         sb_layout.addLayout(brand_row)
-
-        self.nav_list = QListWidget()
-        self.nav_list.setObjectName("CategoryNav")
-        self.nav_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.nav_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         categories = [
             "🌟  Featured Picks",
@@ -432,10 +427,19 @@ class TheonixStoreWindow(QMainWindow):
             "📥  Installed Apps",
             "🔄  Updates",
         ]
-        for cat in categories:
-            self.nav_list.addItem(QListWidgetItem(cat))
 
-        sb_layout.addWidget(self.nav_list)
+        self.btn_group = QButtonGroup(self)
+        self.btn_group.setExclusive(True)
+
+        for idx, cat in enumerate(categories):
+            btn = QPushButton(cat)
+            btn.setProperty("class", "NavBtn")
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_group.addButton(btn, idx)
+            sb_layout.addWidget(btn)
+
+        sb_layout.addStretch()
         main_layout.addWidget(sidebar_box)
 
         # Right Content Area
@@ -456,6 +460,7 @@ class TheonixStoreWindow(QMainWindow):
         search_btn.clicked.connect(self._trigger_search)
 
         mgr_btn = QPushButton("App Manager")
+        mgr_btn.setProperty("class", "ActionBtn")
         mgr_btn.clicked.connect(lambda: subprocess.Popen(["theonix-app-manager"]))
 
         top_row.addWidget(self.search_input, 1)
@@ -474,8 +479,11 @@ class TheonixStoreWindow(QMainWindow):
 
         main_layout.addWidget(content_area, 1)
 
-        self.nav_list.currentRowChanged.connect(self._on_category_changed)
-        self.nav_list.setCurrentRow(0)
+        self.btn_group.idClicked.connect(self._on_category_changed)
+        first_btn = self.btn_group.button(0)
+        if first_btn:
+            first_btn.setChecked(True)
+        self._load_featured_or_category(0)
 
     def _on_category_changed(self, idx):
         self.search_input.clear()
@@ -525,7 +533,7 @@ class TheonixStoreWindow(QMainWindow):
             self.cards_layout.addWidget(up_btn)
 
         else:
-            cat_name = self.nav_list.item(idx).text().split("  ")[1]
+            cat_name = self.btn_group.button(idx).text().split("  ")[1]
             hdr = QLabel(f"Category: {cat_name}")
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
@@ -540,7 +548,8 @@ class TheonixStoreWindow(QMainWindow):
     def _trigger_search(self):
         query = self.search_input.text().strip()
         if not query:
-            self._load_featured_or_category(self.nav_list.currentRow())
+            checked_btn = self.btn_group.checkedId()
+            self._load_featured_or_category(checked_btn if checked_btn >= 0 else 0)
             return
 
         self._clear_cards()
@@ -583,6 +592,7 @@ class TheonixStoreWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     app.setStyleSheet(THEME_QSS)
     win = TheonixStoreWindow()
     win.show()

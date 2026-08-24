@@ -12,9 +12,8 @@ from PyQt6.QtCore import Qt, QDir, QModelIndex
 from PyQt6.QtGui import QFont, QFileSystemModel
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLineEdit, QPushButton, QTreeView, QListWidget, QListWidgetItem,
-    QLabel, QSplitter, QHeaderView, QMenu, QMessageBox, QInputDialog,
-    QFrame
+    QLineEdit, QPushButton, QTreeView, QLabel, QSplitter, QHeaderView,
+    QMenu, QMessageBox, QInputDialog, QFrame, QButtonGroup
 )
 
 THEME_QSS = """
@@ -28,39 +27,36 @@ QWidget#CentralWidget {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Places Sidebar */
+/* Places Sidebar Container */
 QWidget#SidebarContainer {
     background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-QListWidget#PlacesSidebar {
+/* Places Buttons */
+QPushButton.NavBtn {
     background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 8px;
-}
-
-QListWidget#PlacesSidebar::item {
     color: #94A3B8;
-    height: 44px;
-    padding-left: 14px;
-    margin: 2px 4px;
+    border: none;
+    border-left: 3px solid transparent;
     border-radius: 8px;
+    padding: 10px 16px;
     font-size: 13px;
     font-weight: 500;
+    text-align: left;
+    margin: 2px 10px;
 }
 
-QListWidget#PlacesSidebar::item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+QPushButton.NavBtn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
     color: #FFFFFF;
 }
 
-QListWidget#PlacesSidebar::item:selected {
-    background: rgba(108, 99, 255, 0.18);
+QPushButton.NavBtn:checked {
+    background-color: rgba(108, 99, 255, 0.2);
     border-left: 3px solid #00FFAA;
     color: #FFFFFF;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Top Toolbar */
@@ -83,7 +79,7 @@ QLineEdit#PathBar:focus {
     border: 1px solid #00FFAA;
 }
 
-QPushButton.NavBtn {
+QPushButton.TopNavBtn {
     background-color: rgba(255, 255, 255, 0.06);
     color: #F8FAFC;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -92,7 +88,7 @@ QPushButton.NavBtn {
     padding: 6px 12px;
 }
 
-QPushButton.NavBtn:hover {
+QPushButton.TopNavBtn:hover {
     background-color: rgba(255, 255, 255, 0.12);
     color: #00FFAA;
 }
@@ -157,17 +153,17 @@ class TheonixFilesWindow(QMainWindow):
         t_layout.setSpacing(8)
 
         self.back_btn = QPushButton("◀")
-        self.back_btn.setProperty("class", "NavBtn")
+        self.back_btn.setProperty("class", "TopNavBtn")
         self.back_btn.clicked.connect(self._nav_back)
         t_layout.addWidget(self.back_btn)
 
         self.fwd_btn = QPushButton("▶")
-        self.fwd_btn.setProperty("class", "NavBtn")
+        self.fwd_btn.setProperty("class", "TopNavBtn")
         self.fwd_btn.clicked.connect(self._nav_forward)
         t_layout.addWidget(self.fwd_btn)
 
         self.up_btn = QPushButton("⬆")
-        self.up_btn.setProperty("class", "NavBtn")
+        self.up_btn.setProperty("class", "TopNavBtn")
         self.up_btn.clicked.connect(self._nav_up)
         t_layout.addWidget(self.up_btn)
 
@@ -177,7 +173,7 @@ class TheonixFilesWindow(QMainWindow):
         t_layout.addWidget(self.path_bar, 1)
 
         term_btn = QPushButton("Terminal")
-        term_btn.setProperty("class", "NavBtn")
+        term_btn.setProperty("class", "TopNavBtn")
         term_btn.clicked.connect(self._open_terminal)
         t_layout.addWidget(term_btn)
 
@@ -191,17 +187,17 @@ class TheonixFilesWindow(QMainWindow):
         sidebar_box.setObjectName("SidebarContainer")
         sidebar_box.setFixedWidth(230)
         sb_layout = QVBoxLayout(sidebar_box)
-        sb_layout.setContentsMargins(0, 16, 0, 16)
-        sb_layout.setSpacing(10)
+        sb_layout.setContentsMargins(0, 18, 0, 18)
+        sb_layout.setSpacing(4)
 
         brand_row = QHBoxLayout()
-        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_row.setContentsMargins(20, 0, 20, 14)
         brand_icon = QLabel("📁")
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
         brand_tag = QLabel("FILES")
-        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,212,255,0.15); color: #00D4FF; padding: 2px 6px; border-radius: 4px;")
+        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,212,255,0.15); color: #00D4FF; padding: 2px 6px; border-radius: 4px;")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -209,13 +205,8 @@ class TheonixFilesWindow(QMainWindow):
         brand_row.addStretch()
         sb_layout.addLayout(brand_row)
 
-        self.places = QListWidget()
-        self.places.setObjectName("PlacesSidebar")
-        self.places.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.places.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
         user_home = os.path.expanduser("~")
-        places_items = [
+        self.places_items = [
             ("🏠  Home", user_home),
             ("🖥️  Desktop", os.path.join(user_home, "Desktop")),
             ("📥  Downloads", os.path.join(user_home, "Downloads")),
@@ -226,14 +217,18 @@ class TheonixFilesWindow(QMainWindow):
             ("💽  Root FileSystem (/)", "/"),
         ]
 
-        for label, pth in places_items:
-            item = QListWidgetItem(label)
-            item.setData(Qt.ItemDataRole.UserRole, pth)
-            self.places.addItem(item)
+        self.btn_group = QButtonGroup(self)
+        self.btn_group.setExclusive(True)
 
-        self.places.currentRowChanged.connect(self._on_place_selected)
-        sb_layout.addWidget(self.places)
+        for idx, (label, pth) in enumerate(self.places_items):
+            btn = QPushButton(label)
+            btn.setProperty("class", "NavBtn")
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_group.addButton(btn, idx)
+            sb_layout.addWidget(btn)
 
+        sb_layout.addStretch()
         splitter.addWidget(sidebar_box)
 
         # File Tree Model
@@ -260,6 +255,11 @@ class TheonixFilesWindow(QMainWindow):
         splitter.setSizes([230, 870])
         main_layout.addWidget(splitter, 1)
 
+        self.btn_group.idClicked.connect(self._on_place_selected)
+        first_btn = self.btn_group.button(0)
+        if first_btn:
+            first_btn.setChecked(True)
+
         self._navigate_to(user_home)
 
     def _navigate_to(self, path: str, record_history: bool = True):
@@ -275,9 +275,8 @@ class TheonixFilesWindow(QMainWindow):
             self.history_idx += 1
 
     def _on_place_selected(self, idx):
-        item = self.places.item(idx)
-        if item:
-            path = item.data(Qt.ItemDataRole.UserRole)
+        if 0 <= idx < len(self.places_items):
+            path = self.places_items[idx][1]
             self._navigate_to(path)
 
     def _on_path_entered(self):
@@ -361,6 +360,7 @@ class TheonixFilesWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     app.setStyleSheet(THEME_QSS)
     win = TheonixFilesWindow()
     win.show()

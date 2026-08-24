@@ -10,13 +10,13 @@ import shutil
 import subprocess
 import sys
 import threading
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QSlider, QProgressBar,
-    QScrollArea, QFrame, QStackedWidget, QListWidget, QListWidgetItem,
-    QMessageBox, QFileDialog, QCheckBox, QGridLayout
+    QScrollArea, QFrame, QStackedWidget, QMessageBox, QFileDialog,
+    QCheckBox, QGridLayout, QButtonGroup
 )
 
 THEME_QSS = """
@@ -30,39 +30,36 @@ QWidget#CentralWidget {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Sidebar Navigation */
+/* Sidebar Container */
 QWidget#SidebarContainer {
     background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-QListWidget#NavSidebar {
+/* Sidebar Buttons */
+QPushButton.NavBtn {
     background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 8px;
-}
-
-QListWidget#NavSidebar::item {
     color: #94A3B8;
-    height: 44px;
-    padding-left: 14px;
-    margin: 2px 4px;
+    border: none;
+    border-left: 3px solid transparent;
     border-radius: 8px;
+    padding: 10px 16px;
     font-size: 13.5px;
     font-weight: 500;
+    text-align: left;
+    margin: 2px 10px;
 }
 
-QListWidget#NavSidebar::item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+QPushButton.NavBtn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
     color: #FFFFFF;
 }
 
-QListWidget#NavSidebar::item:selected {
-    background: rgba(108, 99, 255, 0.18);
+QPushButton.NavBtn:checked {
+    background-color: rgba(108, 99, 255, 0.2);
     border-left: 3px solid #00FFAA;
     color: #FFFFFF;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Scroll Area */
@@ -133,7 +130,7 @@ QLabel#CardHeader {
 }
 
 /* Buttons */
-QPushButton {
+QPushButton.ActionBtn {
     background-color: rgba(255, 255, 255, 0.06);
     color: #F8FAFC;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -143,7 +140,7 @@ QPushButton {
     font-weight: 600;
 }
 
-QPushButton:hover {
+QPushButton.ActionBtn:hover {
     background-color: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.2);
     color: #FFFFFF;
@@ -153,6 +150,9 @@ QPushButton#PrimaryBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
     color: #0B0E14;
     border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
     font-weight: 700;
 }
 
@@ -270,8 +270,8 @@ class SystemAboutPage(QWidget):
         hero_layout.setSpacing(20)
 
         logo_label = QLabel("⚡")
-        logo_label.setStyleSheet("font-size: 34px; background: rgba(0,255,170,0.12); border-radius: 16px; padding: 8px;")
-        logo_label.setFixedSize(56, 56)
+        logo_label.setStyleSheet("font-size: 30px; background: rgba(0,255,170,0.12); border-radius: 16px;")
+        logo_label.setFixedSize(54, 54)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hero_layout.addWidget(logo_label)
 
@@ -314,6 +314,7 @@ class SystemAboutPage(QWidget):
         actions_layout.addStretch()
 
         github_btn = QPushButton("GitHub")
+        github_btn.setProperty("class", "ActionBtn")
         github_btn.clicked.connect(lambda: subprocess.Popen(["xdg-open", "https://github.com/kelvinkbk/TheonixOS"]))
         actions_layout.addWidget(github_btn)
 
@@ -399,6 +400,7 @@ class AISettingsPage(QWidget):
         status_layout.addStretch()
 
         self.restart_ai_btn = QPushButton("Restart Daemon")
+        self.restart_ai_btn.setProperty("class", "ActionBtn")
         self.restart_ai_btn.clicked.connect(self._restart_ollama)
         status_layout.addWidget(self.restart_ai_btn)
         layout.addWidget(status_card)
@@ -546,6 +548,7 @@ class AppearancePage(QWidget):
         btn_row = QHBoxLayout()
         for name in ["✨ Theonix Dark", "🌌 Deep Space", "⚡ Cyber Neon", "🌅 Solar Glow"]:
             btn = QPushButton(name)
+            btn.setProperty("class", "ActionBtn")
             btn.clicked.connect(lambda _, n=name: QMessageBox.information(self, "Theme", f"Theme set to: {n}"))
             btn_row.addWidget(btn)
         t_layout.addLayout(btn_row)
@@ -566,6 +569,7 @@ class AppearancePage(QWidget):
         self.wall_path_input.setText("/usr/share/wallpapers/theonix-default.png")
         
         browse_btn = QPushButton("Browse...")
+        browse_btn.setProperty("class", "ActionBtn")
         browse_btn.clicked.connect(self._browse_wallpaper)
         apply_btn = QPushButton("Apply")
         apply_btn.setObjectName("PrimaryBtn")
@@ -577,6 +581,7 @@ class AppearancePage(QWidget):
         w_layout.addLayout(w_row)
         layout.addWidget(wall_card)
 
+        # Effects Card
         effects_card = QFrame()
         effects_card.setProperty("class", "Card")
         e_layout = QVBoxLayout(effects_card)
@@ -652,6 +657,7 @@ class DisplayPage(QWidget):
         c_layout.addLayout(grid)
         layout.addWidget(card)
 
+        # Night Light Card
         nl_card = QFrame()
         nl_card.setProperty("class", "Card")
         nl_layout = QVBoxLayout(nl_card)
@@ -696,17 +702,23 @@ class NetworkPage(QWidget):
         hdr.setObjectName("CardHeader")
         c_layout.addWidget(hdr)
 
-        self.wifi_list = QListWidget()
-        self.wifi_list.setStyleSheet("background-color: rgba(14, 18, 28, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #FFFFFF;")
-        self.wifi_list.setFixedHeight(180)
+        self.wifi_list = QFrame()
+        self.wifi_list_layout = QVBoxLayout(self.wifi_list)
+        self.wifi_list_layout.setSpacing(6)
+        
+        self.wifi_status_lbl = QLabel("Scanning for nearby wireless access points...")
+        self.wifi_status_lbl.setStyleSheet("color: #94A3B8; padding: 10px;")
+        self.wifi_list_layout.addWidget(self.wifi_status_lbl)
         c_layout.addWidget(self.wifi_list)
 
         btn_row = QHBoxLayout()
         scan_btn = QPushButton("Scan for Networks")
+        scan_btn.setProperty("class", "ActionBtn")
         scan_btn.clicked.connect(self._scan_wifi)
-        connect_btn = QPushButton("Connect...")
+        
+        connect_btn = QPushButton("Manage in Plasma")
         connect_btn.setObjectName("PrimaryBtn")
-        connect_btn.clicked.connect(self._connect_wifi)
+        connect_btn.clicked.connect(lambda: subprocess.Popen(["plasmawindowed", "org.kde.plasma.networkmanagement"], stderr=subprocess.DEVNULL))
 
         btn_row.addWidget(scan_btn)
         btn_row.addWidget(connect_btn)
@@ -718,8 +730,7 @@ class NetworkPage(QWidget):
         self._scan_wifi()
 
     def _scan_wifi(self):
-        self.wifi_list.clear()
-        self.wifi_list.addItem("Scanning for nearby wireless access points...")
+        self.wifi_status_lbl.setText("Scanning for nearby wireless access points...")
 
         def _task():
             try:
@@ -730,26 +741,15 @@ class NetworkPage(QWidget):
                 return []
 
         def _cb(lines):
-            self.wifi_list.clear()
             if lines:
-                for ln in lines:
-                    parts = ln.split(":")
-                    ssid = parts[0] if parts else "Unknown"
-                    sig = parts[1] if len(parts) > 1 else "50"
-                    sec = parts[2] if len(parts) > 2 else "WPA2"
-                    if ssid:
-                        self.wifi_list.addItem(f"📶  {ssid} ({sig}% signal · {sec})")
+                parts = lines[0].split(":")
+                ssid = parts[0] if parts else "Wi-Fi Connected"
+                sig = parts[1] if len(parts) > 1 else "85"
+                self.wifi_status_lbl.setText(f"📶  {ssid} ({sig}% signal strength · Active Connection)")
             else:
-                self.wifi_list.addItem("No Wi-Fi networks found or NetworkManager offline.")
+                self.wifi_status_lbl.setText("📶  NetworkManager active (Use 'Manage in Plasma' for network connections)")
 
         threading.Thread(target=lambda: _cb(_task()), daemon=True).start()
-
-    def _connect_wifi(self):
-        item = self.wifi_list.currentItem()
-        if not item:
-            QMessageBox.information(self, "Network", "Select a Wi-Fi network from the list first.")
-            return
-        subprocess.Popen(["plasmawindowed", "org.kde.plasma.networkmanagement"], stderr=subprocess.DEVNULL)
 
 
 class AudioPage(QWidget):
@@ -788,6 +788,7 @@ class AudioPage(QWidget):
         c_layout.addLayout(vol_row)
 
         test_btn = QPushButton("🔊 Test Audio")
+        test_btn.setProperty("class", "ActionBtn")
         test_btn.clicked.connect(lambda: subprocess.Popen(["paplay", "/usr/share/sounds/freedesktop/stereo/bell.oga"], stderr=subprocess.DEVNULL))
         c_layout.addWidget(test_btn)
 
@@ -863,6 +864,7 @@ class StoragePage(QWidget):
         create_snap_btn.clicked.connect(lambda: QMessageBox.information(self, "Snapshot", "Snapshot creation triggered."))
         
         timeshift_btn = QPushButton("Open Snapshot Manager")
+        timeshift_btn.setProperty("class", "ActionBtn")
         timeshift_btn.clicked.connect(lambda: subprocess.Popen(["timeshift-launcher"], stderr=subprocess.DEVNULL))
 
         btn_row.addWidget(create_snap_btn)
@@ -903,6 +905,7 @@ class UpdatesPage(QWidget):
 
         btn_row = QHBoxLayout()
         self.check_btn = QPushButton("Check Now")
+        self.check_btn.setProperty("class", "ActionBtn")
         self.check_btn.clicked.connect(self._check_updates)
 
         self.install_btn = QPushButton("Update Entire System")
@@ -956,34 +959,29 @@ class TheonixSettingsWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Sidebar Container with Brand Tag
+        # Sidebar Container
         sidebar_box = QWidget()
         sidebar_box.setObjectName("SidebarContainer")
         sidebar_box.setFixedWidth(250)
         sb_layout = QVBoxLayout(sidebar_box)
-        sb_layout.setContentsMargins(0, 16, 0, 16)
-        sb_layout.setSpacing(12)
+        sb_layout.setContentsMargins(0, 18, 0, 18)
+        sb_layout.setSpacing(4)
 
         # Brand header
         brand_row = QHBoxLayout()
-        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_row.setContentsMargins(20, 0, 20, 14)
         brand_icon = QLabel("⚡")
         brand_icon.setStyleSheet("font-size: 18px; color: #00FFAA;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
         brand_tag = QLabel("SETTINGS")
-        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
         brand_row.addWidget(brand_tag)
         brand_row.addStretch()
         sb_layout.addLayout(brand_row)
-
-        self.nav_list = QListWidget()
-        self.nav_list.setObjectName("NavSidebar")
-        self.nav_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.nav_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         nav_items = [
             ("💻  System & About", SystemAboutPage),
@@ -997,10 +995,17 @@ class TheonixSettingsWindow(QMainWindow):
         ]
 
         self.stack = QStackedWidget()
+        self.btn_group = QButtonGroup(self)
+        self.btn_group.setExclusive(True)
 
-        for label, page_cls in nav_items:
-            item = QListWidgetItem(label)
-            self.nav_list.addItem(item)
+        for idx, (label, page_cls) in enumerate(nav_items):
+            btn = QPushButton(label)
+            btn.setProperty("class", "NavBtn")
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_group.addButton(btn, idx)
+            sb_layout.addWidget(btn)
+
             page = page_cls()
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
@@ -1008,16 +1013,20 @@ class TheonixSettingsWindow(QMainWindow):
             scroll.setWidget(page)
             self.stack.addWidget(scroll)
 
-        self.nav_list.currentRowChanged.connect(self.stack.setCurrentIndex)
-        self.nav_list.setCurrentRow(0)
+        sb_layout.addStretch()
 
-        sb_layout.addWidget(self.nav_list)
+        self.btn_group.idClicked.connect(self.stack.setCurrentIndex)
+        first_btn = self.btn_group.button(0)
+        if first_btn:
+            first_btn.setChecked(True)
+
         main_layout.addWidget(sidebar_box)
         main_layout.addWidget(self.stack)
 
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     app.setStyleSheet(THEME_QSS)
     win = TheonixSettingsWindow()
     win.show()

@@ -12,8 +12,8 @@ from datetime import datetime
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QTextEdit, QListWidget, QListWidgetItem,
-    QComboBox
+    QLabel, QPushButton, QTextEdit, QScrollArea, QFrame,
+    QComboBox, QButtonGroup
 )
 
 DB_PATH = os.path.expanduser("~/.config/theonix/messages.db")
@@ -29,39 +29,36 @@ QWidget#CentralWidget {
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Sidebar */
+/* Sidebar Container */
 QWidget#SidebarContainer {
     background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-QListWidget#ThreadList {
+/* Sidebar Navigation Buttons */
+QPushButton.NavBtn {
     background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 8px;
-}
-
-QListWidget#ThreadList::item {
     color: #94A3B8;
-    height: 46px;
-    padding-left: 14px;
-    margin: 2px 4px;
+    border: none;
+    border-left: 3px solid transparent;
     border-radius: 8px;
+    padding: 10px 16px;
     font-size: 13.5px;
     font-weight: 500;
+    text-align: left;
+    margin: 2px 10px;
 }
 
-QListWidget#ThreadList::item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+QPushButton.NavBtn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
     color: #FFFFFF;
 }
 
-QListWidget#ThreadList::item:selected {
-    background: rgba(108, 99, 255, 0.18);
+QPushButton.NavBtn:checked {
+    background-color: rgba(108, 99, 255, 0.2);
     border-left: 3px solid #00FFAA;
     color: #FFFFFF;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Chat Log */
@@ -191,18 +188,18 @@ class TheonixMessagesWindow(QMainWindow):
         sidebar_box.setObjectName("SidebarContainer")
         sidebar_box.setFixedWidth(260)
         sb_layout = QVBoxLayout(sidebar_box)
-        sb_layout.setContentsMargins(0, 16, 0, 16)
-        sb_layout.setSpacing(12)
+        sb_layout.setContentsMargins(0, 18, 0, 18)
+        sb_layout.setSpacing(4)
 
         # Brand header
         brand_row = QHBoxLayout()
-        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_row.setContentsMargins(20, 0, 20, 14)
         brand_icon = QLabel("💬")
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
         brand_tag = QLabel("AI CHAT")
-        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -211,32 +208,35 @@ class TheonixMessagesWindow(QMainWindow):
         sb_layout.addLayout(brand_row)
 
         btn_box = QHBoxLayout()
-        btn_box.setContentsMargins(14, 0, 14, 0)
+        btn_box.setContentsMargins(14, 0, 14, 10)
         new_btn = QPushButton("➕  New Chat")
         new_btn.setObjectName("SendBtn")
+        new_btn.setFixedHeight(40)
         new_btn.clicked.connect(self._new_chat)
         btn_box.addWidget(new_btn)
         sb_layout.addLayout(btn_box)
 
-        self.thread_list = QListWidget()
-        self.thread_list.setObjectName("ThreadList")
-        self.thread_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.thread_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
-        threads = [
+        self.btn_group = QButtonGroup(self)
+        self.btn_group.setExclusive(True)
+
+        self.threads = [
             ("🤖  THAID System AI", "thaid_system"),
             ("💻  Shell & Linux Helper", "shell_helper"),
             ("⚡  Code & Debugging", "code_helper"),
             ("📝  Notes & Drafting", "notes_draft"),
         ]
-        for name, tid in threads:
-            item = QListWidgetItem(name)
-            item.setData(Qt.ItemDataRole.UserRole, tid)
-            self.thread_list.addItem(item)
 
-        self.thread_list.currentRowChanged.connect(self._on_thread_changed)
-        sb_layout.addWidget(self.thread_list)
+        self.thread_btn_map = {}
+        for idx, (name, tid) in enumerate(self.threads):
+            btn = QPushButton(name)
+            btn.setProperty("class", "NavBtn")
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_group.addButton(btn, idx)
+            self.thread_btn_map[idx] = tid
+            sb_layout.addWidget(btn)
 
+        sb_layout.addStretch()
         main_layout.addWidget(sidebar_box)
 
         # Right Panel
@@ -286,22 +286,31 @@ class TheonixMessagesWindow(QMainWindow):
         right_layout.addLayout(bottom_box)
         main_layout.addWidget(right_panel, 1)
 
-        self.thread_list.setCurrentRow(0)
+        self.btn_group.idClicked.connect(self._on_thread_changed)
+        first_btn = self.btn_group.button(0)
+        if first_btn:
+            first_btn.setChecked(True)
         self._load_history()
 
     def _on_thread_changed(self, idx):
-        item = self.thread_list.item(idx)
-        if item:
-            self.current_thread = item.data(Qt.ItemDataRole.UserRole)
-            self.chat_title.setText(item.text())
-            self._load_history()
+        tid = self.thread_btn_map.get(idx, "thaid_system")
+        self.current_thread = tid
+        btn = self.btn_group.button(idx)
+        if btn:
+            self.chat_title.setText(btn.text())
+        self._load_history()
 
     def _new_chat(self):
         tid = f"chat_{datetime.now().strftime('%m%d_%H%M%S')}"
-        item = QListWidgetItem(f"💬  Chat {datetime.now().strftime('%H:%M')}")
-        item.setData(Qt.ItemDataRole.UserRole, tid)
-        self.thread_list.addItem(item)
-        self.thread_list.setCurrentItem(item)
+        idx = len(self.thread_btn_map)
+        btn = QPushButton(f"💬  Chat {datetime.now().strftime('%H:%M')}")
+        btn.setProperty("class", "NavBtn")
+        btn.setCheckable(True)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_group.addButton(btn, idx)
+        self.thread_btn_map[idx] = tid
+        btn.setChecked(True)
+        self._on_thread_changed(idx)
 
     def _load_history(self):
         self.chat_display.clear()
@@ -373,6 +382,7 @@ class TheonixMessagesWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     app.setStyleSheet(THEME_QSS)
     win = TheonixMessagesWindow()
     win.show()
