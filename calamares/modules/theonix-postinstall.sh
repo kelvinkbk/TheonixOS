@@ -146,7 +146,6 @@ cat >> /etc/os-release << 'OSREL_EOF'
 THEONIX_VERSION="1.0"
 THEONIX_CODENAME="Orion"
 THEONIX_WEBSITE="https://theonix.org"
-THEONIX_CREATOR="Kelvin Benny Koshy"
 OSREL_EOF
 
 # ---- 10. Set package cache cleanup policy -----------------------------------

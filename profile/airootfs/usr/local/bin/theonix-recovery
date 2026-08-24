@@ -13,7 +13,6 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 echo "=== Theonix OS Recovery ==="
-echo "Created by Kelvin Benny Koshy"
 echo ""
 echo "Available commands:"
 echo "  lsblk, fdisk -l     — list disks"

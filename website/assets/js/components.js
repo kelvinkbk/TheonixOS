@@ -107,7 +107,7 @@
         '</div>' +
         '<div class="divider mt-12"></div>' +
         '<div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">' +
-          '<p class="text-sm text-muted">&copy; ' + year + ' Theonix OS &middot; Created by Kelvin Benny Koshy</p>' +
+          '<p class="text-sm text-muted">&copy; ' + year + ' Theonix OS &middot; The Theonix Project</p>' +
           '<p class="text-sm text-muted">Released under the GPL &middot; Built by the community</p>' +
         '</div>' +
       '</div>' +

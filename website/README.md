@@ -103,4 +103,4 @@ compatibility.
 
 ---
 
-© Theonix OS · Created by Kelvin Benny Koshy · Released under the GPL.
+© Theonix OS · Released under the GPL.

@@ -56,8 +56,6 @@ DOCUMENTATION_URL="https://theonix.org/docs"
 SUPPORT_URL="https://theonix.org/support"
 BUG_REPORT_URL="https://github.com/kelvinkbk/TheonixOS/issues"
 LOGO=theonix-logo
-AUTHOR="Kelvin Benny Koshy"
-THEONIX_CREATOR="Kelvin Benny Koshy"
 EOF
 
 echo "Writing archiso.conf with zstd compression..."
