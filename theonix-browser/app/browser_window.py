@@ -89,7 +89,7 @@ QFrame#AISidebar {
 
 
 class TheonixBrowserWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, initial_url: str = None):
         super().__init__()
         self.setWindowTitle("Theonix Browser")
         self.setMinimumSize(1040, 720)
@@ -140,60 +140,55 @@ class TheonixBrowserWindow(QMainWindow):
         nav_toolbar = QFrame()
         nav_toolbar.setObjectName("NavToolbar")
         t_layout = QHBoxLayout(nav_toolbar)
-        t_layout.setContentsMargins(0, 0, 0, 0)
+        t_layout.setContentsMargins(12, 6, 12, 6)
         t_layout.setSpacing(8)
 
         self.back_btn = QPushButton("◀")
-        self.back_btn.setProperty("class", "ActionBtn")
+        self.back_btn.setProperty("class", "NavBtn")
         self.back_btn.clicked.connect(self._nav_back)
         t_layout.addWidget(self.back_btn)
 
         self.forward_btn = QPushButton("▶")
-        self.forward_btn.setProperty("class", "ActionBtn")
+        self.forward_btn.setProperty("class", "NavBtn")
         self.forward_btn.clicked.connect(self._nav_forward)
         t_layout.addWidget(self.forward_btn)
 
         self.reload_btn = QPushButton("🔄")
-        self.reload_btn.setProperty("class", "ActionBtn")
+        self.reload_btn.setProperty("class", "NavBtn")
         self.reload_btn.clicked.connect(self._nav_reload)
         t_layout.addWidget(self.reload_btn)
 
         self.home_btn = QPushButton("🏠")
-        self.home_btn.setProperty("class", "ActionBtn")
-        self.home_btn.clicked.connect(lambda: self._navigate_to(self.homepage))
+        self.home_btn.setProperty("class", "NavBtn")
+        self.home_btn.clicked.connect(self._nav_home)
         t_layout.addWidget(self.home_btn)
 
-        # Smart Address Bar
-        self.url_bar = SearchBar("Search or enter web address (Ctrl+L)...")
+        self.url_bar = SearchBar("Search Google or enter web address (Ctrl+L)...")
         self.url_bar.returnPressed.connect(self._on_url_entered)
         t_layout.addWidget(self.url_bar, 1)
 
         self.bookmark_btn = QPushButton("⭐")
         self.bookmark_btn.setProperty("class", "ActionBtn")
-        self.bookmark_btn.setToolTip("Bookmark this page (Ctrl+D)")
         self.bookmark_btn.clicked.connect(self._toggle_bookmark_current)
         t_layout.addWidget(self.bookmark_btn)
 
-        self.ai_toggle_btn = QPushButton("✨ Ask Theonix")
-        self.ai_toggle_btn.setProperty("class", "PrimaryBtn")
-        self.ai_toggle_btn.clicked.connect(self._toggle_ai_sidebar)
-        t_layout.addWidget(self.ai_toggle_btn)
+        self.ai_btn = QPushButton("✨ Ask Theonix")
+        self.ai_btn.setProperty("class", "PrimaryBtn")
+        self.ai_btn.clicked.connect(self._toggle_ai_sidebar)
+        t_layout.addWidget(self.ai_btn)
 
         self.downloads_btn = QPushButton("📥")
         self.downloads_btn.setProperty("class", "ActionBtn")
-        self.downloads_btn.setToolTip("Downloads (Ctrl+J)")
         self.downloads_btn.clicked.connect(self._open_downloads_dialog)
         t_layout.addWidget(self.downloads_btn)
 
         self.history_btn = QPushButton("📜")
         self.history_btn.setProperty("class", "ActionBtn")
-        self.history_btn.setToolTip("History (Ctrl+H)")
         self.history_btn.clicked.connect(self._open_history_dialog)
         t_layout.addWidget(self.history_btn)
 
         self.settings_btn = QPushButton("⚙️")
         self.settings_btn.setProperty("class", "ActionBtn")
-        self.settings_btn.setToolTip("Browser Settings")
         self.settings_btn.clicked.connect(self._open_settings_dialog)
         t_layout.addWidget(self.settings_btn)
 
@@ -203,21 +198,22 @@ class TheonixBrowserWindow(QMainWindow):
         self.progress_bar = QProgressBar()
         self.progress_bar.setFixedHeight(2)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setStyleSheet("QProgressBar { background: transparent; border: none; } QProgressBar::chunk { background: #00FFAA; }")
+        self.progress_bar.setStyleSheet("QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA); }")
         self.progress_bar.setVisible(False)
         main_layout.addWidget(self.progress_bar)
 
-        # 3. BOOKMARKS BAR (Row 3)
-        self.bmk_bar = QFrame()
-        self.bmk_bar.setObjectName("BookmarksBar")
-        self.bmk_layout = QHBoxLayout(self.bmk_bar)
-        self.bmk_layout.setContentsMargins(0, 0, 0, 0)
+        # 3. BOOKMARKS / FAVORITES BAR (Row 3)
+        self.bookmarks_bar = QFrame()
+        self.bookmarks_bar.setObjectName("BookmarksBar")
+        self.bmk_layout = QHBoxLayout(self.bookmarks_bar)
+        self.bmk_layout.setContentsMargins(12, 3, 12, 3)
         self.bmk_layout.setSpacing(6)
-        main_layout.addWidget(self.bmk_bar)
         self._refresh_bookmarks_bar()
+        main_layout.addWidget(self.bookmarks_bar)
 
-        # 4. VIEWPORT SPLITTER & AI DRAWER (Row 4 - 100% Height)
+        # 4. SPLITTER: VIEWPORT + AI SIDEBAR
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setChildrenCollapsible(False)
 
         self.view_stack = QStackedWidget()
         self.view_stack.setStyleSheet("background-color: #07090E;")
@@ -240,7 +236,9 @@ class TheonixBrowserWindow(QMainWindow):
         self._setup_shortcuts()
 
         # Initial Tab
-        self.add_tab("theonix://newtab", "New Tab")
+        first_target = initial_url or "theonix://newtab"
+        first_title = "Web" if initial_url else "New Tab"
+        self.add_tab(first_target, first_title)
 
     def _setup_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+T"), self, lambda: self.add_tab("theonix://newtab", "New Tab"))
@@ -292,13 +290,16 @@ class TheonixBrowserWindow(QMainWindow):
 
     def _update_tab_url(self, view, url: QUrl):
         url_str = url.toString()
+        if url_str.startswith("data:") or url_str == "about:blank":
+            url_str = "theonix://newtab"
         view.setProperty("current_url", url_str)
         if self.view_stack.currentWidget() == view:
-            self.url_bar.setText(url_str)
+            display_text = "" if url_str == "theonix://newtab" else url_str
+            self.url_bar.setText(display_text)
             self._update_bookmark_icon(url_str)
 
         # Record in persistent history
-        if not url_str.startswith("theonix://") and not url_str.startswith("about:"):
+        if not url_str.startswith("theonix://") and not url_str.startswith("about:") and not url_str.startswith("data:"):
             title = self.tab_bar.tabText(self.view_stack.indexOf(view))
             self.history_mgr.add_entry(url_str, title)
 
@@ -330,8 +331,11 @@ class TheonixBrowserWindow(QMainWindow):
             self.view_stack.setCurrentIndex(idx)
             view = self.view_stack.widget(idx)
             if view:
-                url_str = view.property("current_url") or self.homepage
-                self.url_bar.setText(url_str)
+                url_str = view.property("current_url") or "theonix://newtab"
+                if url_str.startswith("data:") or url_str == "about:blank":
+                    url_str = "theonix://newtab"
+                display_text = "" if url_str == "theonix://newtab" else url_str
+                self.url_bar.setText(display_text)
                 self._update_bookmark_icon(url_str)
 
     def _on_url_entered(self):
@@ -360,10 +364,18 @@ class TheonixBrowserWindow(QMainWindow):
                 view.browser.setHtml(new_tab_content)
             else:
                 view.setHtml(new_tab_content)
+            self.url_bar.setText("")
+            self._update_bookmark_icon("theonix://newtab")
         else:
             view.load_url(QUrl(url))
-        self.url_bar.setText(url)
-        self._update_bookmark_icon(url)
+            self.url_bar.setText(url)
+            self._update_bookmark_icon(url)
+
+    def _nav_home(self):
+        home = self.homepage or "https://google.com"
+        if not home.startswith(("http://", "https://", "theonix://")):
+            home = "https://" + home
+        self._navigate_to(home)
 
     def _nav_back(self):
         view = self._get_current_view()

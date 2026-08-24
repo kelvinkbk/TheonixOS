@@ -19,7 +19,8 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setStyleSheet(BROWSER_THEME_QSS)
-    win = TheonixBrowserWindow()
+    initial_url = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("-") else None
+    win = TheonixBrowserWindow(initial_url=initial_url)
     win.show()
     sys.exit(app.exec())
 
