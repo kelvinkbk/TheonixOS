@@ -174,14 +174,13 @@ class ThaidState(QObject):
 
     @pyqtSlot(str)
     def submitQuery(self, prompt):
-        """Called from QML to send a text query to the Thaid DBus daemon"""
+        """Called from QML to send a text query to the Thaid local AI engine"""
         self.setState("thinking")
 
-        # Use a background thread to make the synchronous DBus call to prevent blocking the QML UI
         def _do_query():
             from PyQt6.QtDBus import QDBus, QDBusMessage
             
-            # Create the DBus message manually to force a strict timeout
+            # 1. Try DBus if daemon is active
             msg = QDBusMessage.createMethodCall(
                 "org.theonix.AI", 
                 "/org/theonix/AI", 
@@ -190,14 +189,28 @@ class ThaidState(QObject):
             )
             msg << prompt << {}
             
-            # Send the call synchronously with a 5-minute timeout (300,000 ms)
-            reply = self.bus.call(msg, QDBus.CallMode.Block, 300000)
-            
+            reply = self.bus.call(msg, QDBus.CallMode.Block, 2000)
             if reply.type() == QDBusMessage.MessageType.ReplyMessage:
                 result = reply.arguments()[0]
                 self._emit_response(result)
-            else:
-                self._emit_response("Error connecting to AI backend: " + reply.errorMessage())
+                return
+
+            # 2. Seamless Direct Fallback to High-Speed Local AIService (Qwen GGUF)
+            try:
+                sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+                from theonix_core import AIService
+                
+                chunks = []
+                for chunk in AIService.stream_chat([{"role": "user", "content": prompt}], model_id="1.5b"):
+                    chunks.append(chunk)
+                
+                full_ans = "".join(chunks).strip()
+                if full_ans:
+                    self._emit_response(full_ans)
+                else:
+                    self._emit_response("Local AI engine is ready. Please try your question again.")
+            except Exception as e:
+                self._emit_response(f"AI Backend Error: {e}")
                 
         import threading
         threading.Thread(target=_do_query, daemon=True).start()
