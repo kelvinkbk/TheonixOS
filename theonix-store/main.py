@@ -870,8 +870,11 @@ class AppDetailDialog(QDialog):
 
     def _install(self, data):
         self.accept()
-        dlg = AppInstallDialog(data, self.parent())
+        dlg = AppInstallDialog(data, self.parent_window or self.parent())
         dlg.exec()
+        parent_win = self.parent_window or self.parent()
+        if parent_win and hasattr(parent_win, "refresh_view"):
+            parent_win.refresh_view()
 
 
 class PackageInstallWorker(QThread):
@@ -1126,14 +1129,20 @@ class AppCard(GlassCard):
     def _open_details(self):
         dlg = AppDetailDialog(self.data, self.parent_window)
         dlg.exec()
+        if self.parent_window and hasattr(self.parent_window, "refresh_view"):
+            self.parent_window.refresh_view()
 
     def _install_app(self):
         dlg = AppInstallDialog(self.data, self.parent_window)
         dlg.exec()
+        if self.parent_window and hasattr(self.parent_window, "refresh_view"):
+            self.parent_window.refresh_view()
 
     def _uninstall_app(self):
         dlg = AppUninstallDialog(self.data, self.parent_window)
         dlg.exec()
+        if self.parent_window and hasattr(self.parent_window, "refresh_view"):
+            self.parent_window.refresh_view()
 
     def _launch_app(self):
         pkg = self.data.get("pkg", self.data["name"])
@@ -1362,6 +1371,14 @@ class TheonixStoreWindow(QMainWindow):
         if btn:
             btn.setChecked(True)
             self._on_category_changed(6)
+
+    def refresh_view(self):
+        query = self.search_input.text().strip()
+        if query:
+            self._trigger_search()
+        else:
+            checked_btn = self.btn_group.checkedId()
+            self._load_featured_or_category(checked_btn if checked_btn >= 0 else 0)
 
     def _on_filter_changed(self, idx):
         filters = ["all", "pacman", "flatpak", "uacl"]
