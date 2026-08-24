@@ -325,6 +325,13 @@ class AIService:
         Yields tokens in real-time from the local high-speed AI engine.
         Falls back to Ollama or simple response if server is unlaunchable.
         """
+        # Check if the prompt triggers a direct desktop action
+        last_prompt = messages[-1]["content"] if messages else ""
+        action_res = ActionService.execute_intent(last_prompt)
+        if action_res:
+            yield action_res
+            return
+
         if not cls.is_server_running():
             cls.ensure_server_running(model_id)
 
@@ -394,10 +401,99 @@ class AIService:
         ]
 
 
+class ActionService:
+    """
+    Intelligent OS Automation & Action Dispatcher for THAID.
+    Executes native desktop commands, app launches, telemetry checks, volume controls, and web lookups.
+    """
+
+    APP_MAP = {
+        "browser": ["theonix-browser", "firefox", "chromium", "google-chrome"],
+        "firefox": ["firefox", "theonix-browser"],
+        "files": ["theonix-files", "dolphin", "nautilus", "thunar"],
+        "file manager": ["theonix-files", "dolphin", "nautilus"],
+        "settings": ["theonix-settings", "systemsettings"],
+        "store": ["theonix-store", "discover"],
+        "messages": ["theonix-messages"],
+        "terminal": ["konsole", "alacritty", "kitty", "foot", "xterm"],
+        "calculator": ["kcalc", "gnome-calculator"],
+        "screenshot": ["spectacle", "grim", "flameshot"],
+        "text editor": ["kate", "kwrite", "gedit", "code"],
+    }
+
+    @classmethod
+    def execute_intent(cls, prompt: str) -> Optional[str]:
+        p = prompt.strip().lower()
+
+        # 1. Launch / Open Apps
+        for key, binaries in cls.APP_MAP.items():
+            pattern = rf"\b(open|launch|start|run|open up)\s+(the\s+)?{key}\b"
+            if re.search(pattern, p) or p == key or p == f"open {key}":
+                for b in binaries:
+                    # Check system path
+                    if shutil.which(b):
+                        subprocess.Popen([b], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        return f"✓ Launched {key.title()}."
+                    # Check local project apps
+                    local_main = os.path.expanduser(f"/home/k/Desktop/Projects/theonix/{b}/main.py")
+                    if os.path.exists(local_main):
+                        subprocess.Popen(["python3", local_main], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        return f"✓ Launched {key.title()} (Theonix Native App)."
+
+                if key == "firefox":
+                    local_browser = os.path.expanduser("/home/k/Desktop/Projects/theonix/theonix-browser/main.py")
+                    if os.path.exists(local_browser):
+                        subprocess.Popen(["python3", local_browser])
+                        return "✓ Firefox is not installed. Opened Theonix Browser instead.\n*(Tip: Run `sudo pacman -S firefox` to install Firefox)*"
+                return f"Could not find application for '{key}'."
+
+        # 2. Open Website / URL
+        url_match = re.search(r"\b(open|go to|visit)\s+(https?://[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.(com|org|io|net|xyz|edu|gov))\b", p)
+        if url_match:
+            raw_url = url_match.group(2)
+            if not raw_url.startswith("http"):
+                raw_url = "https://" + raw_url
+            local_browser = os.path.expanduser("/home/k/Desktop/Projects/theonix/theonix-browser/main.py")
+            if os.path.exists(local_browser):
+                subprocess.Popen(["python3", local_browser, raw_url])
+            elif shutil.which("firefox"):
+                subprocess.Popen(["firefox", raw_url])
+            return f"✓ Opening {raw_url} in Theonix Browser."
+
+        # 3. Lock Screen
+        if any(term in p for term in ["lock screen", "lock my pc", "lock computer", "lock session"]):
+            subprocess.Popen(["loginctl", "lock-session"])
+            return "✓ Screen locked."
+
+        # 4. Take Screenshot
+        if any(term in p for term in ["screenshot", "capture screen", "take screenshot"]):
+            if shutil.which("spectacle"):
+                subprocess.Popen(["spectacle", "-b"], stderr=subprocess.DEVNULL)
+            elif shutil.which("grim"):
+                subprocess.Popen(["grim"], stderr=subprocess.DEVNULL)
+            return "✓ Captured screenshot."
+
+        # 5. Volume control
+        if "mute" in p and "unmute" not in p:
+            subprocess.Popen(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "1"], stderr=subprocess.DEVNULL)
+            return "✓ Audio muted."
+        if "unmute" in p:
+            subprocess.Popen(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "0"], stderr=subprocess.DEVNULL)
+            return "✓ Audio unmuted."
+
+        # 6. Telemetry / Hardware stats
+        if any(w in p for w in ["ram usage", "memory usage", "check ram", "system status", "telemetry", "how much ram"]):
+            stats = SystemService.get_hardware_telemetry()
+            return f"📊 **System Telemetry**:\n• **RAM**: {stats['ram_used_gb']:.1f} GB / {stats['ram_total_gb']:.1f} GB ({stats['ram_percent']}% used)\n• **Disk**: {stats['disk_percent']}% used"
+
+        return None
+
+
 class UACLService:
     """Theonix Universal App Compatibility Layer launcher."""
 
     @staticmethod
     def launch(target_path: str):
         subprocess.Popen(["theonix-uacl", "launch", "--path", target_path])
+
 

@@ -22,6 +22,7 @@ from .services import (
     SearchService,
     SystemService,
     AIService,
+    ActionService,
     UACLService,
     CompatibilityRating
 )
