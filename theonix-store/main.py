@@ -208,14 +208,141 @@ class AppDetailDialog(QDialog):
 
     def _install(self, data):
         self.accept()
-        pkg = data.get("pkg", data["name"])
-        src = data.get("source", "pacman")
-        if src == "pacman":
-            subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-S", "--needed", pkg])
-        elif src == "flatpak":
-            subprocess.Popen(["konsole", "-e", "flatpak", "install", "-y", "flathub", pkg])
+        dlg = AppInstallDialog(data, self.parent_window)
+        dlg.exec()
+
+
+class PackageInstallWorker(QThread):
+    log_received = pyqtSignal(str)
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, pkg: str, source: str = "pacman"):
+        super().__init__()
+        self.pkg = pkg
+        self.source = source
+
+    def run(self):
+        if self.source == "pacman":
+            # Use pkexec for native GUI polkit authentication (no terminal needed)
+            cmd = ["pkexec", "pacman", "-S", "--needed", "--noconfirm", self.pkg]
+        elif self.source == "flatpak":
+            # User-level flatpak installs without requiring root permissions
+            cmd = ["flatpak", "install", "-y", "--user", "flathub", self.pkg]
         else:
-            UACLService.launch(pkg)
+            self.log_received.emit(f"Launching UACL Compatibility layer for {self.pkg}...\n")
+            UACLService.launch(self.pkg)
+            self.finished.emit(True, "Launched with UACL.")
+            return
+
+        try:
+            self.log_received.emit(f"⚡ Starting package installation: {self.pkg}\n")
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            for line in proc.stdout:
+                self.log_received.emit(line)
+            proc.wait()
+            if proc.returncode == 0:
+                self.finished.emit(True, f"✓ Successfully installed {self.pkg}!")
+            else:
+                self.finished.emit(False, f"Installation ended with code {proc.returncode}")
+        except Exception as e:
+            self.finished.emit(False, f"Installation error: {e}")
+
+
+class AppInstallDialog(QDialog):
+    """Modern Glassmorphic In-App Package Installer Dialog."""
+    def __init__(self, app_data: dict, parent=None):
+        super().__init__(parent)
+        self.app_data = app_data
+        self.setWindowTitle(f"Installing {app_data['name']}")
+        self.setMinimumSize(480, 360)
+        self.setStyleSheet("""
+            QDialog { background-color: #0B0E17; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; }
+            QLabel { color: #F8FAFC; }
+            QTextEdit { background-color: #07090E; border: 1px solid #1E2638; border-radius: 8px; color: #00FFAA; font-family: monospace; font-size: 11.5px; }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(14)
+
+        # Header
+        hdr = QHBoxLayout()
+        icon = QLabel(app_data.get("icon", "📦"))
+        icon.setStyleSheet("font-size: 32px;")
+        hdr.addWidget(icon)
+
+        t_box = QVBoxLayout()
+        self.title_lbl = QLabel(f"Installing {app_data['name']}...")
+        self.title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF;")
+        self.status_lbl = QLabel("Downloading packages & verifying signatures...")
+        self.status_lbl.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+        t_box.addWidget(self.title_lbl)
+        t_box.addWidget(self.status_lbl)
+        hdr.addLayout(t_box)
+        hdr.addStretch()
+        layout.addLayout(hdr)
+
+        # Progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0) # Indeterminate pulsating
+        self.progress_bar.setFixedHeight(6)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar { background-color: #121826; border-radius: 3px; border: none; }
+            QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA); border-radius: 3px; }
+        """)
+        layout.addWidget(self.progress_bar)
+
+        # Live log output
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        layout.addWidget(self.log_view)
+
+        # Actions
+        self.btn_row = QHBoxLayout()
+        self.btn_row.addStretch()
+
+        self.launch_btn = QPushButton("🚀 Launch App")
+        self.launch_btn.setProperty("class", "PrimaryBtn")
+        self.launch_btn.setVisible(False)
+        self.launch_btn.clicked.connect(self._launch_installed_app)
+
+        self.close_btn = QPushButton("Cancel")
+        self.close_btn.setProperty("class", "ActionBtn")
+        self.close_btn.clicked.connect(self.reject)
+
+        self.btn_row.addWidget(self.launch_btn)
+        self.btn_row.addWidget(self.close_btn)
+        layout.addLayout(self.btn_row)
+
+        # Start background installation
+        pkg = app_data.get("pkg", app_data["name"])
+        src = app_data.get("source", "pacman")
+        self.worker = PackageInstallWorker(pkg, src)
+        self.worker.log_received.connect(self._on_log)
+        self.worker.finished.connect(self._on_finished)
+        self.worker.start()
+
+    def _on_log(self, text: str):
+        self.log_view.append(text.strip())
+
+    def _on_finished(self, success: bool, msg: str):
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(100 if success else 0)
+        self.close_btn.setText("Close")
+        if success:
+            self.title_lbl.setText(f"✓ {self.app_data['name']} Ready!")
+            self.status_lbl.setText("Installation completed successfully.")
+            self.status_lbl.setStyleSheet("color: #00FFAA; font-weight: bold;")
+            self.launch_btn.setVisible(True)
+        else:
+            self.title_lbl.setText("Installation Incomplete")
+            self.status_lbl.setText(msg)
+            self.status_lbl.setStyleSheet("color: #FF5555;")
+
+    def _launch_installed_app(self):
+        pkg = self.app_data.get("pkg", self.app_data["name"])
+        subprocess.Popen([pkg], stderr=subprocess.DEVNULL)
+        self.accept()
 
 
 class AppCard(GlassCard):
@@ -279,14 +406,8 @@ class AppCard(GlassCard):
         dlg.exec()
 
     def _install_app(self):
-        pkg = self.data.get("pkg", self.data["name"])
-        src = self.data.get("source", "pacman")
-        if src == "pacman":
-            subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-S", "--needed", pkg])
-        elif src == "flatpak":
-            subprocess.Popen(["konsole", "-e", "flatpak", "install", "-y", "flathub", pkg])
-        else:
-            UACLService.launch(pkg)
+        dlg = AppInstallDialog(self.data, self.parent_window)
+        dlg.exec()
 
 
 class StoreWorker(QThread):
