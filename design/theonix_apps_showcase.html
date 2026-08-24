@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theonix OS — Native Apps Design Prototype & UI Showcase</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-dark: #07090E;
+      --bg-surface: rgba(18, 24, 38, 0.75);
+      --bg-card: rgba(24, 32, 50, 0.65);
+      --bg-card-hover: rgba(32, 42, 66, 0.85);
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(0, 255, 170, 0.4);
+      --accent-cyan: #00FFAA;
+      --accent-indigo: #6C63FF;
+      --accent-blue: #00D4FF;
+      --accent-magenta: #FF007F;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-faint: #64748B;
+      --glow-brand: 0 0 25px rgba(0, 255, 170, 0.18), 0 0 50px rgba(108, 99, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(108, 99, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(0, 255, 170, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 60%);
+    }
+
+    /* Header Nav */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glass);
+      backdrop-filter: blur(20px);
+      background: rgba(11, 14, 20, 0.8);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
+      display: grid;
+      place-items: center;
+      color: #04121A;
+      font-weight: 800;
+      box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
+    }
+
+    /* App Switcher Tabs */
+    .app-switcher {
+      display: flex;
+      background: rgba(18, 24, 38, 0.8);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .app-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .app-tab-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .app-tab-btn.active {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-blue));
+      color: #0B0E14;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+    }
+
+    /* Main Showcase Container */
+    main {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    /* Mock Window Frame */
+    .mock-window {
+      width: 100%;
+      max-width: 1180px;
+      height: 740px;
+      background: var(--bg-surface);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--border-glass);
+      border-radius: 18px;
+      box-shadow: var(--glow-brand), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.98) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Window Titlebar */
+    .window-titlebar {
+      height: 44px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glass);
+      background: rgba(14, 18, 28, 0.6);
+      user-select: none;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .win-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+    }
+    .win-close { background: #FF5F56; }
+    .win-min { background: #FFBD2E; }
+    .win-max { background: #27C93F; }
+
+    .window-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    /* App Screen Contents */
+    .app-screen {
+      flex: 1;
+      display: none;
+      height: calc(100% - 44px);
+    }
+
+    .app-screen.active {
+      display: flex;
+    }
+
+    /* Common App Layout */
+    .app-sidebar {
+      width: 240px;
+      background: rgba(14, 18, 28, 0.85);
+      border-right: 1px solid var(--border-glass);
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+    }
+
+    .sidebar-item.active {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.25), rgba(0, 255, 170, 0.15));
+      border: 1px solid rgba(0, 255, 170, 0.3);
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 255, 170, 0.3);
+      background: var(--bg-card-hover);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    /* Action Buttons */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-blue));
+      color: #0B0E14;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-gradient:hover { opacity: 0.9; }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+      cursor: pointer;
+    }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.12); }
+
+    /* Input Fields */
+    .glass-input {
+      background: rgba(14, 18, 28, 0.8);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #FFFFFF;
+      font-size: 13.5px;
+      outline: none;
+      width: 100%;
+    }
+    .glass-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-cyan { background: rgba(0, 255, 170, 0.15); color: var(--accent-cyan); }
+    .badge-indigo { background: rgba(108, 99, 255, 0.2); color: #A78BFA; }
+    .badge-blue { background: rgba(0, 212, 255, 0.15); color: var(--accent-blue); }
+
+    /* Grid Layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+
+  <!-- Header & App Switcher -->
+  <header>
+    <div class="brand-logo">
+      <div class="logo-badge">TX</div>
+      <span>Theonix OS <span style="color:var(--accent-cyan);font-size:13px;font-weight:500;">Apps Design System</span></span>
+    </div>
+
+    <div class="app-switcher">
+      <button class="app-tab-btn active" onclick="switchApp('settings')">⚙️ Settings</button>
+      <button class="app-tab-btn" onclick="switchApp('store')">🛍️ Store</button>
+      <button class="app-tab-btn" onclick="switchApp('browser')">🌐 Browser</button>
+      <button class="app-tab-btn" onclick="switchApp('messages')">💬 Messages</button>
+      <button class="app-tab-btn" onclick="switchApp('files')">📁 Files</button>
+    </div>
+  </header>
+
+  <!-- Showcase Workspace -->
+  <main>
+    <div class="mock-window">
+      <!-- Titlebar -->
+      <div class="window-titlebar">
+        <div class="window-controls">
+          <div class="win-btn win-close"></div>
+          <div class="win-btn win-min"></div>
+          <div class="win-btn win-max"></div>
+        </div>
+        <div class="window-title" id="window-title">Theonix Settings</div>
+        <div style="width:50px;"></div>
+      </div>
+
+      <!-- ================= 1. THEONIX SETTINGS SCREEN ================= -->
+      <div class="app-screen active" id="app-settings">
+        <div class="app-sidebar">
+          <div class="sidebar-item active">💻 System &amp; About</div>
+          <div class="sidebar-item">🧠 AI &amp; THAID</div>
+          <div class="sidebar-item">🎨 Appearance</div>
+          <div class="sidebar-item">🖥️ Display &amp; Scaling</div>
+          <div class="sidebar-item">🌐 Wi-Fi &amp; Network</div>
+          <div class="sidebar-item">🔊 Sound &amp; PipeWire</div>
+          <div class="sidebar-item">💾 Storage &amp; Btrfs</div>
+          <div class="sidebar-item">🔄 System Updates</div>
+        </div>
+
+        <div class="app-content">
+          <!-- Hero System Card -->
+          <div class="glass-card" style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:18px;">
+              <div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-indigo));display:grid;place-items:center;font-size:26px;color:#04121a;font-weight:bold;">⚡</div>
+              <div>
+                <h2 style="font-size:20px;font-weight:800;">Theonix OS 1.0 &ldquo;Genesis&rdquo;</h2>
+                <p style="color:var(--accent-cyan);font-size:13px;font-weight:600;">AI-Powered Linux &middot; Arch Base &middot; KDE Plasma 6 (Wayland)</p>
+              </div>
+            </div>
+            <button class="btn-gradient">Check for Updates</button>
+          </div>
+
+          <!-- Hardware & Kernel Specs -->
+          <div class="grid-2">
+            <div class="glass-card">
+              <div class="card-title">🖥️ Hardware Overview</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;">
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Processor:</span><span>AMD Ryzen 7 / Intel Core i7</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Memory (RAM):</span><span>16.0 GB DDR4</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Graphics (GPU):</span><span>NVIDIA / AMD Vulkan Ready</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Disk Partition:</span><span>512 GB Btrfs (Encrypted)</span></div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-title">🧠 Local AI (THAID Engine)</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;">
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Daemon Status:</span><span style="color:var(--accent-cyan);font-weight:bold;">🟢 Active &amp; Serving</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Active Model:</span><span class="badge badge-indigo">llama3.2:1b (1.3 GB)</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Inference Mode:</span><span>Vulkan GPU Accelerated</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Context Limit:</span><span>8,192 Tokens</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instant Btrfs Snapshot -->
+          <div class="glass-card" style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="card-title" style="margin-bottom:4px;">🛡️ Btrfs System Snapshot</div>
+              <p style="color:var(--text-muted);font-size:13px;">Create an instantaneous restore point before performing major updates.</p>
+            </div>
+            <button class="btn-ghost">📸 Take Snapshot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 2. THEONIX STORE SCREEN ================= -->
+      <div class="app-screen" id="app-store">
+        <div class="app-sidebar">
+          <div class="sidebar-item active">🌟 Featured Picks</div>
+          <div class="sidebar-item">💻 Development</div>
+          <div class="sidebar-item">🧠 AI &amp; Machine Learning</div>
+          <div class="sidebar-item">🎨 Graphics &amp; Media</div>
+          <div class="sidebar-item">⚡ Productivity</div>
+          <div class="sidebar-item">🎮 Gaming &amp; UACL</div>
+          <div class="sidebar-item">📥 Installed Apps</div>
+          <div class="sidebar-item">🔄 Updates (3)</div>
+        </div>
+
+        <div class="app-content">
+          <!-- Search Header -->
+          <input type="text" class="glass-input" placeholder="Search thousands of official packages, Flatpaks, and Windows apps..." />
+
+          <!-- Featured Hero -->
+          <div class="glass-card" style="background:linear-gradient(135deg,rgba(108,99,255,0.25),rgba(0,255,170,0.1));border-color:rgba(0,255,170,0.3);">
+            <span class="badge badge-cyan">Featured Ecosystem App</span>
+            <h3 style="font-size:22px;font-weight:800;margin-top:8px;">Ollama &amp; THAID AI Local Suite</h3>
+            <p style="color:var(--text-muted);font-size:13.5px;margin-top:6px;max-width:600px;">Run private, open-weights AI models on your CPU or GPU without sending telemetry to the cloud.</p>
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn-gradient">Install Suite</button>
+              <button class="btn-ghost">Learn More</button>
+            </div>
+          </div>
+
+          <!-- Popular App Cards -->
+          <h4 style="font-size:15px;color:var(--accent-cyan);font-weight:700;">Trending Software</h4>
+          <div class="grid-3">
+            <div class="glass-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:28px;">💻</span>
+                  <span class="badge badge-blue">PACMAN</span>
+                </div>
+                <h4 style="font-size:16px;font-weight:700;margin-top:8px;">VS Code</h4>
+                <p style="color:var(--text-muted);font-size:12.5px;margin-top:4px;">Industry standard extensible code editor with integrated terminal.</p>
+              </div>
+              <button class="btn-ghost" style="margin-top:16px;width:100%;">Install</button>
+            </div>
+
+            <div class="glass-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:28px;">🎨</span>
+                  <span class="badge badge-blue">PACMAN</span>
+                </div>
+                <h4 style="font-size:16px;font-weight:700;margin-top:8px;">Blender 3D</h4>
+                <p style="color:var(--text-muted);font-size:12.5px;margin-top:4px;">Complete 3D creation pipeline: modeling, sculpting, VFX &amp; rendering.</p>
+              </div>
+              <button class="btn-ghost" style="margin-top:16px;width:100%;">Install</button>
+            </div>
+
+            <div class="glass-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:28px;">💬</span>
+                  <span class="badge badge-indigo">FLATPAK</span>
+                </div>
+                <h4 style="font-size:16px;font-weight:700;margin-top:8px;">Discord</h4>
+                <p style="color:var(--text-muted);font-size:12.5px;margin-top:4px;">Voice, video, and text communication service for gaming &amp; teams.</p>
+              </div>
+              <button class="btn-ghost" style="margin-top:16px;width:100%;">Install</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 3. THEONIX BROWSER SCREEN ================= -->
+      <div class="app-screen" id="app-browser" style="flex-direction:column;">
+        <!-- Browser Topbar -->
+        <div style="padding:10px 16px;background:rgba(14,18,28,0.9);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-glass);">
+          <button class="btn-ghost" style="padding:6px 12px;">◀</button>
+          <button class="btn-ghost" style="padding:6px 12px;">▶</button>
+          <button class="btn-ghost" style="padding:6px 12px;">🔄</button>
+          <input type="text" class="glass-input" value="https://theonixos.xyz" style="flex:1;padding:7px 14px;font-size:13px;" />
+          <button class="btn-gradient" style="padding:6px 14px;font-size:12px;">✨ THAID AI Assistant</button>
+        </div>
+
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <!-- Web Content Viewport -->
+          <div style="flex:1;padding:40px;background:#090C12;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+            <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-indigo));display:grid;place-items:center;font-size:36px;color:#04121a;font-weight:800;margin-bottom:16px;">TX</div>
+            <h2 style="font-size:28px;font-weight:800;">Welcome to Theonix Browser</h2>
+            <p style="color:var(--text-muted);max-width:500px;margin-top:8px;">Fast, private, and AI-augmented browsing powered by Qt and local intelligence.</p>
+          </div>
+
+          <!-- AI Assistant Drawer -->
+          <div style="width:320px;background:rgba(18,24,38,0.95);border-left:1px solid var(--border-glass);padding:18px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-weight:700;color:var(--accent-cyan);">🤖 THAID Sidebar</span>
+              <span class="badge badge-indigo">Online</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-ghost" style="font-size:11px;padding:4px 8px;flex:1;">Summarize</button>
+              <button class="btn-ghost" style="font-size:11px;padding:4px 8px;flex:1;">Extract Code</button>
+            </div>
+            <div style="flex:1;background:rgba(11,14,20,0.8);border-radius:10px;padding:12px;font-size:12.5px;color:var(--text-muted);border:1px solid var(--border-glass);overflow-y:auto;">
+              <b style="color:var(--accent-cyan);">THAID:</b><br/>
+              Ready to analyze the current webpage. Ask questions, extract technical commands, or translate content.
+            </div>
+            <input type="text" class="glass-input" placeholder="Ask AI about this page..." style="padding:8px 12px;font-size:12.5px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 4. THEONIX MESSAGES SCREEN ================= -->
+      <div class="app-screen" id="app-messages">
+        <div class="app-sidebar">
+          <button class="btn-gradient" style="width:100%;margin-bottom:10px;">➕ New Chat</button>
+          <div class="sidebar-item active">🤖 THAID System Assistant</div>
+          <div class="sidebar-item">💻 Linux Shell Helper</div>
+          <div class="sidebar-item">⚡ Code &amp; Debugging</div>
+          <div class="sidebar-item">📝 Notes &amp; Ideas</div>
+        </div>
+
+        <div class="app-content" style="padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+          <!-- Messages Log -->
+          <div style="display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto;">
+            <div style="align-self:flex-start;max-width:75%;background:rgba(24,32,50,0.8);border:1px solid var(--border-glass);border-radius:12px;padding:14px;">
+              <div style="color:var(--accent-cyan);font-weight:700;font-size:12px;margin-bottom:4px;">THAID Assistant</div>
+              <p style="font-size:13.5px;line-height:1.5;">Hello! I am your local AI assistant running on Theonix OS. How can I help configure your environment, generate code, or manage your system?</p>
+            </div>
+
+            <div style="align-self:flex-end;max-width:75%;background:linear-gradient(135deg,rgba(108,99,255,0.4),rgba(0,212,255,0.3));border:1px solid rgba(108,99,255,0.5);border-radius:12px;padding:14px;">
+              <div style="color:#FFFFFF;font-weight:700;font-size:12px;margin-bottom:4px;">You</div>
+              <p style="font-size:13.5px;line-height:1.5;">Show me how to update the system and snapshot Btrfs.</p>
+            </div>
+
+            <div style="align-self:flex-start;max-width:75%;background:rgba(24,32,50,0.8);border:1px solid var(--border-glass);border-radius:12px;padding:14px;">
+              <div style="color:var(--accent-cyan);font-weight:700;font-size:12px;margin-bottom:4px;">THAID Assistant</div>
+              <p style="font-size:13.5px;line-height:1.5;">You can update and trigger an instant restore point with:</p>
+              <pre style="background:#090C12;padding:10px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-cyan);margin-top:8px;border:1px solid var(--border-glass);">sudo pacman -Syu &amp;&amp; btrfs subvolume snapshot / /.snapshots/pre-update</pre>
+            </div>
+          </div>
+
+          <!-- Bottom Prompt Box -->
+          <div style="display:flex;gap:10px;margin-top:14px;">
+            <input type="text" class="glass-input" placeholder="Type a message or request system actions..." />
+            <button class="btn-gradient">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 5. THEONIX FILES SCREEN ================= -->
+      <div class="app-screen" id="app-files">
+        <div class="app-sidebar">
+          <div class="sidebar-item active">🏠 Home</div>
+          <div class="sidebar-item">🖥️ Desktop</div>
+          <div class="sidebar-item">📥 Downloads</div>
+          <div class="sidebar-item">📄 Documents</div>
+          <div class="sidebar-item">🖼️ Pictures</div>
+          <div class="sidebar-item">🎵 Music</div>
+          <div class="sidebar-item">🎬 Videos</div>
+          <div class="sidebar-item">💽 Root FileSystem (/)</div>
+        </div>
+
+        <div class="app-content" style="padding:0;display:flex;flex-direction:column;">
+          <!-- Path Bar -->
+          <div style="padding:10px 16px;border-bottom:1px solid var(--border-glass);display:flex;align-items:center;gap:10px;background:rgba(14,18,28,0.7);">
+            <button class="btn-ghost" style="padding:4px 10px;">◀</button>
+            <button class="btn-ghost" style="padding:4px 10px;">▶</button>
+            <button class="btn-ghost" style="padding:4px 10px;">⬆</button>
+            <input type="text" class="glass-input" value="/home/user/Projects" style="padding:6px 12px;font-size:13px;" />
+            <button class="btn-ghost" style="padding:6px 12px;font-size:12px;">Terminal</button>
+          </div>
+
+          <!-- Files Grid -->
+          <div style="padding:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+            <div class="glass-card" style="text-align:center;cursor:pointer;padding:16px;">
+              <div style="font-size:36px;">📁</div>
+              <div style="font-weight:600;font-size:13.5px;margin-top:8px;">TheonixOS</div>
+              <div style="color:var(--text-faint);font-size:11px;">Folder &middot; 42 items</div>
+            </div>
+
+            <div class="glass-card" style="text-align:center;cursor:pointer;padding:16px;">
+              <div style="font-size:36px;">⚙️</div>
+              <div style="font-weight:600;font-size:13.5px;margin-top:8px;">setup_tool.exe</div>
+              <div style="color:var(--accent-cyan);font-size:11px;font-weight:bold;">🚀 Theonix UACL App</div>
+            </div>
+
+            <div class="glass-card" style="text-align:center;cursor:pointer;padding:16px;">
+              <div style="font-size:36px;">📄</div>
+              <div style="font-weight:600;font-size:13.5px;margin-top:8px;">README.md</div>
+              <div style="color:var(--text-faint);font-size:11px;">Markdown Document</div>
+            </div>
+
+            <div class="glass-card" style="text-align:center;cursor:pointer;padding:16px;">
+              <div style="font-size:36px;">📦</div>
+              <div style="font-weight:600;font-size:13.5px;margin-top:8px;">release.tar.gz</div>
+              <div style="color:var(--text-faint);font-size:11px;">Archive &middot; 3.2 GB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const appTitles = {
+      settings: 'Theonix Settings — System & Hardware Control Center',
+      store: 'Theonix Store — Unified Package & App Marketplace',
+      browser: 'Theonix Browser — AI Augmented Web Navigator',
+      messages: 'Theonix Messages — THAID Local AI Assistant & Chat',
+      files: 'Theonix Files — High-Performance File Explorer & UACL'
+    };
+
+    function switchApp(appId) {
+      document.querySelectorAll('.app-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.app-screen').forEach(scr => scr.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById('app-' + appId).classList.add('active');
+      document.getElementById('window-title').textContent = appTitles[appId] || 'Theonix Application';
+    }
+  </script>
+</body>
+</html>

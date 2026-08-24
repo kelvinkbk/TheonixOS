@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Theonix Store — Next-Gen Software Center & App Discovery Hub
+Theonix Store — Ultra-Dark Glassmorphic Software Center & App Discovery Hub
 Built for Theonix OS. Unified catalog for Pacman, Flatpak, and UACL apps.
 """
 
@@ -9,56 +9,57 @@ import sqlite3
 import subprocess
 import sys
 import threading
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
-from PyQt6.QtGui import QFont, QIcon, QColor, QPalette, QLinearGradient, QBrush, QPainter
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QProgressBar,
     QScrollArea, QFrame, QStackedWidget, QListWidget, QListWidgetItem,
-    QMessageBox, QGridLayout, QSizePolicy, QTabWidget
+    QMessageBox, QGridLayout
 )
 
 UACL_DB = os.path.expanduser("~/.config/theonix/uacl.db")
 
 THEME_QSS = """
 QMainWindow {
-    background-color: #0B0E14;
+    background-color: #07090E;
 }
 
 QWidget#CentralWidget {
-    background-color: #0B0E14;
-    color: #F0F4F8;
+    background-color: #07090E;
+    color: #F8FAFC;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Sidebar Navigation */
 QListWidget#CategoryNav {
-    background-color: #121620;
+    background-color: #0E121C;
     border: none;
-    border-right: 1px solid #1E2638;
-    padding-top: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 14px;
     outline: none;
 }
 
 QListWidget#CategoryNav::item {
     color: #94A3B8;
     height: 46px;
-    padding-left: 18px;
+    padding-left: 16px;
     margin: 3px 10px;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
     font-weight: 500;
 }
 
 QListWidget#CategoryNav::item:hover {
-    background-color: rgba(108, 99, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.05);
     color: #FFFFFF;
 }
 
 QListWidget#CategoryNav::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    font-weight: bold;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    color: #FFFFFF;
+    font-weight: 600;
 }
 
 /* Scroll Area */
@@ -73,19 +74,19 @@ QScrollArea > QWidget > QWidget {
 
 QScrollBar:vertical {
     border: none;
-    background: #121620;
+    background: #0E121C;
     width: 8px;
     border-radius: 4px;
 }
 
 QScrollBar::handle:vertical {
-    background: #2D3748;
+    background: #232D42;
     border-radius: 4px;
     min-height: 25px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #4A5568;
+    background: #384766;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -94,45 +95,45 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 /* App Cards */
 QFrame.AppCard {
-    background-color: #161C28;
-    border: 1px solid #232D40;
-    border-radius: 12px;
-    padding: 14px;
+    background-color: rgba(20, 26, 40, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 16px;
 }
 
 QFrame.AppCard:hover {
-    border: 1px solid #3B82F6;
-    background-color: #19202E;
+    border: 1px solid rgba(0, 255, 170, 0.3);
+    background-color: rgba(26, 34, 52, 0.9);
 }
 
 QFrame.FeaturedHero {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1C1938, stop:0.5 #162035, stop:1 #112826);
-    border: 1px solid #334155;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(108, 99, 255, 0.3), stop:0.5 rgba(18, 26, 44, 0.8), stop:1 rgba(0, 255, 170, 0.15));
+    border: 1px solid rgba(0, 255, 170, 0.3);
     border-radius: 16px;
     padding: 24px;
 }
 
 /* Search Bar */
 QLineEdit#SearchInput {
-    background-color: #121722;
-    border: 1px solid #283347;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 10px 16px;
-    color: #F0F4F8;
-    font-size: 14px;
+    padding: 10px 18px;
+    color: #FFFFFF;
+    font-size: 13.5px;
 }
 
 QLineEdit#SearchInput:focus {
     border: 1px solid #00FFAA;
-    background-color: #161D2B;
+    background-color: rgba(18, 24, 38, 0.95);
 }
 
 /* Source Badges */
 QLabel.BadgePacman {
     background-color: rgba(0, 212, 255, 0.15);
     color: #00D4FF;
-    border-radius: 4px;
-    padding: 2px 8px;
+    border-radius: 5px;
+    padding: 3px 8px;
     font-size: 11px;
     font-weight: bold;
 }
@@ -140,8 +141,8 @@ QLabel.BadgePacman {
 QLabel.BadgeFlatpak {
     background-color: rgba(108, 99, 255, 0.2);
     color: #A78BFA;
-    border-radius: 4px;
-    padding: 2px 8px;
+    border-radius: 5px;
+    padding: 3px 8px;
     font-size: 11px;
     font-weight: bold;
 }
@@ -149,17 +150,17 @@ QLabel.BadgeFlatpak {
 QLabel.BadgeUACL {
     background-color: rgba(0, 255, 170, 0.15);
     color: #00FFAA;
-    border-radius: 4px;
-    padding: 2px 8px;
+    border-radius: 5px;
+    padding: 3px 8px;
     font-size: 11px;
     font-weight: bold;
 }
 
 /* Buttons */
 QPushButton {
-    background-color: #21293A;
-    color: #F0F4F8;
-    border: 1px solid #2F3B52;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #F8FAFC;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px 16px;
     font-size: 13px;
@@ -167,8 +168,8 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background-color: #2D374E;
-    border-color: #4B5563;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
     color: #FFFFFF;
 }
 
@@ -176,22 +177,11 @@ QPushButton.InstallBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
     color: #0B0E14;
     border: none;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 QPushButton.InstallBtn:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7D75FF, stop:1 #1CE0FF);
-}
-
-QPushButton.UninstallBtn {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #EF4444;
-    border: 1px solid #7F1D1D;
-}
-
-QPushButton.UninstallBtn:hover {
-    background-color: #EF4444;
-    color: #FFFFFF;
 }
 """
 
@@ -273,17 +263,15 @@ class AppCard(QFrame):
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
-        layout.setSpacing(16)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(18)
 
-        # Icon
         icon_lbl = QLabel(self.data.get("icon", "📦"))
-        icon_lbl.setStyleSheet("font-size: 32px; background: #121722; border-radius: 10px; padding: 6px;")
-        icon_lbl.setFixedSize(48, 48)
+        icon_lbl.setStyleSheet("font-size: 32px; background: rgba(14, 18, 28, 0.8); border-radius: 12px; padding: 6px;")
+        icon_lbl.setFixedSize(50, 50)
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_lbl)
 
-        # Details
         v_box = QVBoxLayout()
         v_box.setSpacing(4)
 
@@ -292,7 +280,6 @@ class AppCard(QFrame):
         title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #FFFFFF;")
         h_title.addWidget(title_lbl)
 
-        # Source badge
         src = self.data.get("source", "pacman")
         badge = QLabel(src.upper())
         if src == "pacman":
@@ -306,13 +293,12 @@ class AppCard(QFrame):
         v_box.addLayout(h_title)
 
         desc_lbl = QLabel(self.data.get("desc", "Software package for Theonix OS"))
-        desc_lbl.setStyleSheet("color: #94A3B8; font-size: 12px;")
+        desc_lbl.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
         desc_lbl.setWordWrap(True)
         v_box.addWidget(desc_lbl)
 
         layout.addLayout(v_box, 1)
 
-        # Action Button
         btn = QPushButton("Install")
         btn.setProperty("class", "InstallBtn")
         btn.setFixedWidth(100)
@@ -342,7 +328,6 @@ class StoreWorker(QThread):
     def run(self):
         results = []
         if self.query:
-            # Search pacman
             try:
                 res = subprocess.run(["pacman", "-Ss", self.query], capture_output=True, text=True, timeout=10)
                 lines = res.stdout.strip().splitlines()
@@ -367,7 +352,6 @@ class StoreWorker(QThread):
             except Exception:
                 pass
 
-            # Search UACL
             if os.path.exists(UACL_DB):
                 try:
                     conn = sqlite3.connect(UACL_DB)
@@ -393,8 +377,8 @@ class TheonixStoreWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Theonix Store")
-        self.setMinimumSize(1000, 700)
-        self.resize(1080, 750)
+        self.setMinimumSize(1020, 700)
+        self.resize(1120, 760)
         self.worker = None
 
         central = QWidget()
@@ -408,7 +392,7 @@ class TheonixStoreWindow(QMainWindow):
         # Sidebar
         self.nav_list = QListWidget()
         self.nav_list.setObjectName("CategoryNav")
-        self.nav_list.setFixedWidth(230)
+        self.nav_list.setFixedWidth(240)
 
         categories = [
             "🌟  Featured Picks",
@@ -428,10 +412,10 @@ class TheonixStoreWindow(QMainWindow):
         # Right Content Area
         content_area = QWidget()
         content_layout = QVBoxLayout(content_area)
-        content_layout.setContentsMargins(28, 24, 28, 24)
+        content_layout.setContentsMargins(32, 24, 32, 24)
         content_layout.setSpacing(18)
 
-        # Top Bar (Search + App Manager button)
+        # Top Bar
         top_row = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setObjectName("SearchInput")
@@ -450,7 +434,6 @@ class TheonixStoreWindow(QMainWindow):
         top_row.addWidget(mgr_btn)
         content_layout.addLayout(top_row)
 
-        # Scrollable Cards Container
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll_content = QWidget()
@@ -472,7 +455,6 @@ class TheonixStoreWindow(QMainWindow):
         self._clear_cards()
 
         if idx == 0:
-            # Hero Banner
             hero = QFrame()
             hero.setProperty("class", "FeaturedHero")
             h_layout = QVBoxLayout(hero)
@@ -481,20 +463,20 @@ class TheonixStoreWindow(QMainWindow):
             h_title = QLabel("Explore Theonix Ecosystem")
             h_title.setStyleSheet("font-size: 22px; font-weight: 800; color: #FFFFFF;")
             h_desc = QLabel("Discover curated high-performance tools, AI assistants, and native software for Theonix OS.")
-            h_desc.setStyleSheet("font-size: 14px; color: #94A3B8;")
+            h_desc.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
             h_layout.addWidget(h_title)
             h_layout.addWidget(h_desc)
             self.cards_layout.addWidget(hero)
 
             hdr = QLabel("Top Community Recommendations")
-            hdr.setStyleSheet("font-size: 16px; font-weight: bold; color: #00FFAA; margin-top: 10px;")
+            hdr.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA; margin-top: 10px;")
             self.cards_layout.addWidget(hdr)
 
             for app_data in FEATURED_APPS:
                 card = AppCard(app_data, self)
                 self.cards_layout.addWidget(card)
 
-        elif idx == 6:  # Installed Apps
+        elif idx == 6:
             hdr = QLabel("Installed Applications")
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
@@ -502,12 +484,12 @@ class TheonixStoreWindow(QMainWindow):
             lbl.setStyleSheet("color: #94A3B8;")
             self.cards_layout.addWidget(lbl)
 
-        elif idx == 7:  # Updates
+        elif idx == 7:
             hdr = QLabel("Pending Software Updates")
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
             
-            up_btn = QPushButton("🚀  Launch System Updater")
+            up_btn = QPushButton("🚀 Launch System Updater")
             up_btn.setProperty("class", "InstallBtn")
             up_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-Syu"]))
             self.cards_layout.addWidget(up_btn)

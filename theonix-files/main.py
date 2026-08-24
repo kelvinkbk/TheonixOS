@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Theonix Files — High-Performance, Modern File Manager for Theonix OS
+Theonix Files — Ultra-Dark Glassmorphic File Manager for Theonix OS
 Features breadcrumb navigation, quick places, and automatic UACL compatibility.
 """
 
@@ -8,69 +8,69 @@ import os
 import shutil
 import subprocess
 import sys
-from datetime import datetime
-from PyQt6.QtCore import Qt, QDir, QSize, QModelIndex
-from PyQt6.QtGui import QFont, QIcon, QAction, QKeySequence, QFileSystemModel
+from PyQt6.QtCore import Qt, QDir, QModelIndex
+from PyQt6.QtGui import QFont, QFileSystemModel
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLineEdit, QPushButton, QTreeView, QListView, QListWidget, QListWidgetItem,
+    QLineEdit, QPushButton, QTreeView, QListWidget, QListWidgetItem,
     QLabel, QSplitter, QHeaderView, QMenu, QMessageBox, QInputDialog,
-    QFileDialog, QFrame
+    QFrame
 )
 
 THEME_QSS = """
 QMainWindow {
-    background-color: #0B0E14;
+    background-color: #07090E;
 }
 
 QWidget#CentralWidget {
-    background-color: #0B0E14;
-    color: #F0F4F8;
+    background-color: #07090E;
+    color: #F8FAFC;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Places Sidebar */
 QListWidget#PlacesSidebar {
-    background-color: #121620;
+    background-color: #0E121C;
     border: none;
-    border-right: 1px solid #1E2638;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     outline: none;
-    padding-top: 10px;
+    padding-top: 14px;
 }
 
 QListWidget#PlacesSidebar::item {
     color: #94A3B8;
-    height: 42px;
-    padding-left: 14px;
-    margin: 2px 6px;
-    border-radius: 6px;
+    height: 44px;
+    padding-left: 16px;
+    margin: 2px 8px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
 }
 
 QListWidget#PlacesSidebar::item:hover {
-    background-color: rgba(108, 99, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.05);
     color: #FFFFFF;
 }
 
 QListWidget#PlacesSidebar::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    font-weight: bold;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    color: #FFFFFF;
+    font-weight: 600;
 }
 
 /* Top Toolbar */
 QFrame#TopBar {
-    background-color: #121620;
-    border-bottom: 1px solid #1E2638;
-    padding: 8px 12px;
+    background-color: #0E121C;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 14px;
 }
 
 QLineEdit#PathBar {
-    background-color: #161D2B;
-    border: 1px solid #28354D;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 6px 14px;
+    padding: 7px 16px;
     color: #FFFFFF;
     font-size: 13px;
 }
@@ -80,48 +80,50 @@ QLineEdit#PathBar:focus {
 }
 
 QPushButton.NavBtn {
-    background-color: #1A2232;
-    color: #F0F4F8;
-    border: 1px solid #28354D;
-    border-radius: 6px;
-    font-size: 14px;
-    padding: 6px 10px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #F8FAFC;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    font-size: 13px;
+    padding: 6px 12px;
 }
 
 QPushButton.NavBtn:hover {
-    background-color: #26334D;
+    background-color: rgba(255, 255, 255, 0.12);
     color: #00FFAA;
 }
 
 /* File Tree/List View */
 QTreeView#FileView {
-    background-color: #0F131C;
+    background-color: #0B0E14;
     border: none;
-    color: #F0F4F8;
+    color: #F8FAFC;
     font-size: 13px;
     outline: none;
 }
 
 QTreeView#FileView::item {
-    height: 36px;
-    padding: 2px 8px;
+    height: 38px;
+    padding: 2px 10px;
+    border-radius: 4px;
 }
 
 QTreeView#FileView::item:hover {
-    background-color: #161D2B;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 QTreeView#FileView::item:selected {
-    background-color: #232E42;
-    color: #00FFAA;
+    background-color: rgba(108, 99, 255, 0.25);
+    border: 1px solid rgba(0, 255, 170, 0.3);
+    color: #FFFFFF;
 }
 
 QHeaderView::section {
-    background-color: #121620;
+    background-color: #0E121C;
     color: #94A3B8;
     border: none;
-    border-bottom: 1px solid #1E2638;
-    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
     font-weight: bold;
     font-size: 12px;
 }
@@ -184,7 +186,7 @@ class TheonixFilesWindow(QMainWindow):
         # Places sidebar
         self.places = QListWidget()
         self.places.setObjectName("PlacesSidebar")
-        self.places.setFixedWidth(200)
+        self.places.setFixedWidth(210)
 
         user_home = os.path.expanduser("~")
         places_items = [
@@ -195,7 +197,7 @@ class TheonixFilesWindow(QMainWindow):
             ("🖼️  Pictures", os.path.join(user_home, "Pictures")),
             ("🎵  Music", os.path.join(user_home, "Music")),
             ("🎬  Videos", os.path.join(user_home, "Videos")),
-            ("💽  Root (/)", "/"),
+            ("💽  Root FileSystem (/)", "/"),
         ]
 
         for label, pth in places_items:
@@ -221,14 +223,13 @@ class TheonixFilesWindow(QMainWindow):
         self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self._show_context_menu)
 
-        # Adjust header columns
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.tree.header().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         splitter.addWidget(self.tree)
-        splitter.setSizes([200, 800])
+        splitter.setSizes([210, 850])
         main_layout.addWidget(splitter, 1)
 
         self._navigate_to(user_home)
@@ -281,7 +282,6 @@ class TheonixFilesWindow(QMainWindow):
         if os.path.isdir(path):
             self._navigate_to(path)
         else:
-            # Check for Windows / UACL executables
             lower = path.lower()
             if lower.endswith((".exe", ".msi", ".deb", ".appimage")):
                 subprocess.Popen(["theonix-uacl", "launch", "--path", path])

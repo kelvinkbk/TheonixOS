@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Theonix Messages — AI Assistant & Communications Hub for Theonix OS
+Theonix Messages — Ultra-Dark Glassmorphic AI Assistant & Chat Hub
 Connects directly to local THAID daemon & Ollama models for private, rapid AI chat.
 """
 
@@ -8,77 +8,76 @@ import os
 import sqlite3
 import subprocess
 import sys
-import threading
 from datetime import datetime
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QLineEdit, QTextEdit, QListWidget, QListWidgetItem,
-    QFrame, QSplitter, QComboBox, QMessageBox, QScrollArea
+    QLabel, QPushButton, QTextEdit, QListWidget, QListWidgetItem,
+    QComboBox
 )
 
 DB_PATH = os.path.expanduser("~/.config/theonix/messages.db")
 
 THEME_QSS = """
 QMainWindow {
-    background-color: #0B0E14;
+    background-color: #07090E;
 }
 
 QWidget#CentralWidget {
-    background-color: #0B0E14;
-    color: #F0F4F8;
+    background-color: #07090E;
+    color: #F8FAFC;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Sidebar */
 QListWidget#ThreadList {
-    background-color: #121620;
+    background-color: #0E121C;
     border: none;
-    border-right: 1px solid #1E2638;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     outline: none;
-    padding-top: 12px;
+    padding-top: 14px;
 }
 
 QListWidget#ThreadList::item {
     color: #94A3B8;
-    height: 52px;
-    padding-left: 14px;
-    margin: 3px 8px;
-    border-radius: 8px;
-    font-size: 14px;
+    height: 50px;
+    padding-left: 16px;
+    margin: 3px 10px;
+    border-radius: 10px;
+    font-size: 13.5px;
     font-weight: 500;
 }
 
 QListWidget#ThreadList::item:hover {
-    background-color: rgba(108, 99, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.05);
     color: #FFFFFF;
 }
 
 QListWidget#ThreadList::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    font-weight: bold;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
+    border: 1px solid rgba(0, 255, 170, 0.4);
+    color: #FFFFFF;
+    font-weight: 600;
 }
 
 /* Chat Log */
 QTextEdit#ChatDisplay {
-    background-color: #0F131C;
-    border: 1px solid #1E2638;
-    border-radius: 10px;
-    padding: 16px;
-    color: #F0F4F8;
-    font-size: 14px;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 18px;
+    color: #F8FAFC;
+    font-size: 13.5px;
 }
 
 /* Input Area */
 QTextEdit#MessageInput {
-    background-color: #161D2B;
-    border: 1px solid #28354D;
-    border-radius: 10px;
-    padding: 10px 14px;
+    background-color: rgba(18, 24, 38, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 16px;
     color: #FFFFFF;
-    font-size: 14px;
+    font-size: 13.5px;
 }
 
 QTextEdit#MessageInput:focus {
@@ -86,31 +85,39 @@ QTextEdit#MessageInput:focus {
 }
 
 QPushButton#SendBtn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00FFAA, stop:1 #00D4FF);
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA);
     color: #0B0E14;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 12px 24px;
 }
 
 QPushButton#SendBtn:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #24FFBA, stop:1 #1CE0FF);
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7D75FF, stop:1 #24FFBA);
 }
 
 QPushButton.ActionBtn {
-    background-color: #21293A;
-    color: #F0F4F8;
-    border: 1px solid #2F3B52;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #F8FAFC;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 6px 14px;
+    font-size: 12.5px;
 }
 
 QPushButton.ActionBtn:hover {
-    background-color: #2D374E;
+    background-color: rgba(255, 255, 255, 0.12);
     color: #00FFAA;
+}
+
+QComboBox {
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #F8FAFC;
 }
 """
 
@@ -161,8 +168,8 @@ class TheonixMessagesWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Theonix Messages")
-        self.setMinimumSize(960, 680)
-        self.resize(1080, 740)
+        self.setMinimumSize(980, 700)
+        self.resize(1100, 760)
         self.current_thread = "thaid_system"
         self.worker = None
 
@@ -175,11 +182,11 @@ class TheonixMessagesWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Left Sidebar: Threads / AI Personas
+        # Left Sidebar
         left_panel = QWidget()
         left_panel.setFixedWidth(260)
         left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(12, 16, 12, 16)
+        left_layout.setContentsMargins(14, 18, 14, 18)
         left_layout.setSpacing(12)
 
         new_btn = QPushButton("➕  New Chat")
@@ -206,11 +213,11 @@ class TheonixMessagesWindow(QMainWindow):
 
         main_layout.addWidget(left_panel)
 
-        # Right Panel: Chat viewport and input
+        # Right Panel
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(24, 18, 24, 18)
-        right_layout.setSpacing(14)
+        right_layout.setContentsMargins(28, 20, 28, 20)
+        right_layout.setSpacing(16)
 
         # Top Bar
         top_bar = QHBoxLayout()
@@ -230,25 +237,23 @@ class TheonixMessagesWindow(QMainWindow):
         top_bar.addWidget(clear_btn)
         right_layout.addLayout(top_bar)
 
-        # Chat display
         self.chat_display = QTextEdit()
         self.chat_display.setObjectName("ChatDisplay")
         self.chat_display.setReadOnly(True)
         right_layout.addWidget(self.chat_display, 1)
 
-        # Bottom Input
         bottom_box = QHBoxLayout()
-        bottom_box.setSpacing(10)
+        bottom_box.setSpacing(12)
 
         self.msg_input = QTextEdit()
         self.msg_input.setObjectName("MessageInput")
-        self.msg_input.setFixedHeight(70)
-        self.msg_input.setPlaceholderText("Type a message or command (e.g. 'How do I configure btrfs snapshots?')...")
+        self.msg_input.setFixedHeight(75)
+        self.msg_input.setPlaceholderText("Type a message or request system actions (e.g. 'Show me how to snapshot Btrfs')...")
         bottom_box.addWidget(self.msg_input, 1)
 
         self.send_btn = QPushButton("Send")
         self.send_btn.setObjectName("SendBtn")
-        self.send_btn.setFixedHeight(70)
+        self.send_btn.setFixedHeight(75)
         self.send_btn.clicked.connect(self._send_message)
         bottom_box.addWidget(self.send_btn)
 
@@ -282,18 +287,18 @@ class TheonixMessagesWindow(QMainWindow):
 
         if not rows:
             self.chat_display.setHtml(
-                "<div style='color:#64748B;padding:20px;text-align:center;'>"
-                "<h3>Welcome to Theonix Messages</h3>"
-                "<p>Ask questions, generate system scripts, or chat with local AI privately.</p>"
+                "<div style='color:#64748B;padding:30px;text-align:center;font-family:sans-serif;'>"
+                "<h3 style='color:#FFFFFF;margin-bottom:8px;'>Theonix Messages &amp; AI Workspace</h3>"
+                "<p>Private local intelligence running directly on your device.</p>"
                 "</div>"
             )
         else:
             html = ""
             for sender, content, ts in rows:
                 if sender == "user":
-                    html += f"<div style='margin-bottom:12px;'><b style='color:#00FFAA;'>You:</b><br/><span style='color:#F0F4F8;'>{content}</span></div>"
+                    html += f"<div style='margin-bottom:14px;'><b style='color:#00FFAA;'>You:</b><br/><span style='color:#F8FAFC;'>{content}</span></div>"
                 else:
-                    html += f"<div style='margin-bottom:16px;background:#161D2B;padding:12px;border-radius:8px;'><b style='color:#6C63FF;'>THAID:</b><br/><span style='color:#E2E8F0;'>{content}</span></div>"
+                    html += f"<div style='margin-bottom:16px;background:rgba(20,26,40,0.85);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);'><b style='color:#6C63FF;'>THAID:</b><br/><span style='color:#E2E8F0;'>{content}</span></div>"
             self.chat_display.setHtml(html)
 
     def _send_message(self):
@@ -302,7 +307,6 @@ class TheonixMessagesWindow(QMainWindow):
             return
         self.msg_input.clear()
 
-        # Save user msg
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("INSERT INTO messages (thread_id, sender, content) VALUES (?, ?, ?)", (self.current_thread, "user", text))

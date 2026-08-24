@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Theonix Browser — Fast, AI-Augmented Web Browser for Theonix OS
+Theonix Browser — Fast, Ultra-Dark Glassmorphic Web Browser for Theonix OS
 Features multi-tab navigation, privacy shields, and integrated THAID AI Assistant.
 """
 
@@ -9,14 +9,13 @@ import sys
 import subprocess
 import threading
 from PyQt6.QtCore import Qt, QUrl, QSize, pyqtSignal, QThread
-from PyQt6.QtGui import QFont, QIcon, QAction, QKeySequence
+from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTabWidget, QLabel, QSplitter, QTextEdit,
-    QProgressBar, QToolBar, QMenu, QStatusBar, QMessageBox, QFrame
+    QProgressBar, QToolBar, QFrame
 )
 
-# Attempt to load QWebEngineView if available, else use a lightweight fallback browser viewer
 HAS_WEBENGINE = False
 try:
     from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -27,41 +26,42 @@ except ImportError:
 
 THEME_QSS = """
 QMainWindow {
-    background-color: #0B0E14;
+    background-color: #07090E;
 }
 
 QWidget#CentralWidget {
-    background-color: #0B0E14;
-    color: #F0F4F8;
+    background-color: #07090E;
+    color: #F8FAFC;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* ToolBar & Controls */
 QToolBar {
-    background-color: #121620;
-    border-bottom: 1px solid #1E2638;
-    padding: 6px;
+    background-color: #0E121C;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
     spacing: 8px;
 }
 
 QPushButton.NavBtn {
-    background-color: #1A2232;
-    color: #F0F4F8;
-    border: 1px solid #28354D;
-    border-radius: 6px;
-    font-size: 14px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #F8FAFC;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     padding: 6px 12px;
 }
 
 QPushButton.NavBtn:hover {
-    background-color: #26334D;
+    background-color: rgba(255, 255, 255, 0.12);
     color: #00FFAA;
 }
 
 QLineEdit#UrlBar {
-    background-color: #161D2B;
-    border: 1px solid #28354D;
-    border-radius: 8px;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9px;
     padding: 8px 16px;
     color: #FFFFFF;
     font-size: 13px;
@@ -70,19 +70,19 @@ QLineEdit#UrlBar {
 
 QLineEdit#UrlBar:focus {
     border: 1px solid #00FFAA;
-    background-color: #1A2234;
+    background-color: rgba(18, 24, 38, 0.95);
 }
 
 /* Tab Bar */
 QTabWidget::pane {
     border: none;
-    background-color: #0B0E14;
+    background-color: #07090E;
 }
 
 QTabBar::tab {
-    background-color: #121620;
+    background-color: #0E121C;
     color: #94A3B8;
-    border: 1px solid #1E2638;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-bottom: none;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -94,36 +94,36 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected {
-    background-color: #19202E;
+    background-color: rgba(26, 34, 52, 0.9);
     color: #FFFFFF;
-    border-color: #334155;
+    border-color: rgba(0, 255, 170, 0.4);
     border-top: 2px solid #00FFAA;
 }
 
 QTabBar::tab:hover:!selected {
-    background-color: #161C2A;
+    background-color: rgba(255, 255, 255, 0.05);
     color: #E2E8F0;
 }
 
 /* AI Sidebar */
 QFrame#AISidebar {
-    background-color: #121620;
-    border-left: 1px solid #1E2638;
+    background-color: #0E121C;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
     padding: 16px;
 }
 
 QTextEdit#AIChatLog {
-    background-color: #161D2B;
-    border: 1px solid #28354D;
-    border-radius: 8px;
-    color: #F0F4F8;
-    padding: 8px;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #F8FAFC;
+    padding: 10px;
     font-size: 13px;
 }
 
 QLineEdit#AIInput {
-    background-color: #161D2B;
-    border: 1px solid #28354D;
+    background-color: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     padding: 8px 12px;
     color: #FFFFFF;
@@ -222,7 +222,7 @@ class TheonixBrowserWindow(QMainWindow):
         self.new_tab_btn.clicked.connect(lambda: self.add_tab(HOME_URL, "New Tab"))
         self.toolbar.addWidget(self.new_tab_btn)
 
-        # Splitter: Tabs on Left, AI Assistant Sidebar on Right
+        # Splitter: Tabs + AI Sidebar
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         
         self.tabs = QTabWidget()
@@ -236,14 +236,13 @@ class TheonixBrowserWindow(QMainWindow):
         self.ai_sidebar.setObjectName("AISidebar")
         self.ai_sidebar.setFixedWidth(320)
         ai_layout = QVBoxLayout(self.ai_sidebar)
-        ai_layout.setContentsMargins(12, 12, 12, 12)
+        ai_layout.setContentsMargins(14, 14, 14, 14)
         ai_layout.setSpacing(10)
 
-        ai_header = QLabel("🤖  THAID Assistant")
-        ai_header.setStyleSheet("font-size: 16px; font-weight: bold; color: #00FFAA;")
+        ai_header = QLabel("🤖 THAID Assistant")
+        ai_header.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
         ai_layout.addWidget(ai_header)
 
-        # Quick AI Actions
         q_row = QHBoxLayout()
         sum_btn = QPushButton("Summarize")
         sum_btn.clicked.connect(self._ai_summarize)
@@ -278,7 +277,6 @@ class TheonixBrowserWindow(QMainWindow):
 
         main_layout.addWidget(self.splitter)
 
-        # Initial Tab
         self.add_tab(HOME_URL, "DuckDuckGo")
 
     def add_tab(self, url: str, title: str):
@@ -290,7 +288,7 @@ class TheonixBrowserWindow(QMainWindow):
         else:
             view = QTextBrowser()
             view.setOpenExternalLinks(True)
-            view.setHtml(f"<div style='color:white;padding:30px;font-family:sans-serif;'><h2>Theonix Browser</h2><p>Viewing: <a style='color:#00FFAA;' href='{url}'>{url}</a></p><p>Powered by Qt.</p></div>")
+            view.setHtml(f"<div style='color:white;padding:40px;font-family:sans-serif;text-align:center;'><h2>Theonix Browser</h2><p style='color:#94A3B8;'>Viewing: <a style='color:#00FFAA;' href='{url}'>{url}</a></p></div>")
 
         idx = self.tabs.addTab(view, title)
         self.tabs.setCurrentIndex(idx)
