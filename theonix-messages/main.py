@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Theonix Messages — Ultra-Dark Glassmorphic AI Assistant & Chat Hub
-Connects directly to local THAID daemon & Ollama models for private, rapid AI chat.
-Features quick prompt chips, Markdown chat rendering, conversation export, and model controls.
+Theonix Messages — Unified AI Assistant & Communication Workspace for Theonix OS.
+Powered by theonix_core platform services with drag-and-drop file sharing and Markdown syntax styling.
 """
 
 import os
@@ -11,134 +10,23 @@ import sqlite3
 import subprocess
 import sys
 from datetime import datetime
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QDragEnterEvent, QDropEvent
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTextEdit, QScrollArea, QFrame,
     QComboBox, QButtonGroup, QFileDialog, QMessageBox, QInputDialog
 )
 
+from theonix_core import (
+    THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
+    apply_theonix_style, AIService
+)
+
 DB_PATH = os.path.expanduser("~/.config/theonix/messages.db")
-
-THEME_QSS = """
-QMainWindow {
-    background-color: #07090E;
-}
-
-QWidget#CentralWidget {
-    background-color: #07090E;
-    color: #F8FAFC;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* Sidebar Container */
-QWidget#SidebarContainer {
-    background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Sidebar Navigation Buttons */
-QPushButton.NavBtn {
-    background-color: transparent;
-    color: #94A3B8;
-    border: none;
-    border-left: 3px solid transparent;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-align: left;
-    margin: 2px 10px;
-}
-
-QPushButton.NavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
-}
-
-QPushButton.NavBtn:checked {
-    background-color: rgba(108, 99, 255, 0.2);
-    border-left: 3px solid #00FFAA;
-    color: #FFFFFF;
-    font-weight: 700;
-}
-
-/* Chat Log */
-QTextEdit#ChatDisplay {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 18px;
-    color: #F8FAFC;
-    font-size: 13.5px;
-}
-
-/* Quick Action Chips */
-QPushButton.PromptChip {
-    background-color: rgba(255, 255, 255, 0.04);
-    color: #94A3B8;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 12px;
-}
-
-QPushButton.PromptChip:hover {
-    background-color: rgba(108, 99, 255, 0.25);
-    color: #FFFFFF;
-    border-color: #00FFAA;
-}
-
-/* Input Area */
-QTextEdit#MessageInput {
-    background-color: rgba(18, 24, 38, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: #FFFFFF;
-    font-size: 13.5px;
-}
-
-QTextEdit#MessageInput:focus {
-    border: 1px solid #00FFAA;
-}
-
-QPushButton#SendBtn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA);
-    color: #0B0E14;
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 12px 24px;
-}
-
-QPushButton#SendBtn:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7D75FF, stop:1 #24FFBA);
-}
-
-QPushButton.ActionBtn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #F8FAFC;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 12.5px;
-}
-
-QPushButton.ActionBtn:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    color: #00FFAA;
-}
-
-QComboBox {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: #F8FAFC;
-}
-"""
 
 
 def init_db():
@@ -160,22 +48,15 @@ def init_db():
 
 def format_markdown(text: str) -> str:
     """Format basic markdown code blocks and inline formatting to styled HTML."""
-    # Escape basic HTML
     formatted = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    # Code blocks: ```lang ... ```
     def _code_block_repl(m):
         code = m.group(1)
         return f"<pre style='background:#07090E;padding:12px;border-radius:8px;border:1px solid rgba(0,255,170,0.25);font-family:monospace;color:#00FFAA;margin:8px 0;'>{code}</pre>"
     formatted = re.sub(r"```(?:[a-zA-Z0-9_-]+)?\n(.*?)```", _code_block_repl, formatted, flags=re.DOTALL)
 
-    # Inline code: `...`
     formatted = re.sub(r"`([^`]+)`", r"<code style='background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#00FFAA;font-family:monospace;'>\1</code>", formatted)
-
-    # Bold: **...**
     formatted = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", formatted)
-
-    # Newlines to breaks
     formatted = formatted.replace("\n", "<br/>")
     return formatted
 
@@ -203,6 +84,31 @@ class StreamWorker(QThread):
         except Exception as e:
             self.chunk.emit(f"\n[Error: {e}]\n")
         self.done.emit()
+
+
+class MessageDropArea(QTextEdit):
+    """Text edit input with drag-and-drop file attachment support from Theonix Files."""
+    file_dropped = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dropEvent(self, event: QDropEvent):
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                file_path = url.toLocalFile()
+                if file_path:
+                    self.file_dropped.emit(file_path)
+            event.acceptProposedAction()
+        else:
+            super().dropEvent(event)
 
 
 class TheonixMessagesWindow(QMainWindow):
@@ -238,8 +144,7 @@ class TheonixMessagesWindow(QMainWindow):
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
-        brand_tag = QLabel("AI CHAT")
-        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag = Badge("MESSAGES", "cyan")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -250,8 +155,8 @@ class TheonixMessagesWindow(QMainWindow):
         btn_box = QHBoxLayout()
         btn_box.setContentsMargins(14, 0, 14, 10)
         new_btn = QPushButton("➕  New Chat")
-        new_btn.setObjectName("SendBtn")
-        new_btn.setFixedHeight(40)
+        new_btn.setProperty("class", "PrimaryBtn")
+        new_btn.setFixedHeight(38)
         new_btn.clicked.connect(self._new_chat)
         btn_box.addWidget(new_btn)
         sb_layout.addLayout(btn_box)
@@ -260,7 +165,7 @@ class TheonixMessagesWindow(QMainWindow):
         self.btn_group.setExclusive(True)
 
         self.threads = [
-            ("🤖  THAID System AI", "thaid_system"),
+            ("🤖  THAID Assistant", "thaid_system"),
             ("💻  Shell & Linux Helper", "shell_helper"),
             ("⚡  Code & Debugging", "code_helper"),
             ("📝  Notes & Drafting", "notes_draft"),
@@ -268,10 +173,7 @@ class TheonixMessagesWindow(QMainWindow):
 
         self.thread_btn_map = {}
         for idx, (name, tid) in enumerate(self.threads):
-            btn = QPushButton(name)
-            btn.setProperty("class", "NavBtn")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn = NavButton(name)
             self.btn_group.addButton(btn, idx)
             self.thread_btn_map[idx] = tid
             sb_layout.addWidget(btn)
@@ -287,7 +189,7 @@ class TheonixMessagesWindow(QMainWindow):
 
         # Top Bar
         top_bar = QHBoxLayout()
-        self.chat_title = QLabel("🤖  THAID System AI")
+        self.chat_title = QLabel("🤖  THAID Assistant")
         self.chat_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
         top_bar.addWidget(self.chat_title)
         top_bar.addStretch()
@@ -309,8 +211,8 @@ class TheonixMessagesWindow(QMainWindow):
         right_layout.addLayout(top_bar)
 
         self.chat_display = QTextEdit()
-        self.chat_display.setObjectName("ChatDisplay")
         self.chat_display.setReadOnly(True)
+        self.chat_display.setStyleSheet("background-color: rgba(14, 18, 28, 0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; color: #F8FAFC; font-size: 13.5px;")
         right_layout.addWidget(self.chat_display, 1)
 
         # Quick Action Prompt Chips
@@ -325,7 +227,7 @@ class TheonixMessagesWindow(QMainWindow):
         ]
         for c_label, c_prompt in prompt_chips:
             c_btn = QPushButton(c_label)
-            c_btn.setProperty("class", "PromptChip")
+            c_btn.setProperty("class", "ActionBtn")
             c_btn.clicked.connect(lambda _, p=c_prompt: self._insert_prompt(p))
             chips_row.addWidget(c_btn)
 
@@ -335,14 +237,15 @@ class TheonixMessagesWindow(QMainWindow):
         bottom_box = QHBoxLayout()
         bottom_box.setSpacing(12)
 
-        self.msg_input = QTextEdit()
-        self.msg_input.setObjectName("MessageInput")
+        self.msg_input = MessageDropArea()
         self.msg_input.setFixedHeight(75)
-        self.msg_input.setPlaceholderText("Type a message or request system actions (e.g. 'Show me how to snapshot Btrfs')...")
+        self.msg_input.setPlaceholderText("Type a message or drag a file from Theonix Files here...")
+        self.msg_input.setStyleSheet("background-color: rgba(18, 24, 38, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #FFFFFF; font-size: 13.5px;")
+        self.msg_input.file_dropped.connect(self._on_file_dropped)
         bottom_box.addWidget(self.msg_input, 1)
 
         self.send_btn = QPushButton("Send")
-        self.send_btn.setObjectName("SendBtn")
+        self.send_btn.setProperty("class", "PrimaryBtn")
         self.send_btn.setFixedHeight(75)
         self.send_btn.clicked.connect(self._send_message)
         bottom_box.addWidget(self.send_btn)
@@ -355,6 +258,9 @@ class TheonixMessagesWindow(QMainWindow):
         if first_btn:
             first_btn.setChecked(True)
         self._load_history()
+
+    def _on_file_dropped(self, file_path: str):
+        self.msg_input.append(f"[Attached file: {file_path}]\nPlease inspect and analyze this file.")
 
     def _insert_prompt(self, prompt_text: str):
         self.msg_input.setText(prompt_text)
@@ -371,10 +277,7 @@ class TheonixMessagesWindow(QMainWindow):
     def _new_chat(self):
         tid = f"chat_{datetime.now().strftime('%m%d_%H%M%S')}"
         idx = len(self.thread_btn_map)
-        btn = QPushButton(f"💬  Chat {datetime.now().strftime('%H:%M')}")
-        btn.setProperty("class", "NavBtn")
-        btn.setCheckable(True)
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn = NavButton(f"💬  Chat {datetime.now().strftime('%H:%M')}")
         self.btn_group.addButton(btn, idx)
         self.thread_btn_map[idx] = tid
         btn.setChecked(True)
@@ -470,8 +373,7 @@ class TheonixMessagesWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    app.setStyleSheet(THEME_QSS)
+    apply_theonix_style(app)
     win = TheonixMessagesWindow()
     win.show()
     sys.exit(app.exec())

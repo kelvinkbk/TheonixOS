@@ -1,0 +1,16 @@
+# Maintainer: The Theonix Team <https://github.com/kelvinkbk/TheonixOS>
+pkgname=theonix-core
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Theonix OS Shared Platform Foundation & Core Services"
+arch=('any')
+url="https://github.com/kelvinkbk/TheonixOS"
+license=('GPL-3.0-or-later')
+depends=('python' 'python-pyqt6')
+makedepends=('python-setuptools')
+source=()
+
+package() {
+    cd "${srcdir}/../../theonix-core"
+    python setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+}

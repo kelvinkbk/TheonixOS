@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Theonix OS — Modern Ultra-Dark Glassmorphic System Settings & Control Center
-Built for Theonix OS (KDE Plasma 6 / Wayland / Arch base)
-Features live CPU/RAM monitoring, Btrfs snapshot manager, THAID AI control, and audio/network tools.
+Theonix Settings — Unified System Control Center for Theonix OS.
+Powered by theonix_core platform services.
 """
 
 import os
@@ -12,8 +11,11 @@ import subprocess
 import sys
 import threading
 import time
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QColor
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QSlider, QProgressBar,
@@ -22,251 +24,11 @@ from PyQt6.QtWidgets import (
     QHeaderView
 )
 
-THEME_QSS = """
-QMainWindow {
-    background-color: #07090E;
-}
-
-QWidget#CentralWidget {
-    background-color: #07090E;
-    color: #F8FAFC;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* Sidebar Container */
-QWidget#SidebarContainer {
-    background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Sidebar Buttons */
-QPushButton.NavBtn {
-    background-color: transparent;
-    color: #94A3B8;
-    border: none;
-    border-left: 3px solid transparent;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-align: left;
-    margin: 2px 10px;
-}
-
-QPushButton.NavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
-}
-
-QPushButton.NavBtn:checked {
-    background-color: rgba(108, 99, 255, 0.2);
-    border-left: 3px solid #00FFAA;
-    color: #FFFFFF;
-    font-weight: 700;
-}
-
-/* Scroll Area */
-QScrollArea {
-    border: none;
-    background-color: transparent;
-}
-
-QScrollArea > QWidget > QWidget {
-    background-color: transparent;
-}
-
-QScrollBar:vertical {
-    border: none;
-    background: #0B0E17;
-    width: 6px;
-    border-radius: 3px;
-}
-
-QScrollBar::handle:vertical {
-    background: #232D42;
-    border-radius: 3px;
-    min-height: 25px;
-}
-
-QScrollBar::handle:vertical:hover {
-    background: #384766;
-}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-/* Glass Cards */
-QFrame.Card {
-    background-color: rgba(18, 24, 38, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
-    padding: 20px;
-}
-
-QFrame.Card:hover {
-    border: 1px solid rgba(0, 255, 170, 0.25);
-    background-color: rgba(24, 32, 50, 0.85);
-}
-
-/* Typography */
-QLabel {
-    color: #F8FAFC;
-}
-
-QLabel#PageTitle {
-    font-size: 26px;
-    font-weight: 800;
-    color: #FFFFFF;
-}
-
-QLabel#PageSubtitle {
-    font-size: 13.5px;
-    color: #94A3B8;
-    margin-bottom: 6px;
-}
-
-QLabel#CardHeader {
-    font-size: 15px;
-    font-weight: 700;
-    color: #00FFAA;
-}
-
-/* Buttons */
-QPushButton.ActionBtn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #F8FAFC;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-QPushButton.ActionBtn:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #FFFFFF;
-}
-
-QPushButton#PrimaryBtn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-QPushButton#PrimaryBtn:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7D75FF, stop:1 #1CE0FF);
-}
-
-/* Input Fields */
-QLineEdit, QComboBox {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 8px 14px;
-    color: #F8FAFC;
-    font-size: 13px;
-}
-
-QLineEdit:focus, QComboBox:focus {
-    border: 1px solid #00FFAA;
-    background-color: rgba(18, 24, 38, 0.95);
-}
-
-QComboBox::drop-down {
-    border: none;
-    padding-right: 10px;
-}
-
-QComboBox QAbstractItemView {
-    background-color: #121826;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    selection-background-color: #6C63FF;
-    selection-color: #FFFFFF;
-    color: #F8FAFC;
-    padding: 4px;
-}
-
-/* Sliders */
-QSlider::groove:horizontal {
-    height: 6px;
-    background: #1C2436;
-    border-radius: 3px;
-}
-
-QSlider::sub-page:horizontal {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA);
-    border-radius: 3px;
-}
-
-QSlider::handle:horizontal {
-    background: #FFFFFF;
-    border: 2px solid #00FFAA;
-    width: 18px;
-    margin-top: -6px;
-    margin-bottom: -6px;
-    border-radius: 9px;
-}
-
-/* Progress Bar */
-QProgressBar {
-    background-color: #141A28;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    text-align: center;
-    color: #FFFFFF;
-    font-weight: bold;
-    height: 18px;
-}
-
-QProgressBar::chunk {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA);
-    border-radius: 5px;
-}
-
-/* Checkboxes */
-QCheckBox {
-    color: #F8FAFC;
-    spacing: 8px;
-    font-size: 13.5px;
-}
-
-QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background-color: #0E121C;
-}
-
-QCheckBox::indicator:checked {
-    background-color: #00FFAA;
-    border-color: #00FFAA;
-}
-
-/* Table Widget */
-QTableWidget {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    color: #F8FAFC;
-    gridline-color: rgba(255, 255, 255, 0.05);
-}
-
-QTableWidget QHeaderView::section {
-    background-color: #0E121C;
-    color: #94A3B8;
-    padding: 8px;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    font-weight: bold;
-}
-"""
+from theonix_core import (
+    THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
+    TelemetryBar, SearchBar, apply_theonix_style,
+    ThemeService, SystemService
+)
 
 
 class SystemAboutPage(QWidget):
@@ -277,15 +39,14 @@ class SystemAboutPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("System & About")
-        title.setObjectName("PageTitle")
-        subtitle = QLabel("Live hardware monitor, kernel specs, and Theonix OS runtime status")
-        subtitle.setObjectName("PageSubtitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
+        subtitle = QLabel("Live hardware monitor, kernel specifications, and Theonix OS runtime status")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8; margin-bottom: 6px;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
         # Hero Card
-        hero_card = QFrame()
-        hero_card.setProperty("class", "Card")
+        hero_card = GlassCard()
         hero_layout = QHBoxLayout(hero_card)
         hero_layout.setContentsMargins(20, 20, 20, 20)
         hero_layout.setSpacing(20)
@@ -307,41 +68,26 @@ class SystemAboutPage(QWidget):
         hero_layout.addStretch()
         layout.addWidget(hero_card)
 
-        # Live Performance Card
-        perf_card = QFrame()
-        perf_card.setProperty("class", "Card")
+        # Live Performance Telemetry Card
+        perf_card = GlassCard()
         p_layout = QVBoxLayout(perf_card)
-        p_layout.setSpacing(12)
+        p_layout.setSpacing(14)
 
-        p_hdr = QLabel("📊 Live Performance Telemetry")
-        p_hdr.setObjectName("CardHeader")
+        p_hdr = QLabel("📊 Live Hardware Telemetry")
+        p_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         p_layout.addWidget(p_hdr)
 
-        perf_grid = QGridLayout()
-        perf_grid.setSpacing(10)
+        self.cpu_bar = TelemetryBar("CPU Utilization:")
+        self.ram_bar = TelemetryBar("RAM Usage:")
+        self.disk_bar = TelemetryBar("Disk Partition (/):")
 
-        # CPU Meter
-        self.cpu_lbl = QLabel("CPU Load: 0%")
-        self.cpu_lbl.setStyleSheet("color: #94A3B8; font-weight: 600;")
-        self.cpu_bar = QProgressBar()
-        self.cpu_bar.setValue(0)
-        perf_grid.addWidget(self.cpu_lbl, 0, 0)
-        perf_grid.addWidget(self.cpu_bar, 0, 1)
-
-        # RAM Meter
-        self.ram_lbl = QLabel("Memory: 0 / 0 GB")
-        self.ram_lbl.setStyleSheet("color: #94A3B8; font-weight: 600;")
-        self.ram_bar = QProgressBar()
-        self.ram_bar.setValue(0)
-        perf_grid.addWidget(self.ram_lbl, 1, 0)
-        perf_grid.addWidget(self.ram_bar, 1, 1)
-
-        p_layout.addLayout(perf_grid)
+        p_layout.addWidget(self.cpu_bar)
+        p_layout.addWidget(self.ram_bar)
+        p_layout.addWidget(self.disk_bar)
         layout.addWidget(perf_card)
 
         # Specs Card
-        specs_card = QFrame()
-        specs_card.setProperty("class", "Card")
+        specs_card = GlassCard()
         grid = QGridLayout(specs_card)
         grid.setSpacing(14)
 
@@ -357,8 +103,7 @@ class SystemAboutPage(QWidget):
         layout.addWidget(specs_card)
 
         # Actions Card
-        actions_card = QFrame()
-        actions_card.setProperty("class", "Card")
+        actions_card = GlassCard()
         actions_layout = QHBoxLayout(actions_card)
         
         info_txt = QLabel("Community support & repository:")
@@ -372,19 +117,18 @@ class SystemAboutPage(QWidget):
         actions_layout.addWidget(github_btn)
 
         web_btn = QPushButton("Website")
-        web_btn.setObjectName("PrimaryBtn")
+        web_btn.setProperty("class", "PrimaryBtn")
         web_btn.clicked.connect(lambda: subprocess.Popen(["xdg-open", "https://theonixos.xyz"]))
         actions_layout.addWidget(web_btn)
 
         layout.addWidget(actions_card)
         layout.addStretch()
 
-        # Telemetry timer
         self.prev_idle = 0
         self.prev_total = 0
-        self.perf_timer = QTimer(self)
-        self.perf_timer.timeout.connect(self._update_telemetry)
-        self.perf_timer.start(1500)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._update_telemetry)
+        self.timer.start(1500)
         self._update_telemetry()
 
     def _update_telemetry(self):
@@ -399,46 +143,22 @@ class SystemAboutPage(QWidget):
                 diff_total = total - self.prev_total
                 usage = 100.0 * (1.0 - diff_idle / max(1.0, diff_total))
                 usage_int = max(0, min(100, int(usage)))
-                self.cpu_bar.setValue(usage_int)
-                self.cpu_lbl.setText(f"CPU Load: {usage_int}%")
+                self.cpu_bar.set_value(usage_int)
             self.prev_idle = idle
             self.prev_total = total
         except Exception:
             pass
 
-        # RAM
-        try:
-            mem_total = 1
-            mem_avail = 0
-            with open("/proc/meminfo", "r") as f:
-                for line in f:
-                    if line.startswith("MemTotal:"):
-                        mem_total = int(line.split()[1])
-                    elif line.startswith("MemAvailable:"):
-                        mem_avail = int(line.split()[1])
-            used_kb = mem_total - mem_avail
-            pct = int((used_kb / mem_total) * 100)
-            self.ram_bar.setValue(pct)
-            self.ram_lbl.setText(f"Memory: {used_kb/(1024**2):.1f} / {mem_total/(1024**2):.1f} GB ({pct}%)")
-        except Exception:
-            pass
+        # Telemetry service
+        t = SystemService.get_hardware_telemetry()
+        self.ram_bar.set_value(t["ram_percent"], f"{t['ram_used_gb']:.1f} / {t['ram_total_gb']:.1f} GB ({t['ram_percent']}%)")
+        self.disk_bar.set_value(t["disk_percent"])
 
     def _get_specs(self) -> dict[str, str]:
         uname = platform.uname()
         hostname = uname.node
         kernel = uname.release
         arch = uname.machine
-
-        mem_str = "Unknown"
-        try:
-            with open("/proc/meminfo", "r") as f:
-                for line in f:
-                    if line.startswith("MemTotal:"):
-                        kb = int(line.split()[1])
-                        mem_str = f"{kb / (1024 * 1024):.1f} GB"
-                        break
-        except Exception:
-            pass
 
         cpu_str = uname.processor or "x86_64 Processor"
         try:
@@ -456,7 +176,6 @@ class SystemAboutPage(QWidget):
             "Host Name:": hostname,
             "OS Kernel:": f"Linux {kernel}",
             "Processor:": cpu_str,
-            "Memory (RAM):": mem_str,
             "Architecture:": arch,
             "Desktop Environment:": desktop_env,
             "Base Distribution:": "Arch Linux",
@@ -472,14 +191,13 @@ class AISettingsPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("AI & THAID Daemon")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Manage local neural models, Ollama inference, and THAID assistant integration")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        status_card = QFrame()
-        status_card.setProperty("class", "Card")
+        status_card = GlassCard()
         status_layout = QHBoxLayout(status_card)
         
         icon_lbl = QLabel("🧠")
@@ -503,13 +221,12 @@ class AISettingsPage(QWidget):
         layout.addWidget(status_card)
 
         # Model Manager Card
-        model_card = QFrame()
-        model_card.setProperty("class", "Card")
+        model_card = GlassCard()
         m_layout = QVBoxLayout(model_card)
         m_layout.setSpacing(12)
 
         m_header = QLabel("Installed Local Models")
-        m_header.setObjectName("CardHeader")
+        m_header.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         m_layout.addWidget(m_header)
 
         self.model_combo = QComboBox()
@@ -520,7 +237,7 @@ class AISettingsPage(QWidget):
         self.pull_input = QLineEdit()
         self.pull_input.setPlaceholderText("Enter model tag (e.g. llama3.2:1b, mistral, deepseek-r1:1.5b)")
         pull_btn = QPushButton("Pull Model")
-        pull_btn.setObjectName("PrimaryBtn")
+        pull_btn.setProperty("class", "PrimaryBtn")
         pull_btn.clicked.connect(self._pull_model)
         pull_row.addWidget(self.pull_input)
         pull_row.addWidget(pull_btn)
@@ -533,13 +250,12 @@ class AISettingsPage(QWidget):
         layout.addWidget(model_card)
 
         # Parameters Card
-        param_card = QFrame()
-        param_card.setProperty("class", "Card")
+        param_card = GlassCard()
         p_layout = QVBoxLayout(param_card)
         p_layout.setSpacing(12)
 
         p_header = QLabel("Inference Settings")
-        p_header.setObjectName("CardHeader")
+        p_header.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         p_layout.addWidget(p_header)
 
         temp_row = QHBoxLayout()
@@ -627,23 +343,22 @@ class AppearancePage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Appearance & Personalization")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Customize themes, color accents, wallpapers, and interface styles")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        theme_card = QFrame()
-        theme_card.setProperty("class", "Card")
+        theme_card = GlassCard()
         t_layout = QVBoxLayout(theme_card)
         t_layout.setSpacing(12)
 
         t_hdr = QLabel("Theme Preset")
-        t_hdr.setObjectName("CardHeader")
+        t_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         t_layout.addWidget(t_hdr)
 
         btn_row = QHBoxLayout()
-        for name in ["✨ Theonix Dark", "🌌 Deep Space", "⚡ Cyber Neon", "🌅 Solar Glow"]:
+        for name in ThemeService.THEMES:
             btn = QPushButton(name)
             btn.setProperty("class", "ActionBtn")
             btn.clicked.connect(lambda _, n=name: QMessageBox.information(self, "Theme", f"Theme set to: {n}"))
@@ -652,13 +367,12 @@ class AppearancePage(QWidget):
         layout.addWidget(theme_card)
 
         # Wallpaper Card
-        wall_card = QFrame()
-        wall_card.setProperty("class", "Card")
+        wall_card = GlassCard()
         w_layout = QVBoxLayout(wall_card)
         w_layout.setSpacing(12)
 
         w_hdr = QLabel("Desktop Wallpaper")
-        w_hdr.setObjectName("CardHeader")
+        w_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         w_layout.addWidget(w_hdr)
 
         w_row = QHBoxLayout()
@@ -669,7 +383,7 @@ class AppearancePage(QWidget):
         browse_btn.setProperty("class", "ActionBtn")
         browse_btn.clicked.connect(self._browse_wallpaper)
         apply_btn = QPushButton("Apply")
-        apply_btn.setObjectName("PrimaryBtn")
+        apply_btn.setProperty("class", "PrimaryBtn")
         apply_btn.clicked.connect(self._apply_wallpaper)
 
         w_row.addWidget(self.wall_path_input)
@@ -678,13 +392,12 @@ class AppearancePage(QWidget):
         w_layout.addLayout(w_row)
         layout.addWidget(wall_card)
 
-        effects_card = QFrame()
-        effects_card.setProperty("class", "Card")
+        effects_card = GlassCard()
         e_layout = QVBoxLayout(effects_card)
         e_layout.setSpacing(10)
 
         e_hdr = QLabel("Visual Effects")
-        e_hdr.setObjectName("CardHeader")
+        e_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         e_layout.addWidget(e_hdr)
 
         self.blur_check = QCheckBox("Enable Glassmorphism & Translucent Blur")
@@ -704,8 +417,7 @@ class AppearancePage(QWidget):
 
     def _apply_wallpaper(self):
         path = self.wall_path_input.text().strip()
-        if os.path.exists(path):
-            subprocess.Popen(["plasma-apply-wallpaperimage", path], stderr=subprocess.DEVNULL)
+        if ThemeService.apply_wallpaper(path):
             QMessageBox.information(self, "Wallpaper", f"Wallpaper applied: {path}")
         else:
             QMessageBox.warning(self, "Wallpaper", "File path does not exist.")
@@ -719,19 +431,18 @@ class DisplayPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Display & Scaling")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Resolution, refresh rate, scaling, and night light configuration")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        card = QFrame()
-        card.setProperty("class", "Card")
+        card = GlassCard()
         c_layout = QVBoxLayout(card)
         c_layout.setSpacing(12)
 
         hdr = QLabel("Display Configuration")
-        hdr.setObjectName("CardHeader")
+        hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         c_layout.addWidget(hdr)
 
         grid = QGridLayout()
@@ -754,20 +465,19 @@ class DisplayPage(QWidget):
         layout.addWidget(card)
 
         # Night Light Card
-        nl_card = QFrame()
-        nl_card.setProperty("class", "Card")
+        nl_card = GlassCard()
         nl_layout = QVBoxLayout(nl_card)
         nl_layout.setSpacing(12)
 
         nl_hdr = QLabel("Night Light (Blue Light Filter)")
-        nl_hdr.setObjectName("CardHeader")
+        nl_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         nl_layout.addWidget(nl_hdr)
 
         self.nl_check = QCheckBox("Automatically reduce blue light in the evening")
         nl_layout.addWidget(self.nl_check)
 
         apply_btn = QPushButton("Apply Display Settings")
-        apply_btn.setObjectName("PrimaryBtn")
+        apply_btn.setProperty("class", "PrimaryBtn")
         apply_btn.clicked.connect(lambda: QMessageBox.information(self, "Display", "Display configuration saved."))
         nl_layout.addWidget(apply_btn)
 
@@ -783,38 +493,34 @@ class NetworkPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Network & Wi-Fi")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Wi-Fi networks, active IP address, and connection diagnostic")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        # Active Network Overview Card
-        net_info_card = QFrame()
-        net_info_card.setProperty("class", "Card")
+        net_info_card = GlassCard()
         n_layout = QVBoxLayout(net_info_card)
         n_layout.setSpacing(10)
 
         n_hdr = QLabel("🌐 Active Network Interface")
-        n_hdr.setObjectName("CardHeader")
+        n_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         n_layout.addWidget(n_hdr)
 
         self.ip_lbl = QLabel("IP Address: Detecting...")
         self.ip_lbl.setStyleSheet("color: #FFFFFF; font-weight: bold;")
-        self.gw_lbl = QLabel("Gateway / DNS: Detecting...")
+        self.gw_lbl = QLabel("Gateway / Status: Detecting...")
         self.gw_lbl.setStyleSheet("color: #94A3B8;")
         n_layout.addWidget(self.ip_lbl)
         n_layout.addWidget(self.gw_lbl)
         layout.addWidget(net_info_card)
 
-        # Wi-Fi List Card
-        card = QFrame()
-        card.setProperty("class", "Card")
+        card = GlassCard()
         c_layout = QVBoxLayout(card)
         c_layout.setSpacing(12)
 
         hdr = QLabel("Nearby Wi-Fi Networks")
-        hdr.setObjectName("CardHeader")
+        hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         c_layout.addWidget(hdr)
 
         self.wifi_list = QFrame()
@@ -832,7 +538,7 @@ class NetworkPage(QWidget):
         scan_btn.clicked.connect(self._scan_wifi)
         
         connect_btn = QPushButton("Manage in Plasma")
-        connect_btn.setObjectName("PrimaryBtn")
+        connect_btn.setProperty("class", "PrimaryBtn")
         connect_btn.clicked.connect(lambda: subprocess.Popen(["plasmawindowed", "org.kde.plasma.networkmanagement"], stderr=subprocess.DEVNULL))
 
         btn_row.addWidget(scan_btn)
@@ -897,19 +603,18 @@ class AudioPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Sound & Audio")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("PipeWire low-latency audio control, volume levels, and output switcher")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        card = QFrame()
-        card.setProperty("class", "Card")
+        card = GlassCard()
         c_layout = QVBoxLayout(card)
         c_layout.setSpacing(14)
 
         hdr = QLabel("Output Volume (Speakers / Headphones)")
-        hdr.setObjectName("CardHeader")
+        hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         c_layout.addWidget(hdr)
 
         vol_row = QHBoxLayout()
@@ -958,53 +663,20 @@ class StoragePage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Storage & Btrfs Snapshots")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Disk partition capacity, filesystem health, and system restore points")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        card = QFrame()
-        card.setProperty("class", "Card")
-        c_layout = QVBoxLayout(card)
-        c_layout.setSpacing(12)
-
-        hdr = QLabel("Root Partition Usage (/dev/root)")
-        hdr.setObjectName("CardHeader")
-        c_layout.addWidget(hdr)
-
-        try:
-            usage = shutil.disk_usage("/")
-            total_gb = usage.total / (1024**3)
-            used_gb = usage.used / (1024**3)
-            free_gb = usage.free / (1024**3)
-            pct = int((usage.used / usage.total) * 100)
-            lbl_text = f"{used_gb:.1f} GB used of {total_gb:.1f} GB ({free_gb:.1f} GB free)"
-        except Exception:
-            pct = 45
-            lbl_text = "45.0 GB used of 120.0 GB (75.0 GB free)"
-
-        lbl = QLabel(lbl_text)
-        lbl.setStyleSheet("color: #94A3B8; font-weight: 500; font-size: 13px;")
-        c_layout.addWidget(lbl)
-
-        pbar = QProgressBar()
-        pbar.setValue(pct)
-        c_layout.addWidget(pbar)
-
-        layout.addWidget(card)
-
-        # Snapshot card
-        snap_card = QFrame()
-        snap_card.setProperty("class", "Card")
+        snap_card = GlassCard()
         s_layout = QVBoxLayout(snap_card)
         s_layout.setSpacing(12)
 
         s_hdr = QLabel("Btrfs Instant Restore Points")
-        s_hdr.setObjectName("CardHeader")
+        s_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
         s_layout.addWidget(s_hdr)
 
-        # Table of snapshots
         self.snap_table = QTableWidget()
         self.snap_table.setColumnCount(3)
         self.snap_table.setHorizontalHeaderLabels(["Snapshot Name", "Created", "Action"])
@@ -1016,7 +688,7 @@ class StoragePage(QWidget):
 
         btn_row = QHBoxLayout()
         create_snap_btn = QPushButton("📸 Create Instant Snapshot")
-        create_snap_btn.setObjectName("PrimaryBtn")
+        create_snap_btn.setProperty("class", "PrimaryBtn")
         create_snap_btn.clicked.connect(self._create_snapshot)
         
         timeshift_btn = QPushButton("Open Snapshot Manager")
@@ -1049,9 +721,55 @@ class StoragePage(QWidget):
             self.snap_table.setCellWidget(row, 2, restore_btn)
 
     def _create_snapshot(self):
-        snap_name = f"manual-snap-{int(time.time())}"
-        QMessageBox.information(self, "Snapshot Created", f"Successfully created Btrfs instant restore point: {snap_name}")
-        self._load_snapshots()
+        ok, name = SystemService.create_btrfs_snapshot("manual")
+        if ok:
+            QMessageBox.information(self, "Snapshot Created", f"Successfully created Btrfs instant restore point: {name}")
+            self._load_snapshots()
+
+
+class AdvancedPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(32, 28, 32, 28)
+        layout.setSpacing(18)
+
+        title = QLabel("Advanced & Developer Tools")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
+        subtitle = QLabel("Developer mode, permissions, terminal configuration, and recovery tools")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+
+        card = GlassCard()
+        c_layout = QVBoxLayout(card)
+        c_layout.setSpacing(12)
+
+        hdr = QLabel("🛠️ Developer Environment")
+        hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
+        c_layout.addWidget(hdr)
+
+        self.dev_check = QCheckBox("Enable Theonix Developer Mode & Debug Logs")
+        self.uacl_debug_check = QCheckBox("Enable UACL Execution Trace & Proton Diagnostics")
+        c_layout.addWidget(self.dev_check)
+        c_layout.addWidget(self.uacl_debug_check)
+
+        btn_row = QHBoxLayout()
+        term_btn = QPushButton("Open Terminal")
+        term_btn.setProperty("class", "ActionBtn")
+        term_btn.clicked.connect(lambda: subprocess.Popen(["konsole"]))
+
+        rec_btn = QPushButton("Recovery Tools")
+        rec_btn.setProperty("class", "ActionBtn")
+        rec_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "theonix-recovery"]))
+
+        btn_row.addWidget(term_btn)
+        btn_row.addWidget(rec_btn)
+        btn_row.addStretch()
+        c_layout.addLayout(btn_row)
+
+        layout.addWidget(card)
+        layout.addStretch()
 
 
 class UpdatesPage(QWidget):
@@ -1062,14 +780,13 @@ class UpdatesPage(QWidget):
         layout.setSpacing(18)
 
         title = QLabel("Software & System Updates")
-        title.setObjectName("PageTitle")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
         subtitle = QLabel("Keep Theonix OS, system packages, and Flatpaks up to date")
-        subtitle.setObjectName("PageSubtitle")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        card = QFrame()
-        card.setProperty("class", "Card")
+        card = GlassCard()
         c_layout = QVBoxLayout(card)
         c_layout.setSpacing(14)
 
@@ -1087,7 +804,7 @@ class UpdatesPage(QWidget):
         self.check_btn.clicked.connect(self._check_updates)
 
         self.install_btn = QPushButton("Update Entire System")
-        self.install_btn.setObjectName("PrimaryBtn")
+        self.install_btn.setProperty("class", "PrimaryBtn")
         self.install_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-Syu"]))
 
         btn_row.addWidget(self.check_btn)
@@ -1126,8 +843,8 @@ class TheonixSettingsWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Theonix Settings")
-        self.setMinimumSize(980, 680)
-        self.resize(1060, 720)
+        self.setMinimumSize(1000, 700)
+        self.resize(1080, 740)
 
         central = QWidget()
         central.setObjectName("CentralWidget")
@@ -1140,20 +857,19 @@ class TheonixSettingsWindow(QMainWindow):
         # Sidebar Container
         sidebar_box = QWidget()
         sidebar_box.setObjectName("SidebarContainer")
-        sidebar_box.setFixedWidth(250)
+        sidebar_box.setFixedWidth(260)
         sb_layout = QVBoxLayout(sidebar_box)
         sb_layout.setContentsMargins(0, 18, 0, 18)
         sb_layout.setSpacing(4)
 
         # Brand header
         brand_row = QHBoxLayout()
-        brand_row.setContentsMargins(20, 0, 20, 14)
+        brand_row.setContentsMargins(20, 0, 20, 10)
         brand_icon = QLabel("⚡")
         brand_icon.setStyleSheet("font-size: 18px; color: #00FFAA;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
-        brand_tag = QLabel("SETTINGS")
-        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag = Badge("SETTINGS", "cyan")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -1161,26 +877,32 @@ class TheonixSettingsWindow(QMainWindow):
         brand_row.addStretch()
         sb_layout.addLayout(brand_row)
 
-        nav_items = [
-            ("💻  System & About", SystemAboutPage),
-            ("🧠  AI & THAID", AISettingsPage),
-            ("🎨  Appearance", AppearancePage),
-            ("🖥️  Display & Scaling", DisplayPage),
-            ("🌐  Network & Wi-Fi", NetworkPage),
-            ("🔊  Sound & Audio", AudioPage),
-            ("💾  Storage & Snapshots", StoragePage),
-            ("🔄  System Updates", UpdatesPage),
+        # Global Settings Search Bar
+        search_box_layout = QHBoxLayout()
+        search_box_layout.setContentsMargins(14, 0, 14, 8)
+        self.search_bar = SearchBar("Search settings...")
+        self.search_bar.textChanged.connect(self._on_search_query)
+        search_box_layout.addWidget(self.search_bar)
+        sb_layout.addLayout(search_box_layout)
+
+        self.nav_items = [
+            ("💻  System & About", SystemAboutPage, ["hardware", "kernel", "specs", "cpu", "ram", "about"]),
+            ("🧠  AI & THAID", AISettingsPage, ["ai", "ollama", "models", "thaid", "gpu", "inference"]),
+            ("🎨  Appearance", AppearancePage, ["theme", "wallpaper", "colors", "dark", "blur", "effects"]),
+            ("🖥️  Display & Scaling", DisplayPage, ["resolution", "refresh", "scaling", "monitor", "night light"]),
+            ("🌐  Network & Wi-Fi", NetworkPage, ["wifi", "network", "ethernet", "ip", "dns", "internet"]),
+            ("🔊  Sound & Audio", AudioPage, ["sound", "audio", "volume", "speakers", "pipewire", "mute"]),
+            ("💾  Storage & Snapshots", StoragePage, ["storage", "disk", "btrfs", "snapshots", "backup", "restore"]),
+            ("🛠️  Advanced & Developer", AdvancedPage, ["developer", "terminal", "logs", "recovery", "debug"]),
+            ("🔄  System Updates", UpdatesPage, ["update", "pacman", "packages", "upgrade", "mirrors"]),
         ]
 
         self.stack = QStackedWidget()
         self.btn_group = QButtonGroup(self)
         self.btn_group.setExclusive(True)
 
-        for idx, (label, page_cls) in enumerate(nav_items):
-            btn = QPushButton(label)
-            btn.setProperty("class", "NavBtn")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        for idx, (label, page_cls, _) in enumerate(self.nav_items):
+            btn = NavButton(label)
             self.btn_group.addButton(btn, idx)
             sb_layout.addWidget(btn)
 
@@ -1201,11 +923,34 @@ class TheonixSettingsWindow(QMainWindow):
         main_layout.addWidget(sidebar_box)
         main_layout.addWidget(self.stack)
 
+    def _on_search_query(self, query: str):
+        q = query.strip().lower()
+        if not q:
+            for idx in range(len(self.nav_items)):
+                btn = self.btn_group.button(idx)
+                if btn:
+                    btn.setVisible(True)
+            return
+
+        first_match = None
+        for idx, (label, _, keywords) in enumerate(self.nav_items):
+            btn = self.btn_group.button(idx)
+            matched = (q in label.lower()) or any(q in kw for kw in keywords)
+            if btn:
+                btn.setVisible(matched)
+            if matched and first_match is None:
+                first_match = idx
+
+        if first_match is not None:
+            btn = self.btn_group.button(first_match)
+            if btn:
+                btn.setChecked(True)
+            self.stack.setCurrentIndex(first_match)
+
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    app.setStyleSheet(THEME_QSS)
+    apply_theonix_style(app)
     win = TheonixSettingsWindow()
     win.show()
     sys.exit(app.exec())

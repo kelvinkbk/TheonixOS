@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Theonix Files — Ultra-Dark Glassmorphic File Manager for Theonix OS
-Features breadcrumb path navigation, live file search, dotfiles toggle, and automatic UACL compatibility.
+Theonix Files — Ultra-Dark Glassmorphic File Manager for Theonix OS.
+Powered by theonix_core platform services with Spacebar Quick Look and advanced query filters.
 """
 
 import os
@@ -9,6 +9,9 @@ import shutil
 import subprocess
 import sys
 import time
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+
 from PyQt6.QtCore import Qt, QDir, QModelIndex, QSortFilterProxyModel
 from PyQt6.QtGui import QFont, QFileSystemModel, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
@@ -17,124 +20,11 @@ from PyQt6.QtWidgets import (
     QMenu, QMessageBox, QInputDialog, QFrame, QButtonGroup
 )
 
-THEME_QSS = """
-QMainWindow {
-    background-color: #07090E;
-}
-
-QWidget#CentralWidget {
-    background-color: #07090E;
-    color: #F8FAFC;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* Places Sidebar Container */
-QWidget#SidebarContainer {
-    background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Places Buttons */
-QPushButton.NavBtn {
-    background-color: transparent;
-    color: #94A3B8;
-    border: none;
-    border-left: 3px solid transparent;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    text-align: left;
-    margin: 2px 10px;
-}
-
-QPushButton.NavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
-}
-
-QPushButton.NavBtn:checked {
-    background-color: rgba(108, 99, 255, 0.2);
-    border-left: 3px solid #00FFAA;
-    color: #FFFFFF;
-    font-weight: 700;
-}
-
-/* Top Toolbar */
-QFrame#TopBar {
-    background-color: #0E121C;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 8px 14px;
-}
-
-QLineEdit#PathBar, QLineEdit#SearchBox {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 7px 14px;
-    color: #FFFFFF;
-    font-size: 13px;
-}
-
-QLineEdit#PathBar:focus, QLineEdit#SearchBox:focus {
-    border: 1px solid #00FFAA;
-}
-
-QPushButton.TopNavBtn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #F8FAFC;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 7px;
-    font-size: 13px;
-    padding: 6px 12px;
-}
-
-QPushButton.TopNavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    color: #00FFAA;
-}
-
-/* File Tree/List View */
-QTreeView#FileView {
-    background-color: #07090E;
-    border: none;
-    color: #F8FAFC;
-    font-size: 13px;
-    outline: none;
-}
-
-QTreeView#FileView::item {
-    height: 38px;
-    padding: 2px 10px;
-}
-
-QTreeView#FileView::item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-QTreeView#FileView::item:selected {
-    background-color: rgba(108, 99, 255, 0.25);
-    border: 1px solid rgba(0, 255, 170, 0.3);
-    color: #FFFFFF;
-}
-
-QHeaderView::section {
-    background-color: #0E121C;
-    color: #94A3B8;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 8px 12px;
-    font-weight: bold;
-    font-size: 12px;
-}
-
-/* Inspector Drawer */
-QFrame#Inspector {
-    background-color: #0B0E17;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 16px;
-}
-"""
+from theonix_core import (
+    THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
+    SearchBar, QuickLookDialog, apply_theonix_style,
+    SearchService, UACLService
+)
 
 
 class TheonixFilesWindow(QMainWindow):
@@ -142,7 +32,7 @@ class TheonixFilesWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Theonix Files")
         self.setMinimumSize(980, 640)
-        self.resize(1120, 740)
+        self.resize(1140, 740)
         self.history = []
         self.history_idx = -1
         self.show_hidden = False
@@ -156,45 +46,44 @@ class TheonixFilesWindow(QMainWindow):
 
         # Top Bar
         top_bar = QFrame()
-        top_bar.setObjectName("TopBar")
+        top_bar.setStyleSheet("background-color: #0E121C; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 14px;")
         t_layout = QHBoxLayout(top_bar)
         t_layout.setContentsMargins(0, 0, 0, 0)
         t_layout.setSpacing(8)
 
         self.back_btn = QPushButton("◀")
-        self.back_btn.setProperty("class", "TopNavBtn")
+        self.back_btn.setProperty("class", "ActionBtn")
         self.back_btn.clicked.connect(self._nav_back)
         t_layout.addWidget(self.back_btn)
 
         self.fwd_btn = QPushButton("▶")
-        self.fwd_btn.setProperty("class", "TopNavBtn")
+        self.fwd_btn.setProperty("class", "ActionBtn")
         self.fwd_btn.clicked.connect(self._nav_forward)
         t_layout.addWidget(self.fwd_btn)
 
         self.up_btn = QPushButton("⬆")
-        self.up_btn.setProperty("class", "TopNavBtn")
+        self.up_btn.setProperty("class", "ActionBtn")
         self.up_btn.clicked.connect(self._nav_up)
         t_layout.addWidget(self.up_btn)
 
         self.path_bar = QLineEdit()
-        self.path_bar.setObjectName("PathBar")
+        self.path_bar.setPlaceholderText("Enter path...")
         self.path_bar.returnPressed.connect(self._on_path_entered)
         t_layout.addWidget(self.path_bar, 1)
 
         self.search_box = QLineEdit()
-        self.search_box.setObjectName("SearchBox")
-        self.search_box.setPlaceholderText("Filter files (Ctrl+F)...")
-        self.search_box.setFixedWidth(160)
+        self.search_box.setPlaceholderText("Search or filter (e.g. ext:png)...")
+        self.search_box.setFixedWidth(210)
         self.search_box.textChanged.connect(self._on_filter_text_changed)
         t_layout.addWidget(self.search_box)
 
         self.hidden_btn = QPushButton("👁️ Dotfiles")
-        self.hidden_btn.setProperty("class", "TopNavBtn")
+        self.hidden_btn.setProperty("class", "ActionBtn")
         self.hidden_btn.clicked.connect(self._toggle_hidden)
         t_layout.addWidget(self.hidden_btn)
 
         term_btn = QPushButton("Terminal")
-        term_btn.setProperty("class", "TopNavBtn")
+        term_btn.setProperty("class", "ActionBtn")
         term_btn.clicked.connect(self._open_terminal)
         t_layout.addWidget(term_btn)
 
@@ -217,8 +106,7 @@ class TheonixFilesWindow(QMainWindow):
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
-        brand_tag = QLabel("FILES")
-        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(0,212,255,0.15); color: #00D4FF; padding: 2px 6px; border-radius: 4px;")
+        brand_tag = Badge("FILES", "blue")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -242,10 +130,7 @@ class TheonixFilesWindow(QMainWindow):
         self.btn_group.setExclusive(True)
 
         for idx, (label, pth) in enumerate(self.places_items):
-            btn = QPushButton(label)
-            btn.setProperty("class", "NavBtn")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn = NavButton(label)
             self.btn_group.addButton(btn, idx)
             sb_layout.addWidget(btn)
 
@@ -282,7 +167,7 @@ class TheonixFilesWindow(QMainWindow):
 
         # Inspector Panel
         self.inspector = QFrame()
-        self.inspector.setObjectName("Inspector")
+        self.inspector.setStyleSheet("background-color: #0B0E17; border-left: 1px solid rgba(255,255,255,0.08); padding: 16px;")
         self.inspector.setFixedWidth(240)
         ins_layout = QVBoxLayout(self.inspector)
         ins_layout.setContentsMargins(14, 16, 14, 16)
@@ -297,25 +182,30 @@ class TheonixFilesWindow(QMainWindow):
         self.ins_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ins_layout.addWidget(self.ins_icon)
 
-        self.ins_name = QLabel("Select a file or directory")
+        self.ins_name = QLabel("Select an item")
         self.ins_name.setStyleSheet("font-size: 13px; font-weight: bold; color: #FFFFFF;")
         self.ins_name.setWordWrap(True)
         ins_layout.addWidget(self.ins_name)
 
-        self.ins_detail = QLabel("No item selected.")
+        self.ins_detail = QLabel("Press Space for Quick Look preview.")
         self.ins_detail.setStyleSheet("color: #94A3B8; font-size: 12px;")
         self.ins_detail.setWordWrap(True)
         ins_layout.addWidget(self.ins_detail)
 
+        self.ins_quick_look_btn = QPushButton("👁️ Quick Look (Space)")
+        self.ins_quick_look_btn.setProperty("class", "ActionBtn")
+        self.ins_quick_look_btn.clicked.connect(self._open_quick_look)
+        ins_layout.addWidget(self.ins_quick_look_btn)
+
         self.ins_uacl_btn = QPushButton("🚀 Run with UACL")
-        self.ins_uacl_btn.setProperty("class", "TopNavBtn")
+        self.ins_uacl_btn.setProperty("class", "PrimaryBtn")
         self.ins_uacl_btn.setVisible(False)
         ins_layout.addWidget(self.ins_uacl_btn)
 
         ins_layout.addStretch()
         self.splitter.addWidget(self.inspector)
 
-        self.splitter.setSizes([230, 680, 210])
+        self.splitter.setSizes([230, 680, 230])
         main_layout.addWidget(self.splitter, 1)
 
         self.btn_group.idClicked.connect(self._on_place_selected)
@@ -327,7 +217,9 @@ class TheonixFilesWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+F"), self, lambda: self.search_box.setFocus())
         QShortcut(QKeySequence("Ctrl+H"), self, self._toggle_hidden)
         QShortcut(QKeySequence("F4"), self, self._open_terminal)
+        QShortcut(QKeySequence(Qt.Key.Key_Space), self.tree, self._open_quick_look)
 
+        self.current_selected_path = user_home
         self._navigate_to(user_home)
 
     def _update_filter_flags(self):
@@ -342,7 +234,9 @@ class TheonixFilesWindow(QMainWindow):
         self.hidden_btn.setStyleSheet("color: #00FFAA;" if self.show_hidden else "color: #94A3B8;")
 
     def _on_filter_text_changed(self, text):
-        self.proxy_model.setFilterFixedString(text)
+        query_data = SearchService.parse_file_query(text)
+        filter_str = query_data["text"] or (f".{query_data['ext']}" if query_data["ext"] else text)
+        self.proxy_model.setFilterFixedString(filter_str)
 
     def _navigate_to(self, path: str, record_history: bool = True):
         if not os.path.exists(path):
@@ -390,6 +284,7 @@ class TheonixFilesWindow(QMainWindow):
     def _on_item_selected(self, index: QModelIndex):
         src_idx = self.proxy_model.mapToSource(index)
         path = self.base_model.filePath(src_idx)
+        self.current_selected_path = path
         name = os.path.basename(path) or "/"
         self.ins_name.setText(name)
 
@@ -407,7 +302,7 @@ class TheonixFilesWindow(QMainWindow):
                 self.ins_icon.setText("⚙️")
                 self.ins_uacl_btn.setVisible(True)
                 self.ins_uacl_btn.clicked.disconnect() if self.ins_uacl_btn.receivers(self.ins_uacl_btn.clicked) > 0 else None
-                self.ins_uacl_btn.clicked.connect(lambda: subprocess.Popen(["theonix-uacl", "launch", "--path", path]))
+                self.ins_uacl_btn.clicked.connect(lambda: UACLService.launch(path))
             else:
                 self.ins_icon.setText("📄")
                 self.ins_uacl_btn.setVisible(False)
@@ -420,6 +315,11 @@ class TheonixFilesWindow(QMainWindow):
             except Exception:
                 self.ins_detail.setText(f"Path: {path}")
 
+    def _open_quick_look(self):
+        if self.current_selected_path and os.path.exists(self.current_selected_path):
+            dlg = QuickLookDialog(self.current_selected_path, self)
+            dlg.exec()
+
     def _on_item_double_clicked(self, index: QModelIndex):
         src_idx = self.proxy_model.mapToSource(index)
         path = self.base_model.filePath(src_idx)
@@ -428,7 +328,7 @@ class TheonixFilesWindow(QMainWindow):
         else:
             lower = path.lower()
             if lower.endswith((".exe", ".msi", ".deb", ".appimage")):
-                subprocess.Popen(["theonix-uacl", "launch", "--path", path])
+                UACLService.launch(path)
             else:
                 subprocess.Popen(["xdg-open", path])
 
@@ -439,12 +339,16 @@ class TheonixFilesWindow(QMainWindow):
         if index.isValid():
             src_idx = self.proxy_model.mapToSource(index)
             path = self.base_model.filePath(src_idx)
+            
+            ql_act = menu.addAction("👁️ Quick Look (Space)")
+            ql_act.triggered.connect(self._open_quick_look)
+
             open_act = menu.addAction("Open")
             open_act.triggered.connect(lambda: self._on_item_double_clicked(index))
 
             if path.lower().endswith((".exe", ".deb", ".appimage")):
                 uacl_act = menu.addAction("🚀 Launch with Theonix UACL")
-                uacl_act.triggered.connect(lambda: subprocess.Popen(["theonix-uacl", "launch", "--path", path]))
+                uacl_act.triggered.connect(lambda: UACLService.launch(path))
 
             menu.addSeparator()
             del_act = menu.addAction("Delete")
@@ -478,8 +382,7 @@ class TheonixFilesWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    app.setStyleSheet(THEME_QSS)
+    apply_theonix_style(app)
     win = TheonixFilesWindow()
     win.show()
     sys.exit(app.exec())

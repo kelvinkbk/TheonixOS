@@ -1,19 +1,27 @@
 #!/usr/bin/env python3
 """
-Theonix Browser — Fast, Ultra-Dark Glassmorphic Web Browser for Theonix OS
-Features multi-tab navigation, bookmarks bar, keyboard shortcuts, and THAID AI Assistant.
+Theonix Browser — Fast, Ultra-Dark Glassmorphic Web Browser for Theonix OS.
+Powered by theonix_core platform services with integrated THAID AI assistant.
 """
 
 import os
-import sys
 import subprocess
+import sys
 import threading
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+
 from PyQt6.QtCore import Qt, QUrl, QSize, pyqtSignal, QThread
 from PyQt6.QtGui import QFont, QColor, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTabWidget, QLabel, QSplitter, QTextEdit,
-    QProgressBar, QToolBar, QFrame
+    QProgressBar, QToolBar, QFrame, QGridLayout
+)
+
+from theonix_core import (
+    THEONIX_THEME_QSS, GlassCard, Badge, SearchBar,
+    apply_theonix_style, AIService
 )
 
 HAS_WEBENGINE = False
@@ -23,155 +31,6 @@ try:
     HAS_WEBENGINE = True
 except ImportError:
     from PyQt6.QtWidgets import QTextBrowser
-
-THEME_QSS = """
-QMainWindow {
-    background-color: #07090E;
-}
-
-QWidget#CentralWidget {
-    background-color: #07090E;
-    color: #F8FAFC;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* ToolBar & Controls */
-QToolBar {
-    background-color: #0E121C;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 8px 12px;
-    spacing: 8px;
-}
-
-QPushButton.NavBtn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #F8FAFC;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 6px 12px;
-}
-
-QPushButton.NavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    color: #00FFAA;
-}
-
-/* Bookmark Chips */
-QPushButton.BmkBtn {
-    background-color: rgba(255, 255, 255, 0.04);
-    color: #94A3B8;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 6px;
-    font-size: 12px;
-    padding: 4px 10px;
-}
-
-QPushButton.BmkBtn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #00FFAA;
-}
-
-QLineEdit#UrlBar {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 9px;
-    padding: 8px 16px;
-    color: #FFFFFF;
-    font-size: 13px;
-    selection-background-color: #6C63FF;
-}
-
-QLineEdit#UrlBar:focus {
-    border: 1px solid #00FFAA;
-    background-color: rgba(18, 24, 38, 0.95);
-}
-
-/* Tab Bar */
-QTabWidget::pane {
-    border: none;
-    background-color: #07090E;
-}
-
-QTabBar::tab {
-    background-color: #0E121C;
-    color: #94A3B8;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: none;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    padding: 8px 16px;
-    margin-right: 2px;
-    font-size: 13px;
-    min-width: 140px;
-    max-width: 220px;
-}
-
-QTabBar::tab:selected {
-    background-color: rgba(26, 34, 52, 0.9);
-    color: #FFFFFF;
-    border-color: rgba(0, 255, 170, 0.4);
-    border-top: 2px solid #00FFAA;
-}
-
-QTabBar::tab:hover:!selected {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #E2E8F0;
-}
-
-/* AI Sidebar */
-QFrame#AISidebar {
-    background-color: #0E121C;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 16px;
-}
-
-QTextEdit#AIChatLog {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    color: #F8FAFC;
-    padding: 10px;
-    font-size: 13px;
-}
-
-QLineEdit#AIInput {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: #FFFFFF;
-}
-
-QLineEdit#AIInput:focus {
-    border: 1px solid #6C63FF;
-}
-
-QPushButton#AISendBtn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    padding: 8px 14px;
-}
-
-QPushButton.AIPill {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #94A3B8;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    font-size: 11px;
-    padding: 4px 8px;
-}
-
-QPushButton.AIPill:hover {
-    background-color: rgba(108, 99, 255, 0.25);
-    color: #FFFFFF;
-    border-color: #00FFAA;
-}
-"""
 
 HOME_URL = "https://duckduckgo.com"
 
@@ -213,42 +72,40 @@ class TheonixBrowserWindow(QMainWindow):
         # Toolbar
         self.toolbar = QToolBar("Navigation")
         self.toolbar.setMovable(False)
+        self.toolbar.setStyleSheet("background-color: #0E121C; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; spacing: 8px;")
         main_layout.addWidget(self.toolbar)
 
         self.back_btn = QPushButton("◀")
-        self.back_btn.setProperty("class", "NavBtn")
+        self.back_btn.setProperty("class", "ActionBtn")
         self.back_btn.clicked.connect(self._nav_back)
         self.toolbar.addWidget(self.back_btn)
 
         self.forward_btn = QPushButton("▶")
-        self.forward_btn.setProperty("class", "NavBtn")
+        self.forward_btn.setProperty("class", "ActionBtn")
         self.forward_btn.clicked.connect(self._nav_forward)
         self.toolbar.addWidget(self.forward_btn)
 
         self.reload_btn = QPushButton("🔄")
-        self.reload_btn.setProperty("class", "NavBtn")
+        self.reload_btn.setProperty("class", "ActionBtn")
         self.reload_btn.clicked.connect(self._nav_reload)
         self.toolbar.addWidget(self.reload_btn)
 
         self.home_btn = QPushButton("🏠")
-        self.home_btn.setProperty("class", "NavBtn")
+        self.home_btn.setProperty("class", "ActionBtn")
         self.home_btn.clicked.connect(lambda: self._navigate_to(HOME_URL))
         self.toolbar.addWidget(self.home_btn)
 
-        self.url_bar = QLineEdit()
-        self.url_bar.setObjectName("UrlBar")
-        self.url_bar.setPlaceholderText("Search or enter web address (Ctrl+L)...")
+        self.url_bar = SearchBar("Search or enter web address (Ctrl+L)...")
         self.url_bar.returnPressed.connect(self._on_url_entered)
         self.toolbar.addWidget(self.url_bar)
 
-        self.ai_toggle_btn = QPushButton("✨ THAID AI")
-        self.ai_toggle_btn.setProperty("class", "NavBtn")
-        self.ai_toggle_btn.setStyleSheet("font-weight: bold; color: #00FFAA;")
+        self.ai_toggle_btn = QPushButton("✨ Ask Theonix")
+        self.ai_toggle_btn.setProperty("class", "PrimaryBtn")
         self.ai_toggle_btn.clicked.connect(self._toggle_ai_sidebar)
         self.toolbar.addWidget(self.ai_toggle_btn)
 
         self.new_tab_btn = QPushButton("➕")
-        self.new_tab_btn.setProperty("class", "NavBtn")
+        self.new_tab_btn.setProperty("class", "ActionBtn")
         self.new_tab_btn.clicked.connect(lambda: self.add_tab(HOME_URL, "New Tab"))
         self.toolbar.addWidget(self.new_tab_btn)
 
@@ -268,7 +125,8 @@ class TheonixBrowserWindow(QMainWindow):
         ]
         for b_name, b_url in bookmarks:
             b_btn = QPushButton(b_name)
-            b_btn.setProperty("class", "BmkBtn")
+            b_btn.setProperty("class", "ActionBtn")
+            b_btn.setStyleSheet("font-size: 12px; padding: 4px 10px;")
             b_btn.clicked.connect(lambda _, u=b_url: self._navigate_to(u))
             bmk_layout.addWidget(b_btn)
         bmk_layout.addStretch()
@@ -285,34 +143,38 @@ class TheonixBrowserWindow(QMainWindow):
 
         # AI Sidebar
         self.ai_sidebar = QFrame()
-        self.ai_sidebar.setObjectName("AISidebar")
+        self.ai_sidebar.setStyleSheet("background-color: #0E121C; border-left: 1px solid rgba(255,255,255,0.08); padding: 16px;")
         self.ai_sidebar.setFixedWidth(330)
         ai_layout = QVBoxLayout(self.ai_sidebar)
         ai_layout.setContentsMargins(14, 14, 14, 14)
         ai_layout.setSpacing(10)
 
-        ai_header = QLabel("🤖 THAID Assistant")
-        ai_header.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
-        ai_layout.addWidget(ai_header)
+        ai_hdr = QHBoxLayout()
+        ai_title = QLabel("🤖 Ask Theonix (THAID)")
+        ai_title.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
+        ai_hdr.addWidget(ai_title)
+        ai_hdr.addStretch()
+        ai_hdr.addWidget(Badge("AI ONLINE", "cyan"))
+        ai_layout.addLayout(ai_hdr)
 
         # Quick action pills
         pills_grid = QGridLayout()
         pills_grid.setSpacing(6)
         
         p1 = QPushButton("📝 Summarize")
-        p1.setProperty("class", "AIPill")
-        p1.clicked.connect(lambda: self._quick_prompt("Summarize the key information of this webpage concisely."))
+        p1.setProperty("class", "ActionBtn")
+        p1.clicked.connect(lambda: self._quick_prompt("Summarize the key information of this topic concisely."))
 
         p2 = QPushButton("💻 Extract Code")
-        p2.setProperty("class", "AIPill")
+        p2.setProperty("class", "ActionBtn")
         p2.clicked.connect(lambda: self._quick_prompt("Extract all code snippets, shell commands, and syntax blocks."))
 
         p3 = QPushButton("🔍 Explain Simply")
-        p3.setProperty("class", "AIPill")
+        p3.setProperty("class", "ActionBtn")
         p3.clicked.connect(lambda: self._quick_prompt("Explain the main concepts in simple terms with bullet points."))
 
         p4 = QPushButton("🌐 Translate")
-        p4.setProperty("class", "AIPill")
+        p4.setProperty("class", "ActionBtn")
         p4.clicked.connect(lambda: self._quick_prompt("Translate the content to clear English."))
 
         pills_grid.addWidget(p1, 0, 0)
@@ -322,19 +184,18 @@ class TheonixBrowserWindow(QMainWindow):
         ai_layout.addLayout(pills_grid)
 
         self.ai_chat_log = QTextEdit()
-        self.ai_chat_log.setObjectName("AIChatLog")
         self.ai_chat_log.setReadOnly(True)
+        self.ai_chat_log.setStyleSheet("background-color: rgba(14, 18, 28, 0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #F8FAFC; padding: 10px; font-size: 13px;")
         self.ai_chat_log.setPlaceholderText("Ask THAID about this webpage or anything...")
         ai_layout.addWidget(self.ai_chat_log)
 
         ai_input_row = QHBoxLayout()
         self.ai_input = QLineEdit()
-        self.ai_input.setObjectName("AIInput")
         self.ai_input.setPlaceholderText("Ask AI...")
         self.ai_input.returnPressed.connect(self._send_ai_prompt)
 
         ai_send = QPushButton("Ask")
-        ai_send.setObjectName("AISendBtn")
+        ai_send.setProperty("class", "PrimaryBtn")
         ai_send.clicked.connect(self._send_ai_prompt)
 
         ai_input_row.addWidget(self.ai_input)
@@ -443,8 +304,7 @@ class TheonixBrowserWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    app.setStyleSheet(THEME_QSS)
+    apply_theonix_style(app)
     win = TheonixBrowserWindow()
     win.show()
     sys.exit(app.exec())

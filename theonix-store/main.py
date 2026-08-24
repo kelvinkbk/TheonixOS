@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Theonix Store — Ultra-Dark Glassmorphic Software Center & App Discovery Hub
-Built for Theonix OS. Unified catalog for Pacman, Flatpak, and UACL apps.
-Features app detail cards, multi-source backend filtering, and package management.
+Theonix Store — Unified Software Center & App Marketplace for Theonix OS.
+Powered by theonix_core platform services with 'Run on Theonix' compatibility rating.
 """
 
 import os
@@ -10,8 +9,11 @@ import sqlite3
 import subprocess
 import sys
 import threading
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QComboBox, QProgressBar,
@@ -19,199 +21,11 @@ from PyQt6.QtWidgets import (
     QButtonGroup, QDialog, QTextEdit
 )
 
-UACL_DB = os.path.expanduser("~/.config/theonix/uacl.db")
-
-THEME_QSS = """
-QMainWindow {
-    background-color: #07090E;
-}
-
-QWidget#CentralWidget {
-    background-color: #07090E;
-    color: #F8FAFC;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* Sidebar Container */
-QWidget#SidebarContainer {
-    background-color: #0B0E17;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Sidebar Navigation Buttons */
-QPushButton.NavBtn {
-    background-color: transparent;
-    color: #94A3B8;
-    border: none;
-    border-left: 3px solid transparent;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-align: left;
-    margin: 2px 10px;
-}
-
-QPushButton.NavBtn:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
-}
-
-QPushButton.NavBtn:checked {
-    background-color: rgba(108, 99, 255, 0.2);
-    border-left: 3px solid #00FFAA;
-    color: #FFFFFF;
-    font-weight: 700;
-}
-
-/* Filter Chips */
-QPushButton.FilterChip {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #94A3B8;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-QPushButton.FilterChip:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #FFFFFF;
-}
-
-QPushButton.FilterChip:checked {
-    background: linear-gradient(135deg, rgba(108, 99, 255, 0.4), rgba(0, 255, 170, 0.3));
-    border: 1px solid #00FFAA;
-    color: #FFFFFF;
-    font-weight: 700;
-}
-
-/* Scroll Area */
-QScrollArea {
-    border: none;
-    background-color: transparent;
-}
-
-QScrollArea > QWidget > QWidget {
-    background-color: transparent;
-}
-
-QScrollBar:vertical {
-    border: none;
-    background: #0B0E17;
-    width: 6px;
-    border-radius: 3px;
-}
-
-QScrollBar::handle:vertical {
-    background: #232D42;
-    border-radius: 3px;
-    min-height: 25px;
-}
-
-QScrollBar::handle:vertical:hover {
-    background: #384766;
-}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-/* App Cards */
-QFrame.AppCard {
-    background-color: rgba(18, 24, 38, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
-    padding: 16px;
-}
-
-QFrame.AppCard:hover {
-    border: 1px solid rgba(0, 255, 170, 0.3);
-    background-color: rgba(24, 32, 50, 0.85);
-}
-
-QFrame.FeaturedHero {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(108, 99, 255, 0.3), stop:0.5 rgba(18, 26, 44, 0.8), stop:1 rgba(0, 255, 170, 0.15));
-    border: 1px solid rgba(0, 255, 170, 0.3);
-    border-radius: 16px;
-    padding: 24px;
-}
-
-/* Search Bar */
-QLineEdit#SearchInput {
-    background-color: rgba(14, 18, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 10px 18px;
-    color: #FFFFFF;
-    font-size: 13.5px;
-}
-
-QLineEdit#SearchInput:focus {
-    border: 1px solid #00FFAA;
-    background-color: rgba(18, 24, 38, 0.95);
-}
-
-/* Source Badges */
-QLabel.BadgePacman {
-    background-color: rgba(0, 212, 255, 0.15);
-    color: #00D4FF;
-    border-radius: 5px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-QLabel.BadgeFlatpak {
-    background-color: rgba(108, 99, 255, 0.2);
-    color: #A78BFA;
-    border-radius: 5px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-QLabel.BadgeUACL {
-    background-color: rgba(0, 255, 170, 0.15);
-    color: #00FFAA;
-    border-radius: 5px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-/* Buttons */
-QPushButton.ActionBtn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #F8FAFC;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-QPushButton.ActionBtn:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #FFFFFF;
-}
-
-QPushButton.InstallBtn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00D4FF);
-    color: #0B0E14;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    padding: 8px 16px;
-    font-size: 13px;
-}
-
-QPushButton.InstallBtn:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7D75FF, stop:1 #1CE0FF);
-}
-"""
+from theonix_core import (
+    THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
+    SearchBar, apply_theonix_style,
+    PackageService, CompatibilityRating, UACLService
+)
 
 FEATURED_APPS = [
     {
@@ -222,7 +36,9 @@ FEATURED_APPS = [
         "icon": "💻",
         "version": "1.92.0",
         "size": "95 MB",
-        "desc": "Powerful, extensible code editor with integrated Git, debugging, and terminal.",
+        "desc": "Industry-leading extensible code editor with integrated debugging, Git, and terminal.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Official Arch Linux native binary (100% performance)"
     },
     {
         "name": "Ollama AI Local Engine",
@@ -232,17 +48,21 @@ FEATURED_APPS = [
         "icon": "🧠",
         "version": "0.3.12",
         "size": "32 MB",
-        "desc": "Run large language models locally and privately on your machine with GPU support.",
+        "desc": "Run large neural models locally on your GPU/CPU with full privacy and zero cloud telemetry.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Hardware accelerated native inference engine"
     },
     {
-        "name": "Blender 3D",
+        "name": "Blender 3D Suite",
         "pkg": "blender",
         "source": "pacman",
-        "category": "Graphics & Media",
+        "category": "Graphics",
         "icon": "🎨",
         "version": "4.2.1",
         "size": "240 MB",
-        "desc": "Free and open-source 3D creation suite supporting modeling, animation, and rendering.",
+        "desc": "Comprehensive 3D creation suite: modeling, sculpting, VFX, animation, and Cycles rendering.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Vulkan & OptiX accelerated native Linux package"
     },
     {
         "name": "Discord",
@@ -252,47 +72,57 @@ FEATURED_APPS = [
         "icon": "💬",
         "version": "0.0.60",
         "size": "85 MB",
-        "desc": "All-in-one voice and text chat for gamers, communities, and developer teams.",
+        "desc": "Voice, video, and text communication service for gaming, developers, and communities.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed Flathub container with PipeWire audio"
     },
     {
-        "name": "Steam",
+        "name": "Steam & Proton",
         "pkg": "steam",
         "source": "pacman",
-        "category": "Gaming",
+        "category": "Games",
         "icon": "🎮",
         "version": "1.0.0.79",
         "size": "65 MB",
-        "desc": "The ultimate online game platform with Proton compatibility for thousands of titles.",
+        "desc": "The ultimate gaming platform with Proton DXVK/VKD3D compatibility for thousands of titles.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native client with Vulkan translation layers"
     },
     {
-        "name": "LibreOffice Fresh",
-        "pkg": "libreoffice-fresh",
-        "source": "pacman",
-        "category": "Productivity",
-        "icon": "📄",
-        "version": "24.8.0",
-        "size": "180 MB",
-        "desc": "Feature-rich open source office suite including Writer, Calc, and Impress.",
+        "name": "Notepad++ (Win32)",
+        "pkg": "npp.installer.exe",
+        "source": "uacl",
+        "category": "Utilities",
+        "icon": "🪟",
+        "version": "8.6.9",
+        "size": "15 MB",
+        "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
     },
     {
         "name": "GIMP Image Editor",
         "pkg": "gimp",
         "source": "pacman",
-        "category": "Graphics & Media",
+        "category": "Graphics",
         "icon": "🖼️",
         "version": "2.10.38",
         "size": "115 MB",
-        "desc": "Advanced photo retouching, image composition, and graphic authoring software.",
+        "desc": "Advanced photo retouching, image composition, and graphic design authoring software.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Official Arch Linux native application"
     },
     {
         "name": "VLC Media Player",
         "pkg": "vlc",
         "source": "pacman",
-        "category": "Graphics & Media",
+        "category": "Multimedia",
         "icon": "🎬",
         "version": "3.0.21",
         "size": "45 MB",
-        "desc": "Universal media player that plays most multimedia files, discs, and network streams.",
+        "desc": "Universal media player that plays most multimedia files, codecs, and network streams.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "High performance PipeWire and VAAPI accelerated"
     },
 ]
 
@@ -301,8 +131,8 @@ class AppDetailDialog(QDialog):
     def __init__(self, app_data: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"{app_data['name']} — Details")
-        self.setMinimumSize(540, 380)
-        self.setStyleSheet(THEME_QSS)
+        self.setMinimumSize(560, 420)
+        self.setStyleSheet(THEONIX_THEME_QSS)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(28, 28, 28, 28)
@@ -319,22 +149,39 @@ class AppDetailDialog(QDialog):
         title_box = QVBoxLayout()
         name = QLabel(app_data["name"])
         name.setStyleSheet("font-size: 20px; font-weight: 800; color: #FFFFFF;")
-        pkg = QLabel(f"Package: {app_data.get('pkg', app_data['name'])} · {app_data.get('source', 'pacman').upper()}")
-        pkg.setStyleSheet("color: #00FFAA; font-size: 12.5px; font-weight: bold;")
+        
+        compat_val = app_data.get("compat", CompatibilityRating.NATIVE)
+        if compat_val == CompatibilityRating.NATIVE:
+            compat_badge = Badge("🟢 NATIVE LINUX", "green")
+        elif compat_val == CompatibilityRating.UACL_COMPATIBLE:
+            compat_badge = Badge("🟢 WORKS WITH UACL", "cyan")
+        elif compat_val == CompatibilityRating.CONFIG_REQUIRED:
+            compat_badge = Badge("🟡 CONFIG REQUIRED", "yellow")
+        else:
+            compat_badge = Badge("🔴 UNSUPPORTED", "red")
+
+        h_badge_row = QHBoxLayout()
+        h_badge_row.addWidget(compat_badge)
+        h_badge_row.addWidget(QLabel(f"Source: {app_data.get('source', 'pacman').upper()}"))
+        h_badge_row.addStretch()
+
         title_box.addWidget(name)
-        title_box.addWidget(pkg)
+        title_box.addLayout(h_badge_row)
         top_row.addLayout(title_box)
         top_row.addStretch()
         layout.addLayout(top_row)
 
         # Description
-        desc_card = QFrame()
-        desc_card.setProperty("class", "AppCard")
+        desc_card = GlassCard()
         d_layout = QVBoxLayout(desc_card)
         desc_text = QLabel(app_data.get("desc", "No description provided."))
         desc_text.setStyleSheet("color: #F8FAFC; font-size: 13.5px; line-height: 1.5;")
         desc_text.setWordWrap(True)
         d_layout.addWidget(desc_text)
+
+        compat_note = QLabel(f"<b>Run on Theonix:</b> {app_data.get('compat_desc', 'Tested and verified.')}")
+        compat_note.setStyleSheet("color: #00FFAA; font-size: 12px; margin-top: 6px;")
+        d_layout.addWidget(compat_note)
 
         meta_row = QHBoxLayout()
         meta_row.addWidget(QLabel(f"<b>Version:</b> {app_data.get('version', '1.0')}"))
@@ -352,7 +199,7 @@ class AppDetailDialog(QDialog):
         close_btn.clicked.connect(self.accept)
         
         install_btn = QPushButton("Install Package")
-        install_btn.setProperty("class", "InstallBtn")
+        install_btn.setProperty("class", "PrimaryBtn")
         install_btn.clicked.connect(lambda: self._install(app_data))
 
         btn_row.addWidget(close_btn)
@@ -368,15 +215,14 @@ class AppDetailDialog(QDialog):
         elif src == "flatpak":
             subprocess.Popen(["konsole", "-e", "flatpak", "install", "-y", "flathub", pkg])
         else:
-            subprocess.Popen(["theonix-uacl", "launch", "--name", pkg])
+            UACLService.launch(pkg)
 
 
-class AppCard(QFrame):
+class AppCard(GlassCard):
     def __init__(self, data: dict, parent_window):
         super().__init__()
         self.data = data
         self.parent_window = parent_window
-        self.setProperty("class", "AppCard")
         self._build_ui()
 
     def _build_ui(self):
@@ -398,14 +244,14 @@ class AppCard(QFrame):
         title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #FFFFFF;")
         h_title.addWidget(title_lbl)
 
-        src = self.data.get("source", "pacman")
-        badge = QLabel(src.upper())
-        if src == "pacman":
-            badge.setProperty("class", "BadgePacman")
-        elif src == "flatpak":
-            badge.setProperty("class", "BadgeFlatpak")
+        compat_val = self.data.get("compat", CompatibilityRating.NATIVE)
+        if compat_val == CompatibilityRating.NATIVE:
+            badge = Badge("NATIVE", "green")
+        elif compat_val == CompatibilityRating.UACL_COMPATIBLE:
+            badge = Badge("UACL", "cyan")
         else:
-            badge.setProperty("class", "BadgeUACL")
+            badge = Badge("CONFIG", "yellow")
+
         h_title.addWidget(badge)
         h_title.addStretch()
         v_box.addLayout(h_title)
@@ -423,7 +269,7 @@ class AppCard(QFrame):
         layout.addWidget(details_btn)
 
         btn = QPushButton("Install")
-        btn.setProperty("class", "InstallBtn")
+        btn.setProperty("class", "PrimaryBtn")
         btn.setFixedWidth(90)
         btn.clicked.connect(self._install_app)
         layout.addWidget(btn)
@@ -435,69 +281,24 @@ class AppCard(QFrame):
     def _install_app(self):
         pkg = self.data.get("pkg", self.data["name"])
         src = self.data.get("source", "pacman")
-
         if src == "pacman":
             subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-S", "--needed", pkg])
         elif src == "flatpak":
             subprocess.Popen(["konsole", "-e", "flatpak", "install", "-y", "flathub", pkg])
         else:
-            subprocess.Popen(["theonix-uacl", "launch", "--name", pkg])
+            UACLService.launch(pkg)
 
 
 class StoreWorker(QThread):
     results_ready = pyqtSignal(list)
 
-    def __init__(self, query: str, category: str):
+    def __init__(self, query: str):
         super().__init__()
-        self.query = query.strip()
-        self.category = category
+        self.query = query
 
     def run(self):
-        results = []
-        if self.query:
-            try:
-                res = subprocess.run(["pacman", "-Ss", self.query], capture_output=True, text=True, timeout=10)
-                lines = res.stdout.strip().splitlines()
-                cur_pkg = None
-                for line in lines:
-                    if not line.startswith("    "):
-                        parts = line.split()
-                        if parts:
-                            cur_pkg = parts[0].split("/")[-1]
-                            desc = ""
-                    else:
-                        desc = line.strip()
-                        if cur_pkg:
-                            results.append({
-                                "name": cur_pkg,
-                                "pkg": cur_pkg,
-                                "source": "pacman",
-                                "icon": "📦",
-                                "desc": desc
-                            })
-                            cur_pkg = None
-            except Exception:
-                pass
-
-            if os.path.exists(UACL_DB):
-                try:
-                    conn = sqlite3.connect(UACL_DB)
-                    conn.row_factory = sqlite3.Row
-                    cur = conn.cursor()
-                    cur.execute("SELECT name, format_type FROM applications WHERE name LIKE ?", (f"%{self.query}%",))
-                    for row in cur.fetchall():
-                        results.append({
-                            "name": row["name"],
-                            "pkg": row["name"],
-                            "source": "uacl",
-                            "icon": "🪟",
-                            "desc": f"Windows/UACL application [{row['format_type']}]"
-                        })
-                    conn.close()
-                except Exception:
-                    pass
-
-        self.results_ready.emit(results[:60])
+        results = PackageService.search_packages(self.query)
+        self.results_ready.emit(results)
 
 
 class TheonixStoreWindow(QMainWindow):
@@ -505,7 +306,7 @@ class TheonixStoreWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Theonix Store")
         self.setMinimumSize(1020, 700)
-        self.resize(1120, 760)
+        self.resize(1140, 760)
         self.worker = None
         self.active_filter = "all"
 
@@ -532,8 +333,7 @@ class TheonixStoreWindow(QMainWindow):
         brand_icon.setStyleSheet("font-size: 18px;")
         brand_title = QLabel("THEONIX")
         brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
-        brand_tag = QLabel("STORE")
-        brand_tag.setStyleSheet("font-size: 10.5px; font-weight: bold; background: rgba(108,99,255,0.2); color: #A78BFA; padding: 2px 6px; border-radius: 4px;")
+        brand_tag = Badge("STORE", "indigo")
         
         brand_row.addWidget(brand_icon)
         brand_row.addWidget(brand_title)
@@ -556,10 +356,7 @@ class TheonixStoreWindow(QMainWindow):
         self.btn_group.setExclusive(True)
 
         for idx, cat in enumerate(categories):
-            btn = QPushButton(cat)
-            btn.setProperty("class", "NavBtn")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn = NavButton(cat)
             self.btn_group.addButton(btn, idx)
             sb_layout.addWidget(btn)
 
@@ -574,13 +371,11 @@ class TheonixStoreWindow(QMainWindow):
 
         # Top Bar
         top_row = QHBoxLayout()
-        self.search_input = QLineEdit()
-        self.search_input.setObjectName("SearchInput")
-        self.search_input.setPlaceholderText("Search thousands of apps (Pacman, Flatpak, Windows/UACL)...")
+        self.search_input = SearchBar("Search thousands of packages, Flatpaks, and UACL Windows apps...")
         self.search_input.returnPressed.connect(self._trigger_search)
 
         search_btn = QPushButton("Search")
-        search_btn.setProperty("class", "InstallBtn")
+        search_btn.setProperty("class", "PrimaryBtn")
         search_btn.clicked.connect(self._trigger_search)
 
         mgr_btn = QPushButton("App Manager")
@@ -598,10 +393,15 @@ class TheonixStoreWindow(QMainWindow):
         self.chip_group = QButtonGroup(self)
         self.chip_group.setExclusive(True)
 
-        filter_options = [("All Sources", "all"), ("📦 Pacman / Arch", "pacman"), ("🟣 Flatpak", "flatpak"), ("🪟 Windows / UACL", "uacl")]
+        filter_options = [
+            ("All Sources", "all"),
+            ("🟢 Native Linux", "pacman"),
+            ("🟣 Flatpaks", "flatpak"),
+            ("🪟 Windows / UACL", "uacl")
+        ]
         for c_idx, (c_label, c_id) in enumerate(filter_options):
             chip = QPushButton(c_label)
-            chip.setProperty("class", "FilterChip")
+            chip.setProperty("class", "ActionBtn")
             chip.setCheckable(True)
             self.chip_group.addButton(chip, c_idx)
             chips_row.addWidget(chip)
@@ -649,20 +449,20 @@ class TheonixStoreWindow(QMainWindow):
         self._clear_cards()
 
         if idx == 0:
-            hero = QFrame()
-            hero.setProperty("class", "FeaturedHero")
+            hero = GlassCard()
+            hero.setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(108, 99, 255, 0.3), stop:0.5 rgba(18, 26, 44, 0.8), stop:1 rgba(0, 255, 170, 0.15)); border: 1px solid rgba(0, 255, 170, 0.3); border-radius: 16px; padding: 24px;")
             h_layout = QVBoxLayout(hero)
             h_layout.setSpacing(8)
 
             h_title = QLabel("Explore Theonix Ecosystem")
             h_title.setStyleSheet("font-size: 22px; font-weight: 800; color: #FFFFFF;")
-            h_desc = QLabel("Discover curated high-performance tools, AI assistants, and native software for Theonix OS.")
+            h_desc = QLabel("Discover curated native packages, sandboxed Flatpaks, and automated Windows apps running through Theonix UACL.")
             h_desc.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
             h_layout.addWidget(h_title)
             h_layout.addWidget(h_desc)
             self.cards_layout.addWidget(hero)
 
-            hdr = QLabel("Top Community Recommendations")
+            hdr = QLabel("Top Recommended Applications")
             hdr.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA; margin-top: 10px;")
             self.cards_layout.addWidget(hdr)
 
@@ -685,7 +485,7 @@ class TheonixStoreWindow(QMainWindow):
             self.cards_layout.addWidget(hdr)
             
             up_btn = QPushButton("🚀 Launch System Updater")
-            up_btn.setProperty("class", "InstallBtn")
+            up_btn.setProperty("class", "PrimaryBtn")
             up_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-Syu"]))
             self.cards_layout.addWidget(up_btn)
 
@@ -719,7 +519,7 @@ class TheonixStoreWindow(QMainWindow):
         lbl.setStyleSheet("color: #94A3B8;")
         self.cards_layout.addWidget(lbl)
 
-        self.worker = StoreWorker(query, self.active_filter)
+        self.worker = StoreWorker(query)
         self.worker.results_ready.connect(self._on_search_results)
         self.worker.start()
 
@@ -754,8 +554,7 @@ class TheonixStoreWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    app.setStyleSheet(THEME_QSS)
+    apply_theonix_style(app)
     win = TheonixStoreWindow()
     win.show()
     sys.exit(app.exec())
