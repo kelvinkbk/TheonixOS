@@ -16,7 +16,7 @@ strings:
     productCopyright:     "The Theonix Project"
     productUrl:           "https://theonix.org/"
     supportUrl:           "https://community.theonix.org/"
-    knownIssuesUrl:       "https://github.com/theonix-os/theonix/issues"
+    knownIssuesUrl:       "https://github.com/kelvinkbk/TheonixOS/issues"
     releaseNotesUrl:      "https://theonix.org/release-notes/1.0/"
 
 # Images — relative to this branding directory

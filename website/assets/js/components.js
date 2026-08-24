@@ -37,14 +37,14 @@
     Community: [
       ['community.html', 'Get involved'],
       ['contributors.html', 'Contributors'],
-      ['https://github.com/theonix-os/theonix', 'GitHub'],
+      ['https://github.com/kelvinkbk/TheonixOS', 'GitHub'],
       ['https://community.theonix.org/', 'Forum'],
       ['https://discord.gg/theonix', 'Discord']
     ]
   };
 
   var LOGO = 'assets/img/logo.svg';
-  var GH = 'https://github.com/theonix-os/theonix';
+  var GH = 'https://github.com/kelvinkbk/TheonixOS';
 
   var here = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   if (here === '') here = 'index.html';

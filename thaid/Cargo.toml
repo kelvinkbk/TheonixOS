@@ -5,7 +5,7 @@ edition     = "2021"
 description = "Theonix AI Daemon — local AI assistant backend"
 authors     = ["Theonix OS Team <dev@theonix.org>"]
 license     = "GPL-2.0-only"
-repository  = "https://github.com/theonix-os/theonix"
+repository  = "https://github.com/kelvinkbk/TheonixOS"
 readme      = "README.md"
 
 [lib]

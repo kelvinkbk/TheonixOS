@@ -367,7 +367,7 @@ class SystemAboutPage(QWidget):
         actions_layout.addStretch()
 
         github_btn = QPushButton("GitHub Repository")
-        github_btn.clicked.connect(lambda: subprocess.Popen(["xdg-open", "https://github.com/theonix-os/theonix"]))
+        github_btn.clicked.connect(lambda: subprocess.Popen(["xdg-open", "https://github.com/kelvinkbk/TheonixOS"]))
         actions_layout.addWidget(github_btn)
 
         web_btn = QPushButton("Visit Website")
