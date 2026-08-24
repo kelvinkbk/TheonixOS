@@ -32,20 +32,24 @@ QWidget#CentralWidget {
 }
 
 /* Sidebar Navigation */
+QWidget#SidebarContainer {
+    background-color: #0B0E17;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 QListWidget#CategoryNav {
-    background-color: #0E121C;
+    background-color: transparent;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 14px;
     outline: none;
+    padding: 8px;
 }
 
 QListWidget#CategoryNav::item {
     color: #94A3B8;
-    height: 46px;
-    padding-left: 16px;
-    margin: 3px 10px;
-    border-radius: 10px;
+    height: 44px;
+    padding-left: 14px;
+    margin: 2px 4px;
+    border-radius: 8px;
     font-size: 13.5px;
     font-weight: 500;
 }
@@ -56,8 +60,8 @@ QListWidget#CategoryNav::item:hover {
 }
 
 QListWidget#CategoryNav::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
-    border: 1px solid rgba(0, 255, 170, 0.4);
+    background: rgba(108, 99, 255, 0.18);
+    border-left: 3px solid #00FFAA;
     color: #FFFFFF;
     font-weight: 600;
 }
@@ -74,14 +78,14 @@ QScrollArea > QWidget > QWidget {
 
 QScrollBar:vertical {
     border: none;
-    background: #0E121C;
-    width: 8px;
-    border-radius: 4px;
+    background: #0B0E17;
+    width: 6px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical {
     background: #232D42;
-    border-radius: 4px;
+    border-radius: 3px;
     min-height: 25px;
 }
 
@@ -95,15 +99,15 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 /* App Cards */
 QFrame.AppCard {
-    background-color: rgba(20, 26, 40, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(18, 24, 38, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 14px;
     padding: 16px;
 }
 
 QFrame.AppCard:hover {
-    border: 1px solid rgba(0, 255, 170, 0.3);
-    background-color: rgba(26, 34, 52, 0.9);
+    border: 1px solid rgba(0, 255, 170, 0.25);
+    background-color: rgba(24, 32, 50, 0.85);
 }
 
 QFrame.FeaturedHero {
@@ -267,8 +271,8 @@ class AppCard(QFrame):
         layout.setSpacing(18)
 
         icon_lbl = QLabel(self.data.get("icon", "📦"))
-        icon_lbl.setStyleSheet("font-size: 32px; background: rgba(14, 18, 28, 0.8); border-radius: 12px; padding: 6px;")
-        icon_lbl.setFixedSize(50, 50)
+        icon_lbl.setStyleSheet("font-size: 30px; background: rgba(14, 18, 28, 0.8); border-radius: 12px; padding: 6px;")
+        icon_lbl.setFixedSize(48, 48)
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_lbl)
 
@@ -389,10 +393,34 @@ class TheonixStoreWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Sidebar
+        # Sidebar Container with Brand Tag
+        sidebar_box = QWidget()
+        sidebar_box.setObjectName("SidebarContainer")
+        sidebar_box.setFixedWidth(250)
+        sb_layout = QVBoxLayout(sidebar_box)
+        sb_layout.setContentsMargins(0, 16, 0, 16)
+        sb_layout.setSpacing(12)
+
+        # Brand header
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_icon = QLabel("🛍️")
+        brand_icon.setStyleSheet("font-size: 18px;")
+        brand_title = QLabel("THEONIX")
+        brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
+        brand_tag = QLabel("STORE")
+        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(108,99,255,0.2); color: #A78BFA; padding: 2px 6px; border-radius: 4px;")
+        
+        brand_row.addWidget(brand_icon)
+        brand_row.addWidget(brand_title)
+        brand_row.addWidget(brand_tag)
+        brand_row.addStretch()
+        sb_layout.addLayout(brand_row)
+
         self.nav_list = QListWidget()
         self.nav_list.setObjectName("CategoryNav")
-        self.nav_list.setFixedWidth(240)
+        self.nav_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         categories = [
             "🌟  Featured Picks",
@@ -407,7 +435,8 @@ class TheonixStoreWindow(QMainWindow):
         for cat in categories:
             self.nav_list.addItem(QListWidgetItem(cat))
 
-        main_layout.addWidget(self.nav_list)
+        sb_layout.addWidget(self.nav_list)
+        main_layout.addWidget(sidebar_box)
 
         # Right Content Area
         content_area = QWidget()
@@ -436,6 +465,7 @@ class TheonixStoreWindow(QMainWindow):
 
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_content = QWidget()
         self.cards_layout = QVBoxLayout(self.scroll_content)
         self.cards_layout.setSpacing(12)

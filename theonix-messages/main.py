@@ -30,20 +30,24 @@ QWidget#CentralWidget {
 }
 
 /* Sidebar */
+QWidget#SidebarContainer {
+    background-color: #0B0E17;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 QListWidget#ThreadList {
-    background-color: #0E121C;
+    background-color: transparent;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
     outline: none;
-    padding-top: 14px;
+    padding: 8px;
 }
 
 QListWidget#ThreadList::item {
     color: #94A3B8;
-    height: 50px;
-    padding-left: 16px;
-    margin: 3px 10px;
-    border-radius: 10px;
+    height: 46px;
+    padding-left: 14px;
+    margin: 2px 4px;
+    border-radius: 8px;
     font-size: 13.5px;
     font-weight: 500;
 }
@@ -54,8 +58,8 @@ QListWidget#ThreadList::item:hover {
 }
 
 QListWidget#ThreadList::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
-    border: 1px solid rgba(0, 255, 170, 0.4);
+    background: rgba(108, 99, 255, 0.18);
+    border-left: 3px solid #00FFAA;
     color: #FFFFFF;
     font-weight: 600;
 }
@@ -182,20 +186,42 @@ class TheonixMessagesWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Left Sidebar
-        left_panel = QWidget()
-        left_panel.setFixedWidth(260)
-        left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(14, 18, 14, 18)
-        left_layout.setSpacing(12)
+        # Left Sidebar Container
+        sidebar_box = QWidget()
+        sidebar_box.setObjectName("SidebarContainer")
+        sidebar_box.setFixedWidth(260)
+        sb_layout = QVBoxLayout(sidebar_box)
+        sb_layout.setContentsMargins(0, 16, 0, 16)
+        sb_layout.setSpacing(12)
 
+        # Brand header
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_icon = QLabel("💬")
+        brand_icon.setStyleSheet("font-size: 18px;")
+        brand_title = QLabel("THEONIX")
+        brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
+        brand_tag = QLabel("AI CHAT")
+        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        
+        brand_row.addWidget(brand_icon)
+        brand_row.addWidget(brand_title)
+        brand_row.addWidget(brand_tag)
+        brand_row.addStretch()
+        sb_layout.addLayout(brand_row)
+
+        btn_box = QHBoxLayout()
+        btn_box.setContentsMargins(14, 0, 14, 0)
         new_btn = QPushButton("➕  New Chat")
         new_btn.setObjectName("SendBtn")
         new_btn.clicked.connect(self._new_chat)
-        left_layout.addWidget(new_btn)
+        btn_box.addWidget(new_btn)
+        sb_layout.addLayout(btn_box)
 
         self.thread_list = QListWidget()
         self.thread_list.setObjectName("ThreadList")
+        self.thread_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.thread_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
         threads = [
             ("🤖  THAID System AI", "thaid_system"),
@@ -209,9 +235,9 @@ class TheonixMessagesWindow(QMainWindow):
             self.thread_list.addItem(item)
 
         self.thread_list.currentRowChanged.connect(self._on_thread_changed)
-        left_layout.addWidget(self.thread_list)
+        sb_layout.addWidget(self.thread_list)
 
-        main_layout.addWidget(left_panel)
+        main_layout.addWidget(sidebar_box)
 
         # Right Panel
         right_panel = QWidget()

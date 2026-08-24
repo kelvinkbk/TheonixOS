@@ -29,19 +29,23 @@ QWidget#CentralWidget {
 }
 
 /* Places Sidebar */
+QWidget#SidebarContainer {
+    background-color: #0B0E17;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 QListWidget#PlacesSidebar {
-    background-color: #0E121C;
+    background-color: transparent;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
     outline: none;
-    padding-top: 14px;
+    padding: 8px;
 }
 
 QListWidget#PlacesSidebar::item {
     color: #94A3B8;
     height: 44px;
-    padding-left: 16px;
-    margin: 2px 8px;
+    padding-left: 14px;
+    margin: 2px 4px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
@@ -53,8 +57,8 @@ QListWidget#PlacesSidebar::item:hover {
 }
 
 QListWidget#PlacesSidebar::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
-    border: 1px solid rgba(0, 255, 170, 0.4);
+    background: rgba(108, 99, 255, 0.18);
+    border-left: 3px solid #00FFAA;
     color: #FFFFFF;
     font-weight: 600;
 }
@@ -95,7 +99,7 @@ QPushButton.NavBtn:hover {
 
 /* File Tree/List View */
 QTreeView#FileView {
-    background-color: #0B0E14;
+    background-color: #07090E;
     border: none;
     color: #F8FAFC;
     font-size: 13px;
@@ -105,7 +109,6 @@ QTreeView#FileView {
 QTreeView#FileView::item {
     height: 38px;
     padding: 2px 10px;
-    border-radius: 4px;
 }
 
 QTreeView#FileView::item:hover {
@@ -183,10 +186,33 @@ class TheonixFilesWindow(QMainWindow):
         # Splitter: Sidebar + File List
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        # Places sidebar
+        # Places sidebar container
+        sidebar_box = QWidget()
+        sidebar_box.setObjectName("SidebarContainer")
+        sidebar_box.setFixedWidth(230)
+        sb_layout = QVBoxLayout(sidebar_box)
+        sb_layout.setContentsMargins(0, 16, 0, 16)
+        sb_layout.setSpacing(10)
+
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_icon = QLabel("📁")
+        brand_icon.setStyleSheet("font-size: 18px;")
+        brand_title = QLabel("THEONIX")
+        brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
+        brand_tag = QLabel("FILES")
+        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,212,255,0.15); color: #00D4FF; padding: 2px 6px; border-radius: 4px;")
+        
+        brand_row.addWidget(brand_icon)
+        brand_row.addWidget(brand_title)
+        brand_row.addWidget(brand_tag)
+        brand_row.addStretch()
+        sb_layout.addLayout(brand_row)
+
         self.places = QListWidget()
         self.places.setObjectName("PlacesSidebar")
-        self.places.setFixedWidth(210)
+        self.places.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.places.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         user_home = os.path.expanduser("~")
         places_items = [
@@ -206,7 +232,9 @@ class TheonixFilesWindow(QMainWindow):
             self.places.addItem(item)
 
         self.places.currentRowChanged.connect(self._on_place_selected)
-        splitter.addWidget(self.places)
+        sb_layout.addWidget(self.places)
+
+        splitter.addWidget(sidebar_box)
 
         # File Tree Model
         self.model = QFileSystemModel()
@@ -229,7 +257,7 @@ class TheonixFilesWindow(QMainWindow):
         self.tree.header().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         splitter.addWidget(self.tree)
-        splitter.setSizes([210, 850])
+        splitter.setSizes([230, 870])
         main_layout.addWidget(splitter, 1)
 
         self._navigate_to(user_home)

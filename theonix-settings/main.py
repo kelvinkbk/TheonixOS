@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import sys
 import threading
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
 from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -31,20 +31,24 @@ QWidget#CentralWidget {
 }
 
 /* Sidebar Navigation */
+QWidget#SidebarContainer {
+    background-color: #0B0E17;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 QListWidget#NavSidebar {
-    background-color: #0E121C;
+    background-color: transparent;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 14px;
     outline: none;
+    padding: 8px;
 }
 
 QListWidget#NavSidebar::item {
     color: #94A3B8;
-    height: 48px;
-    padding-left: 16px;
-    margin: 3px 10px;
-    border-radius: 10px;
+    height: 44px;
+    padding-left: 14px;
+    margin: 2px 4px;
+    border-radius: 8px;
     font-size: 13.5px;
     font-weight: 500;
 }
@@ -55,8 +59,8 @@ QListWidget#NavSidebar::item:hover {
 }
 
 QListWidget#NavSidebar::item:selected {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(108, 99, 255, 0.35), stop:1 rgba(0, 255, 170, 0.25));
-    border: 1px solid rgba(0, 255, 170, 0.4);
+    background: rgba(108, 99, 255, 0.18);
+    border-left: 3px solid #00FFAA;
     color: #FFFFFF;
     font-weight: 600;
 }
@@ -73,14 +77,14 @@ QScrollArea > QWidget > QWidget {
 
 QScrollBar:vertical {
     border: none;
-    background: #0E121C;
-    width: 8px;
-    border-radius: 4px;
+    background: #0B0E17;
+    width: 6px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical {
     background: #232D42;
-    border-radius: 4px;
+    border-radius: 3px;
     min-height: 25px;
 }
 
@@ -94,15 +98,15 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 /* Glass Cards */
 QFrame.Card {
-    background-color: rgba(20, 26, 40, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(18, 24, 38, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 14px;
-    padding: 18px;
+    padding: 20px;
 }
 
 QFrame.Card:hover {
-    border: 1px solid rgba(0, 255, 170, 0.3);
-    background-color: rgba(26, 34, 52, 0.9);
+    border: 1px solid rgba(0, 255, 170, 0.25);
+    background-color: rgba(24, 32, 50, 0.85);
 }
 
 /* Typography */
@@ -134,7 +138,7 @@ QPushButton {
     color: #F8FAFC;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 9px 18px;
+    padding: 8px 18px;
     font-size: 13px;
     font-weight: 600;
 }
@@ -266,14 +270,15 @@ class SystemAboutPage(QWidget):
         hero_layout.setSpacing(20)
 
         logo_label = QLabel("⚡")
-        logo_label.setStyleSheet("font-size: 38px; background: rgba(0,255,170,0.12); border-radius: 18px; padding: 10px;")
+        logo_label.setStyleSheet("font-size: 34px; background: rgba(0,255,170,0.12); border-radius: 16px; padding: 8px;")
+        logo_label.setFixedSize(56, 56)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hero_layout.addWidget(logo_label)
 
         hero_text = QVBoxLayout()
-        os_name = QLabel("Theonix OS 1.0 &ldquo;Genesis&rdquo;")
+        os_name = QLabel('Theonix OS 1.0 "Genesis"')
         os_name.setStyleSheet("font-size: 20px; font-weight: 800; color: #FFFFFF;")
-        os_desc = QLabel("AI-Powered Modern Linux &middot; Arch Base &middot; KDE Plasma 6 (Wayland)")
+        os_desc = QLabel("AI-Powered Modern Linux · Arch Base · KDE Plasma 6 (Wayland)")
         os_desc.setStyleSheet("color: #00FFAA; font-size: 13px; font-weight: 600;")
         hero_text.addWidget(os_name)
         hero_text.addWidget(os_desc)
@@ -375,7 +380,6 @@ class AISettingsPage(QWidget):
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        # Status Card
         status_card = QFrame()
         status_card.setProperty("class", "Card")
         status_layout = QHBoxLayout(status_card)
@@ -530,7 +534,6 @@ class AppearancePage(QWidget):
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        # Themes Card
         theme_card = QFrame()
         theme_card.setProperty("class", "Card")
         t_layout = QVBoxLayout(theme_card)
@@ -574,7 +577,6 @@ class AppearancePage(QWidget):
         w_layout.addLayout(w_row)
         layout.addWidget(wall_card)
 
-        # Effects Card
         effects_card = QFrame()
         effects_card.setProperty("class", "Card")
         e_layout = QVBoxLayout(effects_card)
@@ -650,7 +652,6 @@ class DisplayPage(QWidget):
         c_layout.addLayout(grid)
         layout.addWidget(card)
 
-        # Night Light Card
         nl_card = QFrame()
         nl_card.setProperty("class", "Card")
         nl_layout = QVBoxLayout(nl_card)
@@ -737,7 +738,7 @@ class NetworkPage(QWidget):
                     sig = parts[1] if len(parts) > 1 else "50"
                     sec = parts[2] if len(parts) > 2 else "WPA2"
                     if ssid:
-                        self.wifi_list.addItem(f"📶  {ssid} ({sig}% signal &middot; {sec})")
+                        self.wifi_list.addItem(f"📶  {ssid} ({sig}% signal · {sec})")
             else:
                 self.wifi_list.addItem("No Wi-Fi networks found or NetworkManager offline.")
 
@@ -955,9 +956,34 @@ class TheonixSettingsWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
+        # Sidebar Container with Brand Tag
+        sidebar_box = QWidget()
+        sidebar_box.setObjectName("SidebarContainer")
+        sidebar_box.setFixedWidth(250)
+        sb_layout = QVBoxLayout(sidebar_box)
+        sb_layout.setContentsMargins(0, 16, 0, 16)
+        sb_layout.setSpacing(12)
+
+        # Brand header
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(20, 0, 20, 0)
+        brand_icon = QLabel("⚡")
+        brand_icon.setStyleSheet("font-size: 18px; color: #00FFAA;")
+        brand_title = QLabel("THEONIX")
+        brand_title.setStyleSheet("font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #FFFFFF;")
+        brand_tag = QLabel("SETTINGS")
+        brand_tag.setStyleSheet("font-size: 11px; font-weight: bold; background: rgba(0,255,170,0.15); color: #00FFAA; padding: 2px 6px; border-radius: 4px;")
+        
+        brand_row.addWidget(brand_icon)
+        brand_row.addWidget(brand_title)
+        brand_row.addWidget(brand_tag)
+        brand_row.addStretch()
+        sb_layout.addLayout(brand_row)
+
         self.nav_list = QListWidget()
         self.nav_list.setObjectName("NavSidebar")
-        self.nav_list.setFixedWidth(240)
+        self.nav_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         nav_items = [
             ("💻  System & About", SystemAboutPage),
@@ -978,13 +1004,15 @@ class TheonixSettingsWindow(QMainWindow):
             page = page_cls()
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             scroll.setWidget(page)
             self.stack.addWidget(scroll)
 
         self.nav_list.currentRowChanged.connect(self.stack.setCurrentIndex)
         self.nav_list.setCurrentRow(0)
 
-        main_layout.addWidget(self.nav_list)
+        sb_layout.addWidget(self.nav_list)
+        main_layout.addWidget(sidebar_box)
         main_layout.addWidget(self.stack)
 
 
