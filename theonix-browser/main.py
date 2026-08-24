@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Theonix Browser — Fast, Ultra-Dark Glassmorphic Web Browser for Theonix OS.
-Powered by theonix_core platform services with integrated THAID AI assistant.
+Powered by theonix_core platform services with top tabs, bookmarks, and integrated THAID AI assistant.
 """
 
 import os
@@ -17,7 +17,7 @@ from PyQt6.QtGui import QFont, QColor, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTabWidget, QLabel, QSplitter, QTextEdit,
-    QProgressBar, QToolBar, QFrame, QGridLayout, QTabBar
+    QProgressBar, QToolBar, QFrame, QGridLayout, QTabBar, QStackedWidget
 )
 
 from theonix_core import (
@@ -36,20 +36,13 @@ except ImportError:
 HOME_URL = "https://duckduckgo.com"
 
 BROWSER_THEME_QSS = THEONIX_THEME_QSS + """
-/* Browser Tabs at Top */
-QTabWidget#BrowserTabs::pane {
-    border: none;
-    background-color: #07090E;
-    margin: 0px;
-    padding: 0px;
-}
-
-QTabBar {
-    background-color: #0A0D15;
+/* Top Window Tabs Header */
+QTabBar#TopTabBar {
+    background-color: #0B0E17;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-QTabBar::tab {
+QTabBar#TopTabBar::tab {
     background-color: #0E121C;
     color: #94A3B8;
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -58,14 +51,14 @@ QTabBar::tab {
     border-top-right-radius: 8px;
     padding: 8px 16px;
     margin-right: 2px;
-    margin-top: 4px;
+    margin-top: 5px;
     font-size: 12.5px;
     font-weight: 500;
     min-width: 140px;
     max-width: 220px;
 }
 
-QTabBar::tab:selected {
+QTabBar#TopTabBar::tab:selected {
     background-color: #121826;
     color: #FFFFFF;
     border-color: rgba(0, 255, 170, 0.4);
@@ -73,7 +66,7 @@ QTabBar::tab:selected {
     font-weight: 600;
 }
 
-QTabBar::tab:hover:!selected {
+QTabBar#TopTabBar::tab:hover:!selected {
     background-color: rgba(255, 255, 255, 0.05);
     color: #E2E8F0;
 }
@@ -82,14 +75,14 @@ QTabBar::tab:hover:!selected {
 QFrame#NavToolbar {
     background-color: #0E121C;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    padding: 8px 12px;
+    padding: 8px 14px;
 }
 
 /* Bookmarks Bar */
 QFrame#BookmarksBar {
     background-color: #0B0E17;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 4px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 14px;
 }
 
 /* AI Sidebar */
@@ -102,7 +95,7 @@ QFrame#AISidebar {
 
 
 def render_fallback_page(url_or_query: str) -> str:
-    """Renders a beautiful, rich dark-mode startpage or web search preview."""
+    """Renders a clean, high-contrast dark startpage or web search preview."""
     is_search = "duckduckgo.com/?q=" in url_or_query or "google.com" in url_or_query
     query = ""
     if "q=" in url_or_query:
@@ -110,59 +103,118 @@ def render_fallback_page(url_or_query: str) -> str:
 
     if is_search and query:
         return f"""
-        <div style="background-color:#07090E;color:#F8FAFC;font-family:'Segoe UI',sans-serif;padding:32px;min-height:100%;">
-            <div style="max-width:780px;margin:0 auto;">
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:14px;">
-                    <span style="font-size:24px;">🔍</span>
-                    <div>
-                        <h2 style="margin:0;font-size:18px;color:#FFFFFF;">Search Results for &ldquo;<span style="color:#00FFAA;">{query}</span>&rdquo;</h2>
-                        <span style="color:#94A3B8;font-size:12px;">Query routed via privacy-first search index</span>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #07090E;
+                    color: #F8FAFC;
+                    font-family: 'Segoe UI', system-ui, sans-serif;
+                    padding: 36px 40px;
+                    margin: 0;
+                }}
+                .card {{
+                    background-color: #121826;
+                    border: 1px solid #1E2638;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 18px;
+                }}
+                .link-title {{
+                    color: #00FFAA;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-decoration: none;
+                }}
+                .url-tag {{
+                    color: #00D4FF;
+                    font-size: 12px;
+                    font-weight: 600;
+                    margin-bottom: 6px;
+                }}
+                .snippet {{
+                    color: #94A3B8;
+                    font-size: 13.5px;
+                    line-height: 1.5;
+                    margin-top: 6px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div style="max-width: 820px; margin: 0 auto;">
+                <div style="border-bottom: 1px solid #1E2638; padding-bottom: 16px; margin-bottom: 24px;">
+                    <h2 style="margin: 0; color: #FFFFFF; font-size: 20px;">Search results for <span style="color: #00FFAA;">"{query}"</span></h2>
+                    <span style="color: #64748B; font-size: 12px;">Instant private search routing</span>
+                </div>
+
+                <div class="card">
+                    <div class="url-tag">https://theonixos.xyz &rsaquo; docs &rsaquo; {query}</div>
+                    <a href="https://theonixos.xyz" class="link-title">Theonix OS &mdash; Next-Generation AI-Augmented Linux Distribution</a>
+                    <div class="snippet">
+                        Theonix OS combines Arch Linux rolling release speed, KDE Plasma 6 Wayland aesthetics, local THAID AI intelligence, and Universal App Compatibility Layer (UACL).
                     </div>
                 </div>
 
-                <div style="background:rgba(18,24,38,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:16px;">
-                    <div style="color:#00D4FF;font-size:12px;font-weight:bold;margin-bottom:4px;">https://theonixos.xyz &rsaquo; docs &rsaquo; {query}</div>
-                    <a href="https://theonixos.xyz" style="color:#00FFAA;font-size:17px;font-weight:bold;text-decoration:none;">Theonix OS &mdash; Next-Generation AI-Augmented Linux Distribution</a>
-                    <p style="color:#94A3B8;font-size:13px;line-height:1.5;margin-top:6px;">
-                        Theonix OS combines Arch Linux speed, KDE Plasma 6 Wayland aesthetics, local THAID AI intelligence, and Universal App Compatibility Layer (UACL).
-                    </p>
-                </div>
-
-                <div style="background:rgba(18,24,38,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:16px;">
-                    <div style="color:#00D4FF;font-size:12px;font-weight:bold;margin-bottom:4px;">https://wiki.archlinux.org &rsaquo; title &rsaquo; {query}</div>
-                    <a href="https://wiki.archlinux.org" style="color:#6C63FF;font-size:17px;font-weight:bold;text-decoration:none;">ArchWiki Documentation &middot; Community Reference</a>
-                    <p style="color:#94A3B8;font-size:13px;line-height:1.5;margin-top:6px;">
+                <div class="card">
+                    <div class="url-tag">https://wiki.archlinux.org &rsaquo; title &rsaquo; {query}</div>
+                    <a href="https://wiki.archlinux.org" class="link-title" style="color: #6C63FF;">ArchWiki Documentation &middot; Community Technical Guide</a>
+                    <div class="snippet">
                         Comprehensive technical documentation, package guidelines, systemd services, PipeWire audio configuration, and Vulkan driver guides.
-                    </p>
+                    </div>
                 </div>
 
-                <div style="background:rgba(18,24,38,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;">
-                    <div style="color:#00D4FF;font-size:12px;font-weight:bold;margin-bottom:4px;">https://github.com/kelvinkbk/TheonixOS</div>
-                    <a href="https://github.com/kelvinkbk/TheonixOS" style="color:#00FFAA;font-size:17px;font-weight:bold;text-decoration:none;">TheonixOS Official Repository on GitHub</a>
-                    <p style="color:#94A3B8;font-size:13px;line-height:1.5;margin-top:6px;">
+                <div class="card">
+                    <div class="url-tag">https://github.com/kelvinkbk/TheonixOS</div>
+                    <a href="https://github.com/kelvinkbk/TheonixOS" class="link-title">TheonixOS Official Repository on GitHub</a>
+                    <div class="snippet">
                         Open-source distribution source, Calamares branding, ISO build pipelines, and native Python applications suite.
-                    </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </body>
+        </html>
         """
     else:
         return f"""
-        <div style="background-color:#07090E;color:#F8FAFC;font-family:'Segoe UI',sans-serif;padding:60px 30px;text-align:center;">
-            <div style="max-width:650px;margin:0 auto;">
-                <div style="width:64px;height:64px;margin:0 auto 20px;border-radius:18px;background:linear-gradient(135deg,#6C63FF,#00FFAA);display:flex;align-items:center;justify-content:center;font-size:32px;color:#0B0E14;font-weight:bold;">⚡</div>
-                <h1 style="font-size:28px;font-weight:800;margin-bottom:10px;color:#FFFFFF;">Theonix Browser</h1>
-                <p style="color:#94A3B8;font-size:14px;margin-bottom:30px;">Fast, private, and AI-augmented web navigation powered by local intelligence.</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    background-color: #07090E;
+                    color: #F8FAFC;
+                    font-family: 'Segoe UI', system-ui, sans-serif;
+                    padding: 60px 30px;
+                    text-align: center;
+                    margin: 0;
+                }}
+                .hero-card {{
+                    background-color: #121826;
+                    border: 1px solid #1E2638;
+                    border-radius: 14px;
+                    padding: 28px;
+                    text-align: left;
+                    margin-top: 24px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div style="max-width: 660px; margin: 0 auto;">
+                <div style="width:60px;height:60px;margin:0 auto 16px;border-radius:16px;background:linear-gradient(135deg,#6C63FF,#00FFAA);display:flex;align-items:center;justify-content:center;font-size:28px;color:#0B0E14;font-weight:bold;">⚡</div>
+                <h1 style="font-size:26px;font-weight:800;margin-bottom:8px;color:#FFFFFF;">Theonix Browser</h1>
+                <p style="color:#94A3B8;font-size:13.5px;">Fast, private, and AI-augmented web navigation powered by local intelligence.</p>
 
-                <div style="background:rgba(18,24,38,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;text-align:left;">
-                    <div style="font-weight:bold;color:#00FFAA;margin-bottom:8px;">Active URL / Resource:</div>
-                    <a href="{url_or_query}" style="color:#00D4FF;font-size:14px;word-break:break-all;">{url_or_query}</a>
+                <div class="hero-card">
+                    <div style="font-weight:bold;color:#00FFAA;margin-bottom:6px;font-size:13px;">Connected Endpoint:</div>
+                    <a href="{url_or_query}" style="color:#00D4FF;font-size:14px;word-break:break-all;text-decoration:none;">{url_or_query}</a>
                     <p style="color:#94A3B8;font-size:12.5px;margin-top:12px;line-height:1.5;">
-                        Tip: Install <code style="color:#00FFAA;">python-pyqt6-webengine</code> for full Chromium Blink rendering engine, or use the integrated THAID sidebar on the right to analyze and extract information.
+                        Install <code style="color:#00FFAA;">python-pyqt6-webengine</code> for full Chromium Blink rendering, or use the integrated THAID sidebar on the right to analyze and extract information.
                     </p>
                 </div>
             </div>
-        </div>
+        </body>
+        </html>
         """
 
 
@@ -200,7 +252,30 @@ class TheonixBrowserWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 1. Navigation Toolbar
+        # 1. TOP TAB BAR (Row 1 - At the very top)
+        tab_header = QFrame()
+        tab_header.setStyleSheet("background-color: #0A0D15; border-bottom: 1px solid rgba(255,255,255,0.08);")
+        th_layout = QHBoxLayout(tab_header)
+        th_layout.setContentsMargins(8, 4, 8, 0)
+        th_layout.setSpacing(6)
+
+        self.tab_bar = QTabBar()
+        self.tab_bar.setObjectName("TopTabBar")
+        self.tab_bar.setTabsClosable(True)
+        self.tab_bar.setMovable(True)
+        self.tab_bar.tabCloseRequested.connect(self._close_tab)
+        self.tab_bar.currentChanged.connect(self._on_tab_changed)
+        th_layout.addWidget(self.tab_bar, 1)
+
+        self.new_tab_btn = QPushButton("➕")
+        self.new_tab_btn.setProperty("class", "ActionBtn")
+        self.new_tab_btn.setFixedHeight(30)
+        self.new_tab_btn.clicked.connect(lambda: self.add_tab(HOME_URL, "New Tab"))
+        th_layout.addWidget(self.new_tab_btn)
+
+        main_layout.addWidget(tab_header)
+
+        # 2. NAVIGATION TOOLBAR (Row 2)
         nav_toolbar = QFrame()
         nav_toolbar.setObjectName("NavToolbar")
         t_layout = QHBoxLayout(nav_toolbar)
@@ -227,7 +302,7 @@ class TheonixBrowserWindow(QMainWindow):
         self.home_btn.clicked.connect(lambda: self._navigate_to(HOME_URL))
         t_layout.addWidget(self.home_btn)
 
-        # URL Bar with SSL indicator
+        # URL Bar
         self.url_bar = SearchBar("Search or enter web address (Ctrl+L)...")
         self.url_bar.returnPressed.connect(self._on_url_entered)
         t_layout.addWidget(self.url_bar, 1)
@@ -237,14 +312,9 @@ class TheonixBrowserWindow(QMainWindow):
         self.ai_toggle_btn.clicked.connect(self._toggle_ai_sidebar)
         t_layout.addWidget(self.ai_toggle_btn)
 
-        self.new_tab_btn = QPushButton("➕")
-        self.new_tab_btn.setProperty("class", "ActionBtn")
-        self.new_tab_btn.clicked.connect(lambda: self.add_tab(HOME_URL, "New Tab"))
-        t_layout.addWidget(self.new_tab_btn)
-
         main_layout.addWidget(nav_toolbar)
 
-        # 2. Bookmarks Bar
+        # 3. BOOKMARKS BAR (Row 3)
         bmk_bar = QFrame()
         bmk_bar.setObjectName("BookmarksBar")
         bmk_layout = QHBoxLayout(bmk_bar)
@@ -267,17 +337,14 @@ class TheonixBrowserWindow(QMainWindow):
         bmk_layout.addStretch()
         main_layout.addWidget(bmk_bar)
 
-        # 3. Main Splitter: Tabs Viewport + AI Assistant Drawer
+        # 4. VIEWPORT STACK & AI SIDEBAR SPLITTER (Row 4 - 100% Height)
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        self.tabs = QTabWidget()
-        self.tabs.setObjectName("BrowserTabs")
-        self.tabs.setTabsClosable(True)
-        self.tabs.tabCloseRequested.connect(self._close_tab)
-        self.tabs.currentChanged.connect(self._on_tab_changed)
-        self.splitter.addWidget(self.tabs)
+        self.view_stack = QStackedWidget()
+        self.view_stack.setStyleSheet("background-color: #07090E;")
+        self.splitter.addWidget(self.view_stack)
 
-        # 4. AI Assistant Sidebar
+        # AI Assistant Sidebar
         self.ai_sidebar = QFrame()
         self.ai_sidebar.setObjectName("AISidebar")
         self.ai_sidebar.setFixedWidth(330)
@@ -344,7 +411,7 @@ class TheonixBrowserWindow(QMainWindow):
 
         # Keyboard shortcuts
         QShortcut(QKeySequence("Ctrl+T"), self, lambda: self.add_tab(HOME_URL, "New Tab"))
-        QShortcut(QKeySequence("Ctrl+W"), self, lambda: self._close_tab(self.tabs.currentIndex()))
+        QShortcut(QKeySequence("Ctrl+W"), self, lambda: self._close_tab(self.tab_bar.currentIndex()))
         QShortcut(QKeySequence("Ctrl+R"), self, self._nav_reload)
         QShortcut(QKeySequence("Ctrl+L"), self, lambda: (self.url_bar.setFocus(), self.url_bar.selectAll()))
 
@@ -362,28 +429,36 @@ class TheonixBrowserWindow(QMainWindow):
             view.setStyleSheet("background-color: #07090E; border: none; color: #F8FAFC;")
             view.setHtml(render_fallback_page(url))
 
-        idx = self.tabs.addTab(view, title)
-        self.tabs.setCurrentIndex(idx)
+        view.setProperty("current_url", url)
+        idx = self.view_stack.addWidget(view)
+        t_idx = self.tab_bar.addTab(title)
+        self.tab_bar.setCurrentIndex(t_idx)
+        self.view_stack.setCurrentIndex(idx)
 
     def _update_tab_title(self, view, title):
-        idx = self.tabs.indexOf(view)
+        idx = self.view_stack.indexOf(view)
         if idx != -1:
-            self.tabs.setTabText(idx, title[:18] + ("..." if len(title) > 18 else ""))
+            self.tab_bar.setTabText(idx, title[:18] + ("..." if len(title) > 18 else ""))
 
     def _update_url_bar(self, view, url):
-        if self.tabs.currentWidget() == view:
+        if self.view_stack.currentWidget() == view:
             self.url_bar.setText(url.toString())
 
     def _close_tab(self, idx):
-        if self.tabs.count() > 1:
-            widget = self.tabs.widget(idx)
-            self.tabs.removeTab(idx)
+        if self.tab_bar.count() > 1:
+            self.tab_bar.removeTab(idx)
+            widget = self.view_stack.widget(idx)
+            self.view_stack.removeWidget(widget)
             widget.deleteLater()
 
     def _on_tab_changed(self, idx):
-        view = self.tabs.currentWidget()
-        if HAS_WEBENGINE and view:
-            self.url_bar.setText(view.url().toString())
+        if 0 <= idx < self.view_stack.count():
+            self.view_stack.setCurrentIndex(idx)
+            view = self.view_stack.widget(idx)
+            if HAS_WEBENGINE and view:
+                self.url_bar.setText(view.url().toString())
+            elif view:
+                self.url_bar.setText(view.property("current_url") or HOME_URL)
 
     def _on_url_entered(self):
         target = self.url_bar.text().strip()
@@ -397,25 +472,31 @@ class TheonixBrowserWindow(QMainWindow):
         self._navigate_to(target)
 
     def _navigate_to(self, url: str):
-        view = self.tabs.currentWidget()
+        view = self.view_stack.currentWidget()
         if HAS_WEBENGINE and view:
             view.setUrl(QUrl(url))
         elif view:
+            view.setProperty("current_url", url)
             view.setHtml(render_fallback_page(url))
+        
+        cur_idx = self.tab_bar.currentIndex()
+        if cur_idx >= 0:
+            domain = urllib.parse.urlparse(url).netloc or url
+            self.tab_bar.setTabText(cur_idx, domain[:18])
         self.url_bar.setText(url)
 
     def _nav_back(self):
-        view = self.tabs.currentWidget()
+        view = self.view_stack.currentWidget()
         if HAS_WEBENGINE and view:
             view.back()
 
     def _nav_forward(self):
-        view = self.tabs.currentWidget()
+        view = self.view_stack.currentWidget()
         if HAS_WEBENGINE and view:
             view.forward()
 
     def _nav_reload(self):
-        view = self.tabs.currentWidget()
+        view = self.view_stack.currentWidget()
         if HAS_WEBENGINE and view:
             view.reload()
         elif view:
