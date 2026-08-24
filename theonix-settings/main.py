@@ -528,12 +528,18 @@ class TouchpadGesturesPage(QWidget):
         grid.setSpacing(10)
 
         mappings = [
-            ("👆👆👆 3 Fingers Up", "Task View / Window Overview", "green"),
-            ("👇👇👇 3 Fingers Down", "Show Desktop / Minimize All", "cyan"),
-            ("👈👉 3 Fingers Left / Right", "Switch Desktops / Open Apps", "blue"),
-            ("🤏 2 Fingers Pinch / Spread", "Smooth Zoom In / Out", "purple"),
+            ("👆 1 Finger Tap", "Left Click", "green"),
             ("✌️ 2 Fingers Tap", "Right-Click Context Menu", "yellow"),
             ("📜 2 Fingers Drag", "Smooth Inertial Scroll", "green"),
+            ("🤏 2 Fingers Pinch", "1:1 Zoom In / Out", "purple"),
+            ("👈👉 2 Fingers Swipe L/R", "History Back / Forward", "blue"),
+            ("👆 3 Fingers Swipe Up", "Task View / Overview", "green"),
+            ("👇 3 Fingers Swipe Down", "Show Desktop", "cyan"),
+            ("👈👉 3 Fingers Swipe L/R", "Switch Applications (Alt+Tab)", "blue"),
+            ("👆 3 Fingers Tap", "Middle Click", "yellow"),
+            ("👆 4 Fingers Swipe Up", "Workspaces Grid Overview", "purple"),
+            ("👈👉 4 Fingers Swipe L/R", "Switch Virtual Desktops", "cyan"),
+            ("👆 4 Fingers Tap", "THAID AI Assistant", "green"),
         ]
 
         for idx, (gesture, action, color) in enumerate(mappings):
