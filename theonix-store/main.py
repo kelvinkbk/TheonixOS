@@ -28,6 +28,7 @@ from theonix_core import (
 )
 
 FEATURED_APPS = [
+    # Development
     {
         "name": "Visual Studio Code",
         "pkg": "code",
@@ -36,27 +37,127 @@ FEATURED_APPS = [
         "icon": "💻",
         "version": "1.92.0",
         "size": "95 MB",
-        "desc": "Industry-leading extensible code editor with integrated debugging, Git, and terminal.",
+        "desc": "Industry-standard code editor with built-in debugging, Git, extensions, and terminal.",
         "compat": CompatibilityRating.NATIVE,
-        "compat_desc": "Official Arch Linux native binary (100% performance)"
+        "compat_desc": "Official Arch Linux native package (100% performance)"
+    },
+    {
+        "name": "PyCharm Community",
+        "pkg": "pycharm-community-edition",
+        "source": "pacman",
+        "category": "Development",
+        "icon": "🐍",
+        "version": "2024.2",
+        "size": "480 MB",
+        "desc": "Intelligent Python IDE with smart code inspection, refactoring, and debugger.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux Java/JVM IDE"
+    },
+    {
+        "name": "Neovim",
+        "pkg": "neovim",
+        "source": "pacman",
+        "category": "Development",
+        "icon": "⌨️",
+        "version": "0.10.1",
+        "size": "18 MB",
+        "desc": "Hyperextensible Vim-based modal text editor with Lua plugin architecture and LSP.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Ultra-fast native C binary"
+    },
+    {
+        "name": "Godot Engine 4",
+        "pkg": "godot",
+        "source": "pacman",
+        "category": "Development",
+        "icon": "🤖",
+        "version": "4.3.0",
+        "size": "85 MB",
+        "desc": "Free and open-source 2D and 3D cross-platform game engine with Vulkan renderer.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Vulkan accelerated native game engine"
+    },
+    {
+        "name": "GitKraken Git GUI",
+        "pkg": "com.axosoft.GitKraken",
+        "source": "flatpak",
+        "category": "Development",
+        "icon": "🐙",
+        "version": "10.1.0",
+        "size": "110 MB",
+        "desc": "Visual Git client with interactive merge conflict resolver and worktree management.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed Flathub container"
+    },
+    {
+        "name": "DBeaver Database Tool",
+        "pkg": "dbeaver",
+        "source": "pacman",
+        "category": "Development",
+        "icon": "🗄️",
+        "version": "24.1.5",
+        "size": "98 MB",
+        "desc": "Universal database manager for PostgreSQL, MySQL, SQLite, Oracle, and Redis.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux database IDE"
+    },
+
+    # AI & Machine Learning
+    {
+        "name": "THAID AI Assistant",
+        "pkg": "thaid-gui",
+        "source": "pacman",
+        "category": "AI & Machine Learning",
+        "icon": "✨",
+        "version": "2.0.0",
+        "size": "12 MB",
+        "desc": "Theonix OS system-level neural assistant for autonomous control, code generation, and browsing.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Built-in Theonix OS core service"
     },
     {
         "name": "Ollama AI Local Engine",
         "pkg": "ollama",
         "source": "pacman",
-        "category": "AI & Tools",
+        "category": "AI & Machine Learning",
         "icon": "🧠",
         "version": "0.3.12",
         "size": "32 MB",
-        "desc": "Run large neural models locally on your GPU/CPU with full privacy and zero cloud telemetry.",
+        "desc": "Run large language models locally on CPU/GPU with zero cloud telemetry.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Hardware accelerated native inference engine"
     },
     {
+        "name": "LM Studio",
+        "pkg": "ai.lmstudio.LMStudio",
+        "source": "flatpak",
+        "category": "AI & Machine Learning",
+        "icon": "🔮",
+        "version": "0.3.2",
+        "size": "140 MB",
+        "desc": "Discover, download, and experiment with local LLMs with a rich chat and API interface.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed container with CUDA/ROCm offload"
+    },
+    {
+        "name": "Whisper Speech-to-Text",
+        "pkg": "openai-whisper",
+        "source": "pacman",
+        "category": "AI & Machine Learning",
+        "icon": "🎙️",
+        "version": "20231117",
+        "size": "45 MB",
+        "desc": "High-accuracy neural voice transcription and multi-language translation model.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "PyTorch accelerated audio model"
+    },
+
+    # Graphics & Media
+    {
         "name": "Blender 3D Suite",
         "pkg": "blender",
         "source": "pacman",
-        "category": "Graphics",
+        "category": "Graphics & Media",
         "icon": "🎨",
         "version": "4.2.1",
         "size": "240 MB",
@@ -65,46 +166,10 @@ FEATURED_APPS = [
         "compat_desc": "Vulkan & OptiX accelerated native Linux package"
     },
     {
-        "name": "Discord",
-        "pkg": "com.discordapp.Discord",
-        "source": "flatpak",
-        "category": "Communication",
-        "icon": "💬",
-        "version": "0.0.60",
-        "size": "85 MB",
-        "desc": "Voice, video, and text communication service for gaming, developers, and communities.",
-        "compat": CompatibilityRating.NATIVE,
-        "compat_desc": "Sandboxed Flathub container with PipeWire audio"
-    },
-    {
-        "name": "Steam & Proton",
-        "pkg": "steam",
-        "source": "pacman",
-        "category": "Games",
-        "icon": "🎮",
-        "version": "1.0.0.79",
-        "size": "65 MB",
-        "desc": "The ultimate gaming platform with Proton DXVK/VKD3D compatibility for thousands of titles.",
-        "compat": CompatibilityRating.NATIVE,
-        "compat_desc": "Native client with Vulkan translation layers"
-    },
-    {
-        "name": "Notepad++ (Win32)",
-        "pkg": "npp.installer.exe",
-        "source": "uacl",
-        "category": "Utilities",
-        "icon": "🪟",
-        "version": "8.6.9",
-        "size": "15 MB",
-        "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
-        "compat": CompatibilityRating.UACL_COMPATIBLE,
-        "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
-    },
-    {
         "name": "GIMP Image Editor",
         "pkg": "gimp",
         "source": "pacman",
-        "category": "Graphics",
+        "category": "Graphics & Media",
         "icon": "🖼️",
         "version": "2.10.38",
         "size": "115 MB",
@@ -113,16 +178,176 @@ FEATURED_APPS = [
         "compat_desc": "Official Arch Linux native application"
     },
     {
+        "name": "Krita Digital Painting",
+        "pkg": "krita",
+        "source": "pacman",
+        "category": "Graphics & Media",
+        "icon": "🖌️",
+        "version": "5.2.3",
+        "size": "180 MB",
+        "desc": "Professional painting program for concept artists, illustrators, and matte painters.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Qt6 Wayland native creative application"
+    },
+    {
+        "name": "Inkscape Vector Studio",
+        "pkg": "inkscape",
+        "source": "pacman",
+        "category": "Graphics & Media",
+        "icon": "📐",
+        "version": "1.3.2",
+        "size": "130 MB",
+        "desc": "Professional vector graphics editor for SVG illustration, typography, and iconography.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux vector suite"
+    },
+    {
+        "name": "OBS Studio",
+        "pkg": "obs-studio",
+        "source": "pacman",
+        "category": "Graphics & Media",
+        "icon": "📹",
+        "version": "30.2.2",
+        "size": "60 MB",
+        "desc": "Live streaming and screen video recording with PipeWire capture and NVENC/VAAPI.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Hardware encoder accelerated"
+    },
+    {
         "name": "VLC Media Player",
         "pkg": "vlc",
         "source": "pacman",
-        "category": "Multimedia",
+        "category": "Graphics & Media",
         "icon": "🎬",
         "version": "3.0.21",
         "size": "45 MB",
         "desc": "Universal media player that plays most multimedia files, codecs, and network streams.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "High performance PipeWire and VAAPI accelerated"
+    },
+
+    # Productivity
+    {
+        "name": "LibreOffice Fresh",
+        "pkg": "libreoffice-fresh",
+        "source": "pacman",
+        "category": "Productivity",
+        "icon": "📑",
+        "version": "24.8.0",
+        "size": "160 MB",
+        "desc": "Full office productivity suite including Writer, Calc spreadsheets, Impress presentations, and Draw.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux office suite"
+    },
+    {
+        "name": "Obsidian Knowledge Base",
+        "pkg": "md.obsidian.Obsidian",
+        "source": "flatpak",
+        "category": "Productivity",
+        "icon": "💎",
+        "version": "1.6.7",
+        "size": "85 MB",
+        "desc": "Second brain and Markdown note-taking app with bidirectional graph linking.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed Flathub container"
+    },
+    {
+        "name": "Thunderbird Mail",
+        "pkg": "thunderbird",
+        "source": "pacman",
+        "category": "Productivity",
+        "icon": "✉️",
+        "version": "128.1.0",
+        "size": "70 MB",
+        "desc": "Full-featured secure email, calendar, and address book client with PGP encryption.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Official Arch Linux email client"
+    },
+    {
+        "name": "Bitwarden Vault",
+        "pkg": "bitwarden",
+        "source": "pacman",
+        "category": "Productivity",
+        "icon": "🛡️",
+        "version": "2024.7.1",
+        "size": "85 MB",
+        "desc": "End-to-end encrypted password manager and 2FA authenticator for all devices.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux secure vault"
+    },
+
+    # Gaming & UACL
+    {
+        "name": "Steam & Proton",
+        "pkg": "steam",
+        "source": "pacman",
+        "category": "Gaming & UACL",
+        "icon": "🎮",
+        "version": "1.0.0.79",
+        "size": "65 MB",
+        "desc": "The ultimate gaming platform with Proton DXVK/VKD3D compatibility for thousands of titles.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native client with Vulkan translation layers"
+    },
+    {
+        "name": "Heroic Games Launcher",
+        "pkg": "com.heroicgameslauncher.hgl",
+        "source": "flatpak",
+        "category": "Gaming & UACL",
+        "icon": "⚔️",
+        "version": "2.14.1",
+        "size": "95 MB",
+        "desc": "Native GUI launcher for Epic Games, GOG, and Amazon Prime with Proton wine prefix manager.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed Flathub gaming client"
+    },
+    {
+        "name": "Lutris Gaming Platform",
+        "pkg": "lutris",
+        "source": "pacman",
+        "category": "Gaming & UACL",
+        "icon": "🕹️",
+        "version": "0.5.17",
+        "size": "25 MB",
+        "desc": "Open gaming platform to install and manage Windows, Linux, emulator, and console games.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Linux gaming manager"
+    },
+    {
+        "name": "RetroArch Multi-Emulator",
+        "pkg": "retroarch",
+        "source": "pacman",
+        "category": "Gaming & UACL",
+        "icon": "👾",
+        "version": "1.19.1",
+        "size": "40 MB",
+        "desc": "Frontend for game engines and classic console emulators with low latency and shaders.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Native Vulkan/OpenGL emulator engine"
+    },
+    {
+        "name": "Discord",
+        "pkg": "com.discordapp.Discord",
+        "source": "flatpak",
+        "category": "Gaming & UACL",
+        "icon": "💬",
+        "version": "0.0.60",
+        "size": "85 MB",
+        "desc": "Voice, video, and text communication service for gaming, developers, and communities.",
+        "compat": CompatibilityRating.NATIVE,
+        "compat_desc": "Sandboxed Flathub container with PipeWire audio"
+    },
+    {
+        "name": "Notepad++ (Win32)",
+        "pkg": "npp.installer.exe",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "🪟",
+        "version": "8.6.9",
+        "size": "15 MB",
+        "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
     },
 ]
 
@@ -695,7 +920,10 @@ class TheonixStoreWindow(QMainWindow):
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
 
-            filtered = [a for a in FEATURED_APPS if cat_name.lower() in a.get("category", "").lower()]
+            filtered = [
+                a for a in FEATURED_APPS 
+                if cat_name.lower() in a.get("category", "").lower() or a.get("category", "").lower() in cat_name.lower()
+            ]
             for app_data in filtered:
                 if self.active_filter == "all" or app_data.get("source") == self.active_filter:
                     card = AppCard(app_data, self)
