@@ -20,7 +20,7 @@ impl ModelRouter {
     pub fn new() -> Self {
         // Attempt to load from /etc/theonix/router.json
         let config_path = "/etc/theonix/router.json";
-        
+
         let default_rules = vec![
             RouteRule {
                 keywords: vec!["code".into(), "rust".into(), "python".into(), "bug".into()],
@@ -31,15 +31,19 @@ impl ModelRouter {
                 keywords: vec!["wifi".into(), "dns".into()],
                 model: "network-agent".into(),
                 priority: 90,
-            }
+            },
         ];
 
         let config = if let Ok(data) = std::fs::read_to_string(config_path) {
-            serde_json::from_str(&data).unwrap_or(RouterConfig { rules: default_rules.clone() })
+            serde_json::from_str(&data).unwrap_or(RouterConfig {
+                rules: default_rules.clone(),
+            })
         } else {
-            RouterConfig { rules: default_rules }
+            RouterConfig {
+                rules: default_rules,
+            }
         };
-        
+
         Self { config }
     }
 
@@ -51,9 +55,9 @@ impl ModelRouter {
         }
 
         let lower_prompt = prompt.to_lowercase();
-        
+
         let mut best_match: Option<&RouteRule> = None;
-        
+
         for rule in &self.config.rules {
             if rule.keywords.iter().any(|k| lower_prompt.contains(k)) {
                 if let Some(best) = best_match {

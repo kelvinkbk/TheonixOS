@@ -1,14 +1,17 @@
-use serde_json::{json, Value};
-use tokio::process::Command;
-use std::sync::Arc;
 use crate::services::tools::Tool;
+use serde_json::{json, Value};
 use std::future::Future;
 use std::pin::Pin;
+use tokio::process::Command;
 
 pub struct GetSystemInfoTool;
 impl Tool for GetSystemInfoTool {
-    fn name(&self) -> &str { "get_system_info" }
-    fn description(&self) -> &str { "Get the current system health including CPU usage, RAM, and temperatures." }
+    fn name(&self) -> &str {
+        "get_system_info"
+    }
+    fn description(&self) -> &str {
+        "Get the current system health including CPU usage, RAM, and temperatures."
+    }
     fn schema(&self) -> Value {
         json!({
             "type": "function",
@@ -19,7 +22,10 @@ impl Tool for GetSystemInfoTool {
             }
         })
     }
-    fn execute<'a>(&'a self, _args: &'a Value) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        _args: &'a Value,
+    ) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
         Box::pin(async move {
             let output = Command::new("bash")
                 .arg("-c")
@@ -36,8 +42,12 @@ impl Tool for GetSystemInfoTool {
 
 pub struct SetVolumeTool;
 impl Tool for SetVolumeTool {
-    fn name(&self) -> &str { "set_volume" }
-    fn description(&self) -> &str { "Set the system audio volume (0-100)." }
+    fn name(&self) -> &str {
+        "set_volume"
+    }
+    fn description(&self) -> &str {
+        "Set the system audio volume (0-100)."
+    }
     fn schema(&self) -> Value {
         json!({
             "type": "function",
@@ -52,7 +62,10 @@ impl Tool for SetVolumeTool {
             }
         })
     }
-    fn execute<'a>(&'a self, args: &'a Value) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        args: &'a Value,
+    ) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
         Box::pin(async move {
             if let Some(level) = args.get("level").and_then(|v| v.as_i64()) {
                 let cmd = format!("amixer -D pulse sset Master {}%", level);
@@ -67,8 +80,12 @@ impl Tool for SetVolumeTool {
 
 pub struct LaunchAppTool;
 impl Tool for LaunchAppTool {
-    fn name(&self) -> &str { "launch_app" }
-    fn description(&self) -> &str { "Open or launch a graphical desktop application (e.g. Chrome, Firefox) by name." }
+    fn name(&self) -> &str {
+        "launch_app"
+    }
+    fn description(&self) -> &str {
+        "Open or launch a graphical desktop application (e.g. Chrome, Firefox) by name."
+    }
     fn schema(&self) -> Value {
         json!({
             "type": "function",
@@ -83,25 +100,34 @@ impl Tool for LaunchAppTool {
             }
         })
     }
-    fn execute<'a>(&'a self, args: &'a Value) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        args: &'a Value,
+    ) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
         Box::pin(async move {
             if let Some(app) = args.get("app_name").and_then(|v| v.as_str()) {
                 let app_lower = app.to_lowercase();
                 let binary = match app_lower.as_str() {
-                    "chrome" | "google chrome" => "(google-chrome-stable || google-chrome || chromium || chromium-browser)",
+                    "chrome" | "google chrome" => {
+                        "(google-chrome-stable || google-chrome || chromium || chromium-browser)"
+                    }
                     "firefox" | "mozilla" => "(firefox || firefox-developer-edition || librewolf)",
                     "discord" => "(discord || discord-canary || webcord)",
-                    "terminal" | "console" => "(konsole || alacritty || kitty || gnome-terminal || xterm)",
+                    "terminal" | "console" => {
+                        "(konsole || alacritty || kitty || gnome-terminal || xterm)"
+                    }
                     "files" | "file manager" => "(dolphin || nautilus || thunar || pcmanfm)",
-                    "settings" => "(systemsettings || gnome-control-center || xfce4-settings-manager)",
+                    "settings" => {
+                        "(systemsettings || gnome-control-center || xfce4-settings-manager)"
+                    }
                     _ => app,
                 };
-                
+
                 let _ = Command::new("bash")
                     .arg("-c")
                     .arg(format!("{} &", binary))
                     .spawn();
-                    
+
                 Some(format!("Launched application: {}", app))
             } else {
                 Some("Error: Missing app_name argument".to_string())
@@ -112,8 +138,12 @@ impl Tool for LaunchAppTool {
 
 pub struct RunOsCommandTool;
 impl Tool for RunOsCommandTool {
-    fn name(&self) -> &str { "run_os_command" }
-    fn description(&self) -> &str { "Execute a system command securely using program name and arguments array." }
+    fn name(&self) -> &str {
+        "run_os_command"
+    }
+    fn description(&self) -> &str {
+        "Execute a system command securely using program name and arguments array."
+    }
     fn schema(&self) -> Value {
         json!({
             "type": "function",
@@ -122,7 +152,7 @@ impl Tool for RunOsCommandTool {
                 "description": self.description(),
                 "parameters": {
                     "type": "object",
-                    "properties": { 
+                    "properties": {
                         "program": { "type": "string", "description": "The executable program to run (e.g., 'systemctl', 'echo', 'mkdir')." },
                         "args": { "type": "array", "items": { "type": "string" }, "description": "Array of arguments to pass to the program." }
                     },
@@ -131,7 +161,10 @@ impl Tool for RunOsCommandTool {
             }
         })
     }
-    fn execute<'a>(&'a self, args: &'a Value) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        args: &'a Value,
+    ) -> Pin<Box<dyn Future<Output = Option<String>> + Send + 'a>> {
         Box::pin(async move {
             let program = args.get("program").and_then(|v| v.as_str());
             let cmd_args = args.get("args").and_then(|v| v.as_array());
@@ -157,15 +190,26 @@ impl Tool for RunOsCommandTool {
                         if out.status.success() {
                             Some(format!("Success.\n{stdout}"))
                         } else if out.status.code() == Some(124) {
-                            Some(format!("Command timed out after {} seconds.\n{}\n{}", TOOL_TIMEOUT, stdout, stderr))
+                            Some(format!(
+                                "Command timed out after {} seconds.\n{}\n{}",
+                                TOOL_TIMEOUT, stdout, stderr
+                            ))
                         } else {
-                            Some(format!("Failed (code {}).\n{}\n{}", out.status.code().unwrap_or(1), stderr, stdout))
+                            Some(format!(
+                                "Failed (code {}).\n{}\n{}",
+                                out.status.code().unwrap_or(1),
+                                stderr,
+                                stdout
+                            ))
                         }
                     }
                     Err(e) => Some(format!("Execution failed: {e}")),
                 }
             } else {
-                Some(format!("Error: Missing program or args. Received: {}", args))
+                Some(format!(
+                    "Error: Missing program or args. Received: {}",
+                    args
+                ))
             }
         })
     }

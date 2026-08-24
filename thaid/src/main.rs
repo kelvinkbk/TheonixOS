@@ -97,17 +97,31 @@ async fn main() -> Result<()> {
     let mut plugin_manager = crate::services::tools::plugin_manager::PluginManager::new();
 
     let mut executor = crate::services::tools::ToolExecutor::new(permission_manager.clone());
-    
+
     // Register migrated trait-based tools
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::GetSystemInfoTool));
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::SetVolumeTool));
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::LaunchAppTool));
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::system::RunOsCommandTool));
-    
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::system::GetSystemInfoTool,
+    ));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::system::SetVolumeTool,
+    ));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::system::LaunchAppTool,
+    ));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::system::RunOsCommandTool,
+    ));
+
     // Register Phase 4 Desktop tools
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::ReadClipboardTool));
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::SendNotificationTool));
-    executor.register_tool(std::sync::Arc::new(crate::services::tools::desktop::KRunnerSearchTool));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::desktop::ReadClipboardTool,
+    ));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::desktop::SendNotificationTool,
+    ));
+    executor.register_tool(std::sync::Arc::new(
+        crate::services::tools::desktop::KRunnerSearchTool,
+    ));
 
     // ---- Phase 5: Dynamic Plugin Loading ----
     match plugin_manager.load_all_plugins() {
@@ -126,9 +140,9 @@ async fn main() -> Result<()> {
     let tool_executor = std::sync::Arc::new(executor);
 
     let memory_arc = std::sync::Arc::new(tokio::sync::RwLock::new(memory));
-    
+
     let event_bus = std::sync::Arc::new(crate::services::event_bus::EventBus::new());
-    
+
     let metrics = std::sync::Arc::new(crate::services::metrics::MetricsService::new());
 
     let container = crate::services::container::ServiceContainer::new(
@@ -149,7 +163,12 @@ async fn main() -> Result<()> {
         .context("Cannot acquire D-Bus name org.theonix.AI — another instance may be running")?
         .serve_at(
             "/org/theonix/AI",
-            dbus::AIInterface::new(config.clone(), model_manager.clone(), memory_arc.clone(), planner),
+            dbus::AIInterface::new(
+                config.clone(),
+                model_manager.clone(),
+                memory_arc.clone(),
+                planner,
+            ),
         )
         .context("Failed to register D-Bus object")?
         .build()

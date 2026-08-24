@@ -30,9 +30,12 @@ pub async fn execute_settings_tool(name: &str, args: &Value) -> Option<String> {
         "change_desktop_settings" => {
             let action = match args.get("action").and_then(|v| v.as_str()) {
                 Some(a) => a,
-                None => return Some("Error: Missing required argument 'action' (must be 'theme' or 'wallpaper').".to_string()),
+                None => return Some(
+                    "Error: Missing required argument 'action' (must be 'theme' or 'wallpaper')."
+                        .to_string(),
+                ),
             };
-            
+
             let argument = match args.get("argument").and_then(|v| v.as_str()) {
                 Some(a) => a,
                 None => return Some("Error: Missing required argument 'argument' (e.g. theme name or wallpaper path).".to_string()),

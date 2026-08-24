@@ -1,14 +1,14 @@
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use crate::services::memory::ConversationStore;
+use crate::services::metrics::MetricsService;
+use crate::services::models::ModelManager;
 use crate::services::permissions::PermissionManager;
 use crate::services::tools::ToolExecutor;
-use crate::services::models::ModelManager;
-use crate::services::metrics::MetricsService;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
+use crate::services::event_bus::EventBus;
 use std::collections::HashMap;
 use tokio_util::sync::CancellationToken;
-use crate::services::event_bus::EventBus;
 
 /// The ServiceContainer holds all core services and dependencies.
 /// This pattern enables true Dependency Injection, avoiding a tangled web
@@ -43,7 +43,7 @@ impl ServiceContainer {
             active_queries: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-    
+
     pub async fn cancel_query(&self, session_id: &str) {
         let queries = self.active_queries.read().await;
         if let Some(token) = queries.get(session_id) {

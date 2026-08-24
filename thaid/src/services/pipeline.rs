@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use crate::services::container::ServiceContainer;
-use zbus::zvariant::OwnedValue;
+use std::collections::HashMap;
 use std::sync::Arc;
+use zbus::zvariant::OwnedValue;
 
 pub struct PipelineContext {
     pub prompt: String,
@@ -17,7 +17,11 @@ pub struct PipelineContext {
 
 pub trait PipelineStep: Send + Sync {
     fn name(&self) -> &str;
-    fn execute<'a>(&'a self, ctx: &'a mut PipelineContext, container: &'a ServiceContainer) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), String>> + Send + 'a>>;
+    fn execute<'a>(
+        &'a self,
+        ctx: &'a mut PipelineContext,
+        container: &'a ServiceContainer,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), String>> + Send + 'a>>;
 }
 
 pub struct Pipeline {
@@ -33,7 +37,13 @@ impl Pipeline {
         self.steps.push(step);
     }
 
-    pub async fn execute(&self, prompt: String, options: HashMap<String, OwnedValue>, container: &ServiceContainer, token: tokio_util::sync::CancellationToken) -> Result<String, String> {
+    pub async fn execute(
+        &self,
+        prompt: String,
+        options: HashMap<String, OwnedValue>,
+        container: &ServiceContainer,
+        token: tokio_util::sync::CancellationToken,
+    ) -> Result<String, String> {
         let session_id: Option<String> = options
             .get("session")
             .and_then(|v| <&str>::try_from(v).ok())
@@ -59,6 +69,7 @@ impl Pipeline {
             step.execute(&mut ctx, container).await?;
         }
 
-        ctx.response.ok_or_else(|| "Pipeline completed without generating a response".to_string())
+        ctx.response
+            .ok_or_else(|| "Pipeline completed without generating a response".to_string())
     }
 }

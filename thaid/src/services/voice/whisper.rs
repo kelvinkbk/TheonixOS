@@ -29,7 +29,10 @@ impl WhisperTranscriber {
 
         if !std::path::Path::new(&model_path).exists() {
             if let Some(home) = dirs::home_dir() {
-                let local_path = home.join(format!(".local/share/theonix/models/whisper/ggml-{}.bin", self.model_size));
+                let local_path = home.join(format!(
+                    ".local/share/theonix/models/whisper/ggml-{}.bin",
+                    self.model_size
+                ));
                 if local_path.exists() {
                     model_path = local_path.to_string_lossy().to_string();
                 }

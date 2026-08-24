@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use std::collections::HashMap;
 use crate::services::tools::Plugin;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 /// PluginManager handles the dynamic loading of .so libraries.
 pub struct PluginManager {
@@ -30,7 +30,8 @@ impl PluginManager {
                 let path = entry.path();
                 if path.extension().and_then(|e| e.to_str()) == Some("so") {
                     if let Ok((plugin, lib)) = self.load_plugin(path.to_str().unwrap_or_default()) {
-                        self.loaded_plugins.insert(plugin.name().to_string(), plugin);
+                        self.loaded_plugins
+                            .insert(plugin.name().to_string(), plugin);
                         self.libraries.push(lib);
                         count += 1;
                     } else {
@@ -45,15 +46,15 @@ impl PluginManager {
     /// Load a single plugin dynamically via dlopen
     fn load_plugin(&self, path: &str) -> Result<(Arc<dyn Plugin>, libloading::Library), String> {
         unsafe {
-            let lib = libloading::Library::new(path)
-                .map_err(|e| format!("Library load error: {}", e))?;
-            
+            let lib =
+                libloading::Library::new(path).map_err(|e| format!("Library load error: {}", e))?;
+
             // The plugin MUST export a C-compatible function named `_plugin_create`
             // that returns a raw pointer to a Boxed trait object.
             let constructor: libloading::Symbol<unsafe extern "C" fn() -> *mut ()> = lib
                 .get(b"_plugin_create\0")
                 .map_err(|e| format!("Symbol _plugin_create not found: {}", e))?;
-            
+
             let raw_ptr = constructor();
             if raw_ptr.is_null() {
                 return Err("Plugin returned null pointer".to_string());
@@ -61,16 +62,24 @@ impl PluginManager {
 
             // Convert the raw pointer back to Box<dyn Plugin>
             let boxed_plugin = Box::from_raw(raw_ptr as *mut Box<dyn Plugin>);
-            
+
             // Convert Box to Arc so we can share it
             let plugin: Arc<dyn Plugin> = Arc::from(*boxed_plugin);
-            
+
             if let Err(e) = plugin.initialize() {
-                return Err(format!("Plugin {} initialization failed: {}", plugin.name(), e));
+                return Err(format!(
+                    "Plugin {} initialization failed: {}",
+                    plugin.name(),
+                    e
+                ));
             }
-            
-            tracing::info!("Successfully loaded dynamic plugin: {} (v{})", plugin.name(), plugin.version());
-            
+
+            tracing::info!(
+                "Successfully loaded dynamic plugin: {} (v{})",
+                plugin.name(),
+                plugin.version()
+            );
+
             Ok((plugin, lib))
         }
     }

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{error, info, warn};
+use tracing::info;
 use uuid::Uuid;
 use zbus::interface;
 
@@ -66,7 +66,10 @@ impl AIInterface {
 
         info!(prompt_len = prompt.len(), "Query received");
 
-        let response = self.planner.handle_query(prompt, options).await
+        let response = self
+            .planner
+            .handle_query(prompt, options)
+            .await
             .map_err(|e| zbus::fdo::Error::Failed(e))?;
 
         info!(response_len = response.len(), "Query completed");

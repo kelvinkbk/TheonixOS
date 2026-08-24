@@ -6,7 +6,7 @@ use anyhow::Result;
 pub trait VectorStore: Send + Sync {
     /// Store a text snippet along with its embedding vector.
     fn store_embedding(&self, text: &str, vector: Vec<f32>) -> Result<()>;
-    
+
     /// Search for text snippets similar to the provided query vector.
     fn search_similar(&self, query_vector: &[f32], limit: usize) -> Result<Vec<String>>;
 }
@@ -23,6 +23,9 @@ impl VectorStore for StubVectorStore {
     fn search_similar(&self, _query_vector: &[f32], _limit: usize) -> Result<Vec<String>> {
         // [PENDING Phase 4 Compilation]
         // Returning a stub semantic context.
-        Ok(vec!["[Semantic Memory]: User previously requested THAID to be a 9.9/10 architected system.".to_string()])
+        Ok(vec![
+            "[Semantic Memory]: User previously requested THAID to be a 9.9/10 architected system."
+                .to_string(),
+        ])
     }
 }

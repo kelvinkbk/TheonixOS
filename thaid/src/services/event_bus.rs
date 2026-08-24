@@ -1,6 +1,5 @@
-use std::sync::Arc;
-use tokio::sync::broadcast;
 use serde::Serialize;
+use tokio::sync::broadcast;
 
 #[derive(Clone, Serialize, Debug)]
 pub enum ThaidEvent {

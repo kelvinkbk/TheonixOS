@@ -1,7 +1,6 @@
+use serde_json::json;
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::sync::{Arc, RwLock};
-use serde_json::json;
 
 /// Permission tiers for AI operations
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -12,7 +11,7 @@ pub enum PermissionTier {
     Admin = 3,
 }
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct PermissionPolicy {
@@ -68,7 +67,12 @@ impl PermissionManager {
         let _ = std::fs::create_dir_all(&log_dir);
 
         let default_policy = PermissionPolicy {
-            allow: vec!["set_volume".into(), "set_brightness".into(), "launch_app".into(), "get_system_info".into()],
+            allow: vec![
+                "set_volume".into(),
+                "set_brightness".into(),
+                "launch_app".into(),
+                "get_system_info".into(),
+            ],
             confirm: vec!["run_os_command".into(), "delete".into(), "network".into()],
             deny: vec!["shutdown".into()],
         };
@@ -81,15 +85,21 @@ impl PermissionManager {
 
         Self {
             config: PermissionConfig { log_dir, policy },
-            cache: tokio::sync::RwLock::new(PermissionCache { active_tokens: HashMap::new() }),
+            cache: tokio::sync::RwLock::new(PermissionCache {
+                active_tokens: HashMap::new(),
+            }),
         }
     }
 
     /// Generate a 5-minute cryptographic token for a specific tool
     pub async fn request_token(&self, tool_name: &str) -> String {
         let uuid = uuid::Uuid::new_v4().to_string();
-        let expires_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() + 300; // 5 minutes
-        
+        let expires_at = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs()
+            + 300; // 5 minutes
+
         let token = ApprovalToken {
             uuid: uuid.clone(),
             tool_name: tool_name.to_string(),
@@ -105,7 +115,10 @@ impl PermissionManager {
     pub async fn consume_token(&self, uuid: &str, tool_name: &str) -> bool {
         let mut cache = self.cache.write().await;
         if let Some(token) = cache.active_tokens.get(uuid) {
-            let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs();
             if token.expires_at > now && token.tool_name == tool_name {
                 cache.active_tokens.remove(uuid);
                 return true;
@@ -117,7 +130,7 @@ impl PermissionManager {
     /// Logs any executed system action to an audit log file in JSON format
     pub fn audit_log(&self, entry: AuditEntry) {
         let log_path = format!("{}/audit.log", self.config.log_dir);
-        
+
         let log_json = json!(entry);
 
         if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(log_path) {
@@ -126,7 +139,7 @@ impl PermissionManager {
             let _ = file.write_all(log_line.as_bytes());
         }
     }
-    
+
     /// Checks if a tool is allowed to run without explicit user confirmation
     pub fn is_allowed(&self, tool_name: &str) -> bool {
         if self.config.policy.deny.contains(&tool_name.to_string()) {

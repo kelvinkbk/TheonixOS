@@ -1,20 +1,20 @@
 pub mod automation;
 pub mod context;
+pub mod desktop;
 pub mod intent;
 pub mod memory;
 pub mod network;
+pub mod plugin_manager;
 pub mod settings;
 pub mod system;
 pub mod vision;
-pub mod plugin_manager;
-pub mod desktop;
 
 use crate::services::memory::ConversationStore;
 use crate::services::permissions::PermissionManager;
 use serde_json::Value;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use std::time::Instant;
+use tokio::sync::RwLock;
 
 use std::collections::HashMap;
 
@@ -22,7 +22,10 @@ pub trait Tool: Send + Sync {
     fn name(&self) -> &str;
     fn description(&self) -> &str;
     fn schema(&self) -> Value;
-    fn execute<'a>(&'a self, args: &'a Value) -> std::pin::Pin<Box<dyn std::future::Future<Output = Option<String>> + Send + 'a>>;
+    fn execute<'a>(
+        &'a self,
+        args: &'a Value,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Option<String>> + Send + 'a>>;
 }
 
 pub trait Plugin: Send + Sync {
@@ -40,7 +43,7 @@ pub struct ToolExecutor {
 
 impl ToolExecutor {
     pub fn new(permission_manager: Arc<RwLock<PermissionManager>>) -> Self {
-        Self { 
+        Self {
             permission_manager,
             registry: HashMap::new(),
         }
@@ -56,7 +59,7 @@ impl ToolExecutor {
         for tool in self.registry.values() {
             tools.push(tool.schema());
         }
-        
+
         // Legacy fallback (Will be removed once all migrated to traits)
         tools.extend(system::get_system_tools());
         tools.extend(context::get_context_tools());
@@ -83,16 +86,20 @@ impl ToolExecutor {
             let pm = self.permission_manager.read().await;
             if !pm.is_allowed(name) {
                 // Check if a valid token was provided
-                let token_valid = if let Some(token) = args.get("approval_token").and_then(|v| v.as_str()) {
-                    pm.consume_token(token, name).await
-                } else {
-                    false
-                };
+                let token_valid =
+                    if let Some(token) = args.get("approval_token").and_then(|v| v.as_str()) {
+                        pm.consume_token(token, name).await
+                    } else {
+                        false
+                    };
 
                 if !token_valid {
                     let new_token = pm.request_token(name).await;
                     let entry = crate::services::permissions::AuditEntry {
-                        timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs(),
+                        timestamp: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_secs(),
                         request_id: uuid::Uuid::new_v4().to_string(),
                         session_id: None,
                         user: std::env::var("USER").unwrap_or_else(|_| "unknown".to_string()),
@@ -141,7 +148,10 @@ impl ToolExecutor {
 
         let pm = self.permission_manager.read().await;
         let entry = crate::services::permissions::AuditEntry {
-            timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs(),
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
             request_id: uuid::Uuid::new_v4().to_string(),
             session_id: None,
             user: std::env::var("USER").unwrap_or_else(|_| "unknown".to_string()),
@@ -152,7 +162,11 @@ impl ToolExecutor {
             args: args.clone(),
             status: status.to_string(),
             success: status == "allowed",
-            error: if status == "failed" { Some("Execution failed".to_string()) } else { None },
+            error: if status == "failed" {
+                Some("Execution failed".to_string())
+            } else {
+                None
+            },
             duration_ms: start_time.elapsed().as_millis() as u64,
         };
         pm.audit_log(entry);
