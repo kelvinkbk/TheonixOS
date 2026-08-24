@@ -166,6 +166,7 @@ theonix-settings
 theonix-browser
 theonix-messages
 theonix-files
+python-pyqt6-webengine
 
 # Pacman provider pins (avoid interactive prompts during ISO build)
 noto-fonts

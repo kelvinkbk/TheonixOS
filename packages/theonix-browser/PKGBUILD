@@ -6,8 +6,7 @@ pkgdesc="Native AI-Augmented Web Browser for Theonix OS"
 arch=('any')
 url="https://github.com/kelvinkbk/TheonixOS"
 license=('GPL3')
-depends=('python' 'python-pyqt6')
-optdepends=('python-pyqt6-webengine: Chromium-based web rendering engine')
+depends=('python' 'python-pyqt6' 'python-pyqt6-webengine' 'theonix-core')
 source=("main.py" "org.theonix.Browser.desktop")
 sha256sums=('SKIP' 'SKIP')
 
