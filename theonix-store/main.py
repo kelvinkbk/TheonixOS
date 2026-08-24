@@ -208,7 +208,7 @@ class AppDetailDialog(QDialog):
 
     def _install(self, data):
         self.accept()
-        dlg = AppInstallDialog(data, self.parent_window)
+        dlg = AppInstallDialog(data, self.parent())
         dlg.exec()
 
 
