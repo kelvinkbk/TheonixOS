@@ -8,7 +8,7 @@ Provides 3-Level Browser & Page Intelligence:
 
 import os
 from typing import List, Dict, Optional
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTextEdit, QLineEdit, QGridLayout, QFrame, QComboBox
@@ -22,6 +22,7 @@ from theonix_core import (
 
 class AIWorkerThread(QThread):
     chunk_received = pyqtSignal(str)
+    action_requested = pyqtSignal(str, dict)
     finished = pyqtSignal()
 
     def __init__(self, prompt: str, browser_ctx: Optional[BrowserContext] = None, model_preference: str = "auto"):
@@ -31,33 +32,7 @@ class AIWorkerThread(QThread):
         self.model_preference = model_preference
 
     def run(self):
-        # 1. Check direct browser action automation
-        p_lower = self.prompt.strip().lower()
-
-        # Tab opening / navigation triggers
-        if p_lower.startswith("open tab") or p_lower.startswith("new tab"):
-            parts = self.prompt.split(" ", 2)
-            target = parts[2] if len(parts) > 2 else "theonix://newtab"
-            if not target.startswith(("http://", "https://", "theonix://")):
-                target = "https://" + target
-            BrowserService.open_tab(target)
-            self.chunk_received.emit(f"✓ Opened new tab: `{target}`")
-            self.finished.emit()
-            return
-
-        if p_lower.startswith("scroll down"):
-            BrowserService.scroll("down", 600)
-            self.chunk_received.emit("✓ Scrolled down.")
-            self.finished.emit()
-            return
-
-        if p_lower.startswith("scroll up"):
-            BrowserService.scroll("up", 600)
-            self.chunk_received.emit("✓ Scrolled up.")
-            self.finished.emit()
-            return
-
-        # 2. Build multi-layer prompt using ContextManager
+        # 1. Build multi-layer prompt using ContextManager
         messages = ContextManager.build_prompt(
             user_prompt=self.prompt,
             browser_ctx=self.browser_ctx,
@@ -68,7 +43,7 @@ class AIWorkerThread(QThread):
             )
         )
 
-        # 3. Intelligent Model Routing
+        # 2. Intelligent Model Routing
         ctx_len = len(self.browser_ctx.page_text) if (self.browser_ctx and self.browser_ctx.page_text) else 0
         selected_model = ModelRouter.select_model(
             prompt=self.prompt,
@@ -202,6 +177,37 @@ class AskTheonixDrawer(QFrame):
         self._dispatch_with_context(text)
 
     def _dispatch_with_context(self, prompt: str, selected_override: str = ""):
+        p_lower = prompt.strip().lower()
+
+        # Level 3: Direct Browser Actions safely executed on Main GUI Thread
+        if p_lower.startswith("open tab") or p_lower.startswith("new tab"):
+            self.chat_log.append(f"<b>You:</b> {prompt}\n")
+            parts = prompt.split(" ", 2)
+            target = parts[2] if len(parts) > 2 else "theonix://newtab"
+            if not target.startswith(("http://", "https://", "theonix://")):
+                target = "https://" + target
+            BrowserService.open_tab(target)
+            self.chat_log.append(f"<b>THAID:</b> ✓ Opened new tab: `{target}`\n")
+            return
+
+        if p_lower.startswith("scroll down"):
+            self.chat_log.append(f"<b>You:</b> {prompt}\n")
+            BrowserService.scroll("down", 600)
+            self.chat_log.append("<b>THAID:</b> ✓ Scrolled down.\n")
+            return
+
+        if p_lower.startswith("scroll up"):
+            self.chat_log.append(f"<b>You:</b> {prompt}\n")
+            BrowserService.scroll("up", 600)
+            self.chat_log.append("<b>THAID:</b> ✓ Scrolled up.\n")
+            return
+
+        if p_lower.startswith("close tab"):
+            self.chat_log.append(f"<b>You:</b> {prompt}\n")
+            BrowserService.close_current_tab()
+            self.chat_log.append("<b>THAID:</b> ✓ Closed tab.\n")
+            return
+
         self.chat_log.append(f"<b>You:</b> {prompt}\n")
         self.chat_log.append("<b>THAID:</b> <i>Thinking...</i>\n")
 
@@ -235,4 +241,9 @@ class AskTheonixDrawer(QFrame):
     def _start_worker(self, prompt: str, ctx: BrowserContext):
         self.worker = AIWorkerThread(prompt, browser_ctx=ctx, model_preference=self._get_model_pref())
         self.worker.chunk_received.connect(lambda c: self.chat_log.append(c))
+        self.worker.action_requested.connect(self._handle_async_action)
         self.worker.start()
+
+    @pyqtSlot(str, dict)
+    def _handle_async_action(self, tool_name: str, params: dict):
+        tools.execute(tool_name, **params)
