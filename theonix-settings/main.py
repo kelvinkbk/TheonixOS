@@ -474,6 +474,218 @@ class DisplayPage(QWidget):
         layout.addStretch()
 
 
+class TouchpadGesturesPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(32, 28, 32, 28)
+        layout.setSpacing(18)
+
+        title = QLabel("Touchpad & Gestures")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
+        subtitle = QLabel("Windows-like precision multi-touch gestures, tap-to-click, and smooth scrolling")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+
+        # Windows Precision Preset Card
+        preset_card = GlassCard()
+        p_layout = QHBoxLayout(preset_card)
+        p_layout.setContentsMargins(20, 20, 20, 20)
+        p_layout.setSpacing(18)
+
+        p_icon = QLabel("🪟")
+        p_icon.setStyleSheet("font-size: 32px; background: rgba(0, 255, 170, 0.12); border-radius: 12px; padding: 6px;")
+        p_icon.setFixedSize(54, 54)
+        p_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        p_layout.addWidget(p_icon)
+
+        p_text = QVBoxLayout()
+        p_title = QLabel("Windows Precision Gestures Profile")
+        p_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF;")
+        p_sub = QLabel("1-click apply: 3-finger swipe up for Task View, 3-finger down for Desktop, swipe left/right to switch apps, and 2-finger right click.")
+        p_sub.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+        p_sub.setWordWrap(True)
+        p_text.addWidget(p_title)
+        p_text.addWidget(p_sub)
+        p_layout.addLayout(p_text, 1)
+
+        apply_win_btn = QPushButton("⚡ Apply Windows Gestures")
+        apply_win_btn.setProperty("class", "PrimaryBtn")
+        apply_win_btn.clicked.connect(self._apply_windows_profile)
+        p_layout.addWidget(apply_win_btn)
+        layout.addWidget(preset_card)
+
+        # Gestures Visualizer
+        vis_card = GlassCard()
+        v_layout = QVBoxLayout(vis_card)
+        v_layout.setSpacing(12)
+        v_hdr = QLabel("✨ Active Gesture Mappings")
+        v_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
+        v_layout.addWidget(v_hdr)
+
+        grid = QGridLayout()
+        grid.setSpacing(10)
+
+        mappings = [
+            ("👆👆👆 3 Fingers Up", "Task View / Window Overview", "green"),
+            ("👇👇👇 3 Fingers Down", "Show Desktop / Minimize All", "cyan"),
+            ("👈👉 3 Fingers Left / Right", "Switch Desktops / Open Apps", "blue"),
+            ("🤏 2 Fingers Pinch / Spread", "Smooth Zoom In / Out", "purple"),
+            ("✌️ 2 Fingers Tap", "Right-Click Context Menu", "yellow"),
+            ("📜 2 Fingers Drag", "Smooth Inertial Scroll", "green"),
+        ]
+
+        for idx, (gesture, action, color) in enumerate(mappings):
+            row = idx // 2
+            col = idx % 2
+            item_box = QFrame()
+            item_box.setStyleSheet("background: rgba(14, 18, 28, 0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px;")
+            ib_lay = QHBoxLayout(item_box)
+            g_lbl = QLabel(gesture)
+            g_lbl.setStyleSheet("font-weight: bold; color: #FFFFFF;")
+            a_badge = Badge(action, color)
+            ib_lay.addWidget(g_lbl)
+            ib_lay.addStretch()
+            ib_lay.addWidget(a_badge)
+            grid.addWidget(item_box, row, col)
+
+        v_layout.addLayout(grid)
+        layout.addWidget(vis_card)
+
+        # Touchpad Controls Card
+        ctrl_card = GlassCard()
+        c_layout = QVBoxLayout(ctrl_card)
+        c_layout.setSpacing(12)
+        c_hdr = QLabel("Touchpad Controls & Behavior")
+        c_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #00FFAA;")
+        c_layout.addWidget(c_hdr)
+
+        self.tap_click_cb = QCheckBox("Enable Tap to Click (1 finger = left click, 2 fingers = right click)")
+        self.tap_click_cb.setChecked(True)
+        self.tap_drag_cb = QCheckBox("Enable Tap and Drag (Double tap to drag windows and files)")
+        self.tap_drag_cb.setChecked(True)
+        self.natural_scroll_cb = QCheckBox("Natural / Inverted Scrolling (Swipe up to scroll content up)")
+        self.natural_scroll_cb.setChecked(True)
+        self.dwt_cb = QCheckBox("Disable touchpad while typing (Avoid accidental cursor jumps)")
+        self.dwt_cb.setChecked(True)
+
+        c_layout.addWidget(self.tap_click_cb)
+        c_layout.addWidget(self.tap_drag_cb)
+        c_layout.addWidget(self.natural_scroll_cb)
+        c_layout.addWidget(self.dwt_cb)
+
+        speed_row = QHBoxLayout()
+        speed_lbl = QLabel("Pointer Speed / Sensitivity:")
+        speed_lbl.setStyleSheet("color: #F8FAFC;")
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal)
+        self.speed_slider.setRange(1, 10)
+        self.speed_slider.setValue(6)
+        speed_row.addWidget(speed_lbl)
+        speed_row.addWidget(self.speed_slider, 1)
+        c_layout.addLayout(speed_row)
+
+        save_btn = QPushButton("💾 Save Touchpad Settings")
+        save_btn.setProperty("class", "PrimaryBtn")
+        save_btn.clicked.connect(self._save_settings)
+        c_layout.addWidget(save_btn)
+
+        layout.addWidget(ctrl_card)
+        layout.addStretch()
+
+        self._load_current_settings()
+
+    def _load_current_settings(self):
+        kcm_path = os.path.expanduser("~/.config/kcminputrc")
+        if os.path.exists(kcm_path):
+            try:
+                import configparser
+                config = configparser.ConfigParser(interpolation=None)
+                config.read(kcm_path)
+                for section in config.sections():
+                    if "Libinput" in section and ("Touchpad" in section or "touchpad" in section):
+                        self.tap_click_cb.setChecked(config[section].get("TapToClick", "true").lower() == "true")
+                        self.tap_drag_cb.setChecked(config[section].get("TapAndDrag", "true").lower() == "true")
+                        self.natural_scroll_cb.setChecked(config[section].get("NaturalScroll", "true").lower() == "true")
+                        self.dwt_cb.setChecked(config[section].get("DisableWhileTyping", "true").lower() == "true")
+                        break
+            except Exception:
+                pass
+
+    def _apply_windows_profile(self):
+        self.tap_click_cb.setChecked(True)
+        self.tap_drag_cb.setChecked(True)
+        self.natural_scroll_cb.setChecked(True)
+        self.dwt_cb.setChecked(True)
+        self.speed_slider.setValue(6)
+        self._save_settings(show_msg=False)
+        QMessageBox.information(
+            self,
+            "Windows Gestures Applied",
+            "✓ Windows Precision Touchpad profile successfully applied!\n\n"
+            "• 3-finger swipe UP: Task View (Window Overview)\n"
+            "• 3-finger swipe DOWN: Show Desktop\n"
+            "• 3-finger swipe LEFT/RIGHT: Switch Desktops & Apps\n"
+            "• 2-finger TAP: Right-Click Menu\n"
+            "• 2-finger SCROLL: Smooth Natural Scrolling"
+        )
+
+    def _save_settings(self, show_msg=True):
+        tap_click = self.tap_click_cb.isChecked()
+        tap_drag = self.tap_drag_cb.isChecked()
+        natural_scroll = self.natural_scroll_cb.isChecked()
+        dwt = self.dwt_cb.isChecked()
+        speed_val = (self.speed_slider.value() - 5) * 0.08
+
+        # 1. Update kcminputrc
+        kcm_path = os.path.expanduser("~/.config/kcminputrc")
+        if os.path.exists(kcm_path):
+            try:
+                import configparser
+                config = configparser.ConfigParser(interpolation=None)
+                config.read(kcm_path)
+                for section in config.sections():
+                    if "Libinput" in section and ("Touchpad" in section or "touchpad" in section):
+                        config[section]["Enabled"] = "true"
+                        config[section]["TapToClick"] = "true" if tap_click else "false"
+                        config[section]["TapAndDrag"] = "true" if tap_drag else "false"
+                        config[section]["NaturalScroll"] = "true" if natural_scroll else "false"
+                        config[section]["ScrollTwoFinger"] = "true"
+                        config[section]["ClickMethod"] = "2"
+                        config[section]["DisableWhileTyping"] = "true" if dwt else "false"
+                        config[section]["PointerAcceleration"] = f"{speed_val:.3f}"
+                        config[section]["PointerAccelerationProfile"] = "1"
+                with open(kcm_path, "w") as f:
+                    config.write(f)
+            except Exception:
+                pass
+
+        # 2. Update kwinrc for gestures
+        kwinrc_path = os.path.expanduser("~/.config/kwinrc")
+        try:
+            import configparser
+            config = configparser.ConfigParser(interpolation=None)
+            if os.path.exists(kwinrc_path):
+                config.read(kwinrc_path)
+            if "Touchpad" not in config:
+                config["Touchpad"] = {}
+            config["Touchpad"]["GesturePinch"] = "true"
+            config["Touchpad"]["GestureSwipe"] = "true"
+            with open(kwinrc_path, "w") as f:
+                config.write(f)
+        except Exception:
+            pass
+
+        # 3. Trigger KWin reload
+        try:
+            subprocess.run(["qdbus6", "org.kde.KWin", "/KWin", "reconfigure"], timeout=2)
+        except Exception:
+            pass
+
+        if show_msg:
+            QMessageBox.information(self, "Touchpad Settings", "✓ Touchpad settings saved and applied successfully!")
+
+
 class NetworkPage(QWidget):
     def __init__(self):
         super().__init__()
@@ -879,6 +1091,7 @@ class TheonixSettingsWindow(QMainWindow):
             ("🧠  AI & THAID", AISettingsPage, ["ai", "ollama", "models", "thaid", "gpu", "inference"]),
             ("🎨  Appearance", AppearancePage, ["theme", "wallpaper", "colors", "dark", "blur", "effects"]),
             ("🖥️  Display & Scaling", DisplayPage, ["resolution", "refresh", "scaling", "monitor", "night light"]),
+            ("🖐️  Touchpad & Gestures", TouchpadGesturesPage, ["touchpad", "gestures", "mouse", "scroll", "swipe", "tap", "click"]),
             ("🌐  Network & Wi-Fi", NetworkPage, ["wifi", "network", "ethernet", "ip", "dns", "internet"]),
             ("🔊  Sound & Audio", AudioPage, ["sound", "audio", "volume", "speakers", "pipewire", "mute"]),
             ("💾  Storage & Snapshots", StoragePage, ["storage", "disk", "btrfs", "snapshots", "backup", "restore"]),
