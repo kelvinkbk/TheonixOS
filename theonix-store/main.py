@@ -216,10 +216,11 @@ class PackageInstallWorker(QThread):
     log_received = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, pkg: str, source: str = "pacman"):
+    def __init__(self, app_data: dict):
         super().__init__()
-        self.pkg = pkg
-        self.source = source
+        self.app_data = app_data
+        self.pkg = app_data.get("pkg", app_data["name"])
+        self.source = app_data.get("source", "pacman")
 
     def run(self):
         if self.source == "pacman":
@@ -228,10 +229,28 @@ class PackageInstallWorker(QThread):
         elif self.source == "flatpak":
             # User-level flatpak installs without requiring root permissions
             cmd = ["flatpak", "install", "-y", "--user", "flathub", self.pkg]
-        else:
-            self.log_received.emit(f"Launching UACL Compatibility layer for {self.pkg}...\n")
-            UACLService.launch(self.pkg)
-            self.finished.emit(True, "Launched with UACL.")
+        elif self.source == "uacl":
+            uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
+            os.makedirs(uacl_cache_dir, exist_ok=True)
+            local_exe = os.path.join(uacl_cache_dir, self.pkg)
+
+            if not os.path.exists(local_exe):
+                self.log_received.emit(f"📥 Downloading Windows application package ({self.pkg})...\n")
+                try:
+                    import urllib.request
+                    download_url = self.app_data.get(
+                        "download_url", 
+                        "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.9/npp.8.6.9.Installer.x64.exe"
+                    )
+                    urllib.request.urlretrieve(download_url, local_exe)
+                    self.log_received.emit(f"✓ Package downloaded successfully to {local_exe}\n")
+                except Exception as e:
+                    self.finished.emit(False, f"Download failed: {e}")
+                    return
+
+            self.log_received.emit(f"🚀 Initializing Theonix UACL Proton/Wine container for {self.pkg}...\n")
+            UACLService.launch(local_exe)
+            self.finished.emit(True, "Launched with Theonix UACL.")
             return
 
         try:
@@ -315,9 +334,7 @@ class AppInstallDialog(QDialog):
         layout.addLayout(self.btn_row)
 
         # Start background installation
-        pkg = app_data.get("pkg", app_data["name"])
-        src = app_data.get("source", "pacman")
-        self.worker = PackageInstallWorker(pkg, src)
+        self.worker = PackageInstallWorker(app_data)
         self.worker.log_received.connect(self._on_log)
         self.worker.finished.connect(self._on_finished)
         self.worker.start()
@@ -341,7 +358,16 @@ class AppInstallDialog(QDialog):
 
     def _launch_installed_app(self):
         pkg = self.app_data.get("pkg", self.app_data["name"])
-        subprocess.Popen([pkg], stderr=subprocess.DEVNULL)
+        src = self.app_data.get("source", "pacman")
+        if src == "pacman":
+            bin_name = pkg.split(".")[0]
+            subprocess.Popen([bin_name], stderr=subprocess.DEVNULL)
+        elif src == "flatpak":
+            subprocess.Popen(["flatpak", "run", pkg], stderr=subprocess.DEVNULL)
+        elif src == "uacl":
+            uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
+            local_exe = os.path.join(uacl_cache_dir, pkg)
+            UACLService.launch(local_exe if os.path.exists(local_exe) else pkg)
         self.accept()
 
 

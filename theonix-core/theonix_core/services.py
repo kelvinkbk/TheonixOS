@@ -494,6 +494,9 @@ class UACLService:
 
     @staticmethod
     def launch(target_path: str):
-        subprocess.Popen(["theonix-uacl", "launch", "--path", target_path])
+        if os.path.exists(target_path):
+            subprocess.Popen(["theonix-uacl", "run", "--file", target_path])
+        else:
+            subprocess.Popen(["theonix-uacl", "launch", "--id", target_path])
 
 
