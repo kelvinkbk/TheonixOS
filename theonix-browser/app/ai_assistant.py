@@ -1,46 +1,86 @@
 """
 Theonix Browser — Ask Theonix AI Assistant (THAID).
-Provides interactive page summarization, question answering, code extraction, and translation.
+Provides 3-Level Browser & Page Intelligence:
+  Level 1: Page Intelligence (Summaries, Code Extraction, Translation, Selected Text, Tables)
+  Level 2: Browser State Intelligence (Current URL, Title, Open Tabs, Multi-tab Comparisons)
+  Level 3: Browser Action Automation (Navigation, Tab Management, Element Clicking, Form Typing)
 """
 
-import subprocess
+import os
+from typing import List, Dict, Optional
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QTextEdit, QLineEdit, QGridLayout, QFrame
+    QTextEdit, QLineEdit, QGridLayout, QFrame, QComboBox
 )
 
-from theonix_core import Badge, AIService
+from theonix_core import (
+    Badge, AIService, ContextManager, BrowserContext, ModelRouter,
+    BrowserService, tools
+)
 
 
 class AIWorkerThread(QThread):
     chunk_received = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, prompt: str, context: str = "", model_id: str = "1.5b"):
+    def __init__(self, prompt: str, browser_ctx: Optional[BrowserContext] = None, model_preference: str = "auto"):
         super().__init__()
         self.prompt = prompt
-        self.context = context
-        self.model_id = model_id
+        self.browser_ctx = browser_ctx
+        self.model_preference = model_preference
 
     def run(self):
-        messages = []
-        system_prompt = (
-            "You are THAID, the intelligent native AI assistant built into Theonix OS. "
-            "Help the user analyze, summarize, code, or extract insights cleanly and accurately."
+        # 1. Check direct browser action automation
+        p_lower = self.prompt.strip().lower()
+
+        # Tab opening / navigation triggers
+        if p_lower.startswith("open tab") or p_lower.startswith("new tab"):
+            parts = self.prompt.split(" ", 2)
+            target = parts[2] if len(parts) > 2 else "theonix://newtab"
+            if not target.startswith(("http://", "https://", "theonix://")):
+                target = "https://" + target
+            BrowserService.open_tab(target)
+            self.chunk_received.emit(f"✓ Opened new tab: `{target}`")
+            self.finished.emit()
+            return
+
+        if p_lower.startswith("scroll down"):
+            BrowserService.scroll("down", 600)
+            self.chunk_received.emit("✓ Scrolled down.")
+            self.finished.emit()
+            return
+
+        if p_lower.startswith("scroll up"):
+            BrowserService.scroll("up", 600)
+            self.chunk_received.emit("✓ Scrolled up.")
+            self.finished.emit()
+            return
+
+        # 2. Build multi-layer prompt using ContextManager
+        messages = ContextManager.build_prompt(
+            user_prompt=self.prompt,
+            browser_ctx=self.browser_ctx,
+            system_instructions=(
+                "You are THAID, the native intelligence engine built into Theonix Browser and Theonix OS. "
+                "You have full context over the current webpage, tabs, and browser state. "
+                "Provide accurate, actionable, clean answers with Markdown formatting."
+            )
         )
 
-        user_content = self.prompt
-        if self.context:
-            user_content = f"Webpage Context:\n```\n{self.context[:6000]}\n```\n\nUser Question/Request:\n{self.prompt}"
-
-        messages.append({"role": "user", "content": user_content})
+        # 3. Intelligent Model Routing
+        ctx_len = len(self.browser_ctx.page_text) if (self.browser_ctx and self.browser_ctx.page_text) else 0
+        selected_model = ModelRouter.select_model(
+            prompt=self.prompt,
+            context_len=ctx_len,
+            user_preference=self.model_preference
+        )
 
         try:
-            for token in AIService.stream_chat(messages, model_id=self.model_id, system_prompt=system_prompt):
+            for token in AIService.stream_chat(messages, model_id=selected_model):
                 self.chunk_received.emit(token)
         except Exception as e:
-            self.chunk_received.emit(f"\n[THAID Connection Error: {e}]\n")
+            self.chunk_received.emit(f"\n[THAID Error: {e}]\n")
         self.finished.emit()
 
 
@@ -49,40 +89,51 @@ class AskTheonixDrawer(QFrame):
         super().__init__(parent)
         self.get_active_view = get_active_view_callback
         self.setObjectName("AISidebar")
-        self.setFixedWidth(340)
+        self.setFixedWidth(360)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 16, 14, 16)
+        layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(10)
 
         # Header
         hdr = QHBoxLayout()
-        title = QLabel("🤖 Ask Theonix")
+        title = QLabel("✨ Ask Theonix")
         title.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
         hdr.addWidget(title)
         hdr.addStretch()
-        hdr.addWidget(Badge("THAID ONLINE", "cyan"))
+
+        self.model_selector = QComboBox()
+        self.model_selector.addItems(["Auto Route", "⚡ Fast (1.5B)", "🧠 Quality (4B)"])
+        self.model_selector.setStyleSheet(
+            "background-color: #121826; color: #94A3B8; border: 1px solid #1E2638; "
+            "border-radius: 6px; font-size: 11px; padding: 2px 6px;"
+        )
+        hdr.addWidget(self.model_selector)
         layout.addLayout(hdr)
 
-        # Quick action pills
+        # Quick action pills (Level 1: Page Intelligence)
         pills_grid = QGridLayout()
         pills_grid.setSpacing(6)
 
         p1 = QPushButton("📝 Summarize Page")
         p1.setProperty("class", "ActionBtn")
+        p1.setStyleSheet("font-size: 11.5px; padding: 6px;")
         p1.clicked.connect(self._summarize_page)
 
         p2 = QPushButton("💻 Extract Code")
         p2.setProperty("class", "ActionBtn")
+        p2.setStyleSheet("font-size: 11.5px; padding: 6px;")
         p2.clicked.connect(self._extract_code)
 
-        p3 = QPushButton("🔍 Explain Simply")
+        p3 = QPushButton("📊 Extract Tables")
         p3.setProperty("class", "ActionBtn")
-        p3.clicked.connect(self._explain_simply)
+        p3.setStyleSheet("font-size: 11.5px; padding: 6px;")
+        p3.clicked.connect(self._extract_tables)
 
-        p4 = QPushButton("🌐 Translate")
+        p4 = QPushButton("🔍 Explain Selection")
         p4.setProperty("class", "ActionBtn")
-        p4.clicked.connect(self._translate_page)
+        p4.setStyleSheet("font-size: 11.5px; padding: 6px;")
+        p4.clicked.connect(self._explain_selection)
 
         pills_grid.addWidget(p1, 0, 0)
         pills_grid.addWidget(p2, 0, 1)
@@ -94,16 +145,16 @@ class AskTheonixDrawer(QFrame):
         self.chat_log = QTextEdit()
         self.chat_log.setReadOnly(True)
         self.chat_log.setStyleSheet(
-            "background-color: rgba(14, 18, 28, 0.85); border: 1px solid rgba(255,255,255,0.08); "
-            "border-radius: 10px; color: #F8FAFC; padding: 10px; font-size: 13px;"
+            "background-color: rgba(14, 18, 28, 0.9); border: 1px solid rgba(255,255,255,0.08); "
+            "border-radius: 10px; color: #F8FAFC; padding: 10px; font-size: 12.5px; line-height: 1.5;"
         )
-        self.chat_log.setPlaceholderText("Ask THAID about this page or any topic...")
+        self.chat_log.setPlaceholderText("Ask THAID to analyze this page, compare open tabs, or execute browser actions...")
         layout.addWidget(self.chat_log)
 
         # Prompt Input
         input_row = QHBoxLayout()
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Ask THAID...")
+        self.input_field.setPlaceholderText("Ask THAID or command browser...")
         self.input_field.returnPressed.connect(self._send_custom_prompt)
 
         send_btn = QPushButton("Ask")
@@ -116,37 +167,72 @@ class AskTheonixDrawer(QFrame):
 
         self.worker = None
 
+    def _get_model_pref(self) -> str:
+        idx = self.model_selector.currentIndex()
+        if idx == 1:
+            return "1.5b"
+        elif idx == 2:
+            return "4b"
+        return "auto"
+
     def _summarize_page(self):
-        self._dispatch_with_page_context("Please summarize the main content and key takeaways of this webpage concisely.")
+        self._dispatch_with_context("Please summarize the main content and key takeaways of this webpage concisely.")
 
     def _extract_code(self):
-        self._dispatch_with_page_context("Extract all code snippets, shell commands, scripts, and syntax examples from this page.")
+        self._dispatch_with_context("Extract all code snippets, terminal commands, scripts, and syntax examples from this page.")
 
-    def _explain_simply(self):
-        self._dispatch_with_page_context("Explain the core ideas on this page in simple terms with bullet points.")
+    def _extract_tables(self):
+        self._dispatch_with_context("Extract all tabular data, matrices, and structured comparisons from this page into Markdown tables.")
 
-    def _translate_page(self):
-        self._dispatch_with_page_context("Translate the key content of this page to clear, fluent English.")
+    def _explain_selection(self):
+        view = self.get_active_view()
+        if view and hasattr(view, "extract_selected_text"):
+            def _on_selection(sel_text: str):
+                if sel_text.strip():
+                    self._dispatch_with_context("Explain the selected text simply and provide context.", selected_override=sel_text)
+                else:
+                    self.chat_log.append("💡 <i>Please select some text on the webpage first, then click Explain Selection.</i>\n")
+            view.extract_selected_text(_on_selection)
 
     def _send_custom_prompt(self):
         text = self.input_field.text().strip()
         if not text:
             return
         self.input_field.clear()
-        self._dispatch_with_page_context(text)
+        self._dispatch_with_context(text)
 
-    def _dispatch_with_page_context(self, prompt: str):
+    def _dispatch_with_context(self, prompt: str, selected_override: str = ""):
         self.chat_log.append(f"<b>You:</b> {prompt}\n")
-        self.chat_log.append("<b>THAID:</b> <i>Analyzing page & thinking...</i>\n")
+        self.chat_log.append("<b>THAID:</b> <i>Thinking...</i>\n")
 
         view = self.get_active_view()
+        url = view.property("current_url") if view else ""
+        title = ""
+        if hasattr(self.parent(), "tab_bar") and self.parent().tab_bar:
+            title = self.parent().tab_bar.tabText(self.parent().tab_bar.currentIndex())
+
+        # Collect open tabs list for Level 2 Browser State Intelligence
+        open_tabs = []
+        if hasattr(self.parent(), "tab_bar") and self.parent().tab_bar:
+            for i in range(self.parent().tab_bar.count()):
+                open_tabs.append({"title": self.parent().tab_bar.tabText(i)})
+
         if view and hasattr(view, "extract_page_text"):
             def _on_extracted(page_text: str):
-                self.worker = AIWorkerThread(prompt, context=page_text or "")
-                self.worker.chunk_received.connect(lambda c: self.chat_log.append(c))
-                self.worker.start()
+                ctx = BrowserContext(
+                    url=url or "",
+                    title=title or "",
+                    selected_text=selected_override,
+                    page_text=page_text or "",
+                    open_tabs=open_tabs
+                )
+                self._start_worker(prompt, ctx)
             view.extract_page_text(_on_extracted)
         else:
-            self.worker = AIWorkerThread(prompt, context="")
-            self.worker.chunk_received.connect(lambda c: self.chat_log.append(c))
-            self.worker.start()
+            ctx = BrowserContext(url=url or "", title=title or "", open_tabs=open_tabs)
+            self._start_worker(prompt, ctx)
+
+    def _start_worker(self, prompt: str, ctx: BrowserContext):
+        self.worker = AIWorkerThread(prompt, browser_ctx=ctx, model_preference=self._get_model_pref())
+        self.worker.chunk_received.connect(lambda c: self.chat_log.append(c))
+        self.worker.start()

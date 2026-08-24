@@ -2,7 +2,7 @@
 Theonix Core — Unified Platform Services, IPC & UI Engine for Theonix OS.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "The Theonix Team"
 
 from .ui import (
@@ -26,3 +26,12 @@ from .services import (
     UACLService,
     CompatibilityRating
 )
+
+# 7-Pillar THAID Architecture
+from .events import EventBus, bus, Event
+from .permissions import PermissionManager, permission_mgr, PermissionLevel
+from .tools import ToolRegistry, tools, Tool
+from .context import ContextManager, BrowserContext
+from .sessions import SessionManager, session_mgr
+from .router import ModelRouter
+from .browser import BrowserService

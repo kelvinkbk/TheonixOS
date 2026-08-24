@@ -106,6 +106,10 @@ class TheonixBrowserWindow(QMainWindow):
         self.homepage = self.browser_settings.value("homepage", "https://google.com")
         self.closed_tabs_stack: List[str] = []
 
+        # Register window with THAID BrowserService
+        from theonix_core import BrowserService
+        BrowserService.set_active_window(self)
+
         central = QWidget()
         central.setObjectName("CentralWidget")
         self.setCentralWidget(central)
