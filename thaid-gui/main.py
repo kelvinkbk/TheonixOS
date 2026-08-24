@@ -197,7 +197,15 @@ class ThaidState(QObject):
 
             # 2. Seamless Direct Fallback to High-Speed Local AIService (Qwen GGUF)
             try:
-                sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")))
+                for p in [
+                    os.path.expanduser("/home/k/Desktop/Projects/theonix/theonix-core"),
+                    "/usr/share/theonix-core",
+                    "/usr/share/theonix",
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")),
+                ]:
+                    if os.path.exists(p) and p not in sys.path:
+                        sys.path.insert(0, p)
+
                 from theonix_core import AIService
                 
                 chunks = []
