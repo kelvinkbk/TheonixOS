@@ -42,6 +42,42 @@ FEATURED_APPS = [
         "compat_desc": "Official Arch Linux native package (100% performance)"
     },
     {
+        "name": "Notepad++ (Win32)",
+        "pkg": "npp.installer.exe",
+        "source": "uacl",
+        "category": "Development",
+        "icon": "🪟",
+        "version": "8.6.9",
+        "size": "15 MB",
+        "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
+    },
+    {
+        "name": "WinSCP SFTP / FTP (Win32)",
+        "pkg": "winscp.installer.exe",
+        "source": "uacl",
+        "category": "Development",
+        "icon": "📁",
+        "version": "6.3.4",
+        "size": "11 MB",
+        "desc": "Popular Windows graphical SFTP, FTP, WebDAV, and S3 file transfer client.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Seamless Windows network tool running via UACL"
+    },
+    {
+        "name": "HeidiSQL Database (Win32)",
+        "pkg": "heidisql.installer.exe",
+        "source": "uacl",
+        "category": "Development",
+        "icon": "🐬",
+        "version": "12.8.0",
+        "size": "18 MB",
+        "desc": "Fast and lightweight Windows GUI for MariaDB, MySQL, Microsoft SQL, and PostgreSQL.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Direct database connection via UACL"
+    },
+    {
         "name": "PyCharm Community",
         "pkg": "pycharm-community-edition",
         "source": "pacman",
@@ -154,6 +190,42 @@ FEATURED_APPS = [
 
     # Graphics & Media
     {
+        "name": "Paint.NET (Win32)",
+        "pkg": "paintnet.installer.exe",
+        "source": "uacl",
+        "category": "Graphics & Media",
+        "icon": "🖌️",
+        "version": "5.0.13",
+        "size": "65 MB",
+        "desc": "Classic Windows photo editing and digital drawing suite with layer support.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Direct rendering through Theonix UACL"
+    },
+    {
+        "name": "Foobar2000 (Win32)",
+        "pkg": "foobar2000.installer.exe",
+        "source": "uacl",
+        "category": "Graphics & Media",
+        "icon": "🎵",
+        "version": "2.1.5",
+        "size": "6 MB",
+        "desc": "Ultra-lightweight and customizable Windows audio player with gapless playback and DSP.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Direct PipeWire/WASAPI audio via UACL"
+    },
+    {
+        "name": "IrfanView (Win32)",
+        "pkg": "irfanview.installer.exe",
+        "source": "uacl",
+        "category": "Graphics & Media",
+        "icon": "👁️",
+        "version": "4.67",
+        "size": "5 MB",
+        "desc": "Blazing fast Windows image viewer and batch converter for graphics and RAW files.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Native performance via UACL"
+    },
+    {
         "name": "Blender 3D Suite",
         "pkg": "blender",
         "source": "pacman",
@@ -228,6 +300,42 @@ FEATURED_APPS = [
 
     # Productivity
     {
+        "name": "7-Zip Archiver (Win32)",
+        "pkg": "7z.installer.exe",
+        "source": "uacl",
+        "category": "Productivity",
+        "icon": "📦",
+        "version": "24.07",
+        "size": "2 MB",
+        "desc": "High-compression file archiver with 7z, ZIP, RAR, TAR, GZ, and ISO support.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Ultra-fast execution through Theonix UACL"
+    },
+    {
+        "name": "PDF24 Creator (Win32)",
+        "pkg": "pdf24.installer.exe",
+        "source": "uacl",
+        "category": "Productivity",
+        "icon": "📄",
+        "version": "11.18.0",
+        "size": "34 MB",
+        "desc": "Free Windows PDF toolkit: merge, compress, split, convert, and sign PDF documents.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "All PDF utilities working smoothly in UACL"
+    },
+    {
+        "name": "WinRAR 64-bit (Win32)",
+        "pkg": "winrar.installer.exe",
+        "source": "uacl",
+        "category": "Productivity",
+        "icon": "📚",
+        "version": "7.01",
+        "size": "3.5 MB",
+        "desc": "Classic Windows RAR and ZIP compression manager with recovery record capabilities.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Full Win32 UI integrated into Theonix desktop"
+    },
+    {
         "name": "LibreOffice Fresh",
         "pkg": "libreoffice-fresh",
         "source": "pacman",
@@ -277,6 +385,66 @@ FEATURED_APPS = [
     },
 
     # Gaming & UACL
+    {
+        "name": "Battle.net Desktop (Win32)",
+        "pkg": "battlenet.installer.exe",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "⚔️",
+        "version": "2.33.0",
+        "size": "5 MB",
+        "desc": "Blizzard launcher for World of Warcraft, Overwatch 2, Diablo IV, and Hearthstone.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Configured with Proton DXVK compatibility profile"
+    },
+    {
+        "name": "Epic Games Store (Win32)",
+        "pkg": "epicgames.installer.msi",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "🎮",
+        "version": "16.12.0",
+        "size": "55 MB",
+        "desc": "Official Epic Games Launcher for Fortnite, Unreal Engine marketplace, and weekly free games.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Proton VKD3D DirectX 12 compatibility layer"
+    },
+    {
+        "name": "EA App (Win32)",
+        "pkg": "eaapp.installer.exe",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "🚀",
+        "version": "13.250",
+        "size": "8 MB",
+        "desc": "Electronic Arts PC gaming platform for EA Sports FC, Apex Legends, and The Sims.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "UACL Gaming runtime prefix"
+    },
+    {
+        "name": "Ubisoft Connect (Win32)",
+        "pkg": "ubisoft.installer.exe",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "🌀",
+        "version": "144.0",
+        "size": "210 MB",
+        "desc": "Ubisoft gaming client for Assassin's Creed, Rainbow Six Siege, and Far Cry.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "Proton DXVK accelerated launcher"
+    },
+    {
+        "name": "Roblox Player (Win32)",
+        "pkg": "roblox.installer.exe",
+        "source": "uacl",
+        "category": "Gaming & UACL",
+        "icon": "🧱",
+        "version": "2.635",
+        "size": "160 MB",
+        "desc": "Global virtual universe and gaming sandbox running smoothly through Theonix UACL.",
+        "compat": CompatibilityRating.UACL_COMPATIBLE,
+        "compat_desc": "DirectX 11 translation via UACL"
+    },
     {
         "name": "Steam & Proton",
         "pkg": "steam",
@@ -336,18 +504,6 @@ FEATURED_APPS = [
         "desc": "Voice, video, and text communication service for gaming, developers, and communities.",
         "compat": CompatibilityRating.NATIVE,
         "compat_desc": "Sandboxed Flathub container with PipeWire audio"
-    },
-    {
-        "name": "Notepad++ (Win32)",
-        "pkg": "npp.installer.exe",
-        "source": "uacl",
-        "category": "Gaming & UACL",
-        "icon": "🪟",
-        "version": "8.6.9",
-        "size": "15 MB",
-        "desc": "Classic lightweight Win32 source code editor running through Theonix UACL.",
-        "compat": CompatibilityRating.UACL_COMPATIBLE,
-        "compat_desc": "Windows binary managed seamlessly by Theonix UACL"
     },
 ]
 
