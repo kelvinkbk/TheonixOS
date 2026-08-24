@@ -566,9 +566,9 @@ class TheonixStoreWindow(QMainWindow):
         search_btn.setProperty("class", "PrimaryBtn")
         search_btn.clicked.connect(self._trigger_search)
 
-        mgr_btn = QPushButton("App Manager")
+        mgr_btn = QPushButton("Installed Apps")
         mgr_btn.setProperty("class", "ActionBtn")
-        mgr_btn.clicked.connect(lambda: subprocess.Popen(["theonix-app-manager"]))
+        mgr_btn.clicked.connect(self._open_installed_manager)
 
         top_row.addWidget(self.search_input, 1)
         top_row.addWidget(search_btn)
@@ -619,6 +619,12 @@ class TheonixStoreWindow(QMainWindow):
             first_chip.setChecked(True)
 
         self._load_featured_or_category(0)
+
+    def _open_installed_manager(self):
+        btn = self.btn_group.button(6)
+        if btn:
+            btn.setChecked(True)
+            self._on_category_changed(6)
 
     def _on_filter_changed(self, idx):
         filters = ["all", "pacman", "flatpak", "uacl"]
