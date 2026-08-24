@@ -1158,6 +1158,14 @@ class AppCard(GlassCard):
             UACLService.launch(local_exe if os.path.exists(local_exe) else pkg)
 
 
+class CheckUpdatesWorker(QThread):
+    updates_ready = pyqtSignal(list)
+
+    def run(self):
+        updates = PackageService.check_updates()
+        self.updates_ready.emit(updates)
+
+
 class StoreWorker(QThread):
     results_ready = pyqtSignal(list)
 
@@ -1438,30 +1446,68 @@ class TheonixStoreWindow(QMainWindow):
                 self.cards_layout.addWidget(card)
 
         elif idx == 7:
-            updates = PackageService.check_updates()
-            hdr = QLabel(f"🔄 Pending Software Updates ({len(updates)} available)")
-            hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
+            hdr = QLabel("🔄 System & Container Updates")
+            hdr.setStyleSheet("font-size: 20px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
+
+            sub = QLabel("Check for pending Arch Linux packages, security patches, and Flathub container upgrades.")
+            sub.setStyleSheet("color: #94A3B8; font-size: 13px; margin-bottom: 6px;")
+            self.cards_layout.addWidget(sub)
 
             up_btn_row = QHBoxLayout()
             up_all_btn = QPushButton("⚡ Update All Packages & Containers")
             up_all_btn.setProperty("class", "PrimaryBtn")
             up_all_btn.clicked.connect(self._run_update_all)
+
+            refresh_up_btn = QPushButton("🔄 Check for Updates")
+            refresh_up_btn.setProperty("class", "ActionBtn")
+            refresh_up_btn.clicked.connect(lambda: self._load_featured_or_category(7))
+
             up_btn_row.addWidget(up_all_btn)
+            up_btn_row.addWidget(refresh_up_btn)
             up_btn_row.addStretch()
             self.cards_layout.addLayout(up_btn_row)
 
-            if updates:
-                for u in updates:
-                    card = AppCard(u, self)
+            # Progress scan indicator
+            scan_box = GlassCard()
+            scan_layout = QVBoxLayout(scan_box)
+            scan_lbl = QLabel("🔍 Checking for updates across Arch Linux and Flathub...")
+            scan_lbl.setStyleSheet("color: #00FFAA; font-weight: bold;")
+            scan_bar = QProgressBar()
+            scan_bar.setRange(0, 0)
+            scan_bar.setFixedHeight(5)
+            scan_bar.setStyleSheet("""
+                QProgressBar { background-color: #121826; border-radius: 2px; border: none; }
+                QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6C63FF, stop:1 #00FFAA); }
+            """)
+            scan_layout.addWidget(scan_lbl)
+            scan_layout.addWidget(scan_bar)
+            self.cards_layout.addWidget(scan_box)
+
+            def _on_updates_ready(updates):
+                scan_box.deleteLater()
+                if updates:
+                    count_lbl = QLabel(f"📦 {len(updates)} Updates Available:")
+                    count_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #00FFAA; margin-top: 8px;")
+                    self.cards_layout.addWidget(count_lbl)
+                    for u in updates:
+                        card = AppCard(u, self)
+                        self.cards_layout.addWidget(card)
+                else:
+                    card = GlassCard()
+                    c_lay = QVBoxLayout(card)
+                    c_lay.setContentsMargins(18, 18, 18, 18)
+                    ok_lbl = QLabel("✨ Your system is fully up to date!")
+                    ok_lbl.setStyleSheet("color: #00FFAA; font-weight: bold; font-size: 15px;")
+                    detail_lbl = QLabel("Zero pending package updates found across Arch repositories and Flathub.")
+                    detail_lbl.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+                    c_lay.addWidget(ok_lbl)
+                    c_lay.addWidget(detail_lbl)
                     self.cards_layout.addWidget(card)
-            else:
-                card = GlassCard()
-                c_lay = QVBoxLayout(card)
-                ok_lbl = QLabel("✨ Your system is fully up to date! Zero pending package updates.")
-                ok_lbl.setStyleSheet("color: #00FFAA; font-weight: bold; font-size: 14px;")
-                c_lay.addWidget(ok_lbl)
-                self.cards_layout.addWidget(card)
+
+            self.up_worker = CheckUpdatesWorker()
+            self.up_worker.updates_ready.connect(_on_updates_ready)
+            self.up_worker.start()
 
         else:
             cat_name = self.btn_group.button(idx).text().split("  ")[1]
