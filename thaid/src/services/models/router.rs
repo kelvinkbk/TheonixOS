@@ -16,6 +16,12 @@ pub struct ModelRouter {
     config: RouterConfig,
 }
 
+impl Default for ModelRouter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ModelRouter {
     pub fn new() -> Self {
         // Attempt to load from /etc/theonix/router.json

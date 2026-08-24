@@ -8,6 +8,12 @@ pub struct MetricsService {
     pub active_pipelines: AtomicU64,
 }
 
+impl Default for MetricsService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MetricsService {
     pub fn new() -> Self {
         Self {

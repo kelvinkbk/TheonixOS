@@ -60,6 +60,12 @@ pub struct AuditEntry {
     pub duration_ms: u64,
 }
 
+impl Default for PermissionManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PermissionManager {
     pub fn new() -> Self {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());

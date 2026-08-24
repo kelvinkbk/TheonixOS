@@ -70,7 +70,7 @@ impl AIInterface {
             .planner
             .handle_query(prompt, options)
             .await
-            .map_err(|e| zbus::fdo::Error::Failed(e))?;
+            .map_err(zbus::fdo::Error::Failed)?;
 
         info!(response_len = response.len(), "Query completed");
         Ok(response)

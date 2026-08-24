@@ -9,6 +9,12 @@ pub struct PluginManager {
     plugin_dir: String,
 }
 
+impl Default for PluginManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PluginManager {
     pub fn new() -> Self {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
