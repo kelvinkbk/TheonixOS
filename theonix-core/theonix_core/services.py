@@ -123,6 +123,107 @@ class PackageService:
 
         return results[:80]
 
+    @staticmethod
+    def is_installed(pkg_name: str, source: str = "pacman") -> bool:
+        """Check if a package, container, or binary is installed on the system."""
+        if not pkg_name:
+            return False
+
+        if source in ["pacman", "arch"]:
+            try:
+                res = subprocess.run(["pacman", "-Qq", pkg_name], capture_output=True, timeout=2)
+                if res.returncode == 0:
+                    return True
+            except Exception:
+                pass
+            bin_name = pkg_name.split(".")[0]
+            return shutil.which(bin_name) is not None
+        elif source == "flatpak":
+            try:
+                res = subprocess.run(["flatpak", "info", pkg_name], capture_output=True, timeout=2)
+                return res.returncode == 0
+            except Exception:
+                return False
+        elif source == "uacl":
+            uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
+            if os.path.exists(os.path.join(uacl_cache_dir, pkg_name)):
+                return True
+            apps_dir = os.path.expanduser("~/.local/share/applications")
+            if os.path.exists(apps_dir):
+                for f in os.listdir(apps_dir):
+                    if pkg_name.lower() in f.lower():
+                        return True
+            return False
+        return False
+
+    @staticmethod
+    def get_installed_apps() -> List[Dict[str, Any]]:
+        """Scans the system for installed GUI applications with desktop entries."""
+        apps = []
+        seen = set()
+        search_dirs = [
+            "/usr/share/applications",
+            os.path.expanduser("~/.local/share/applications")
+        ]
+        
+        for sdir in search_dirs:
+            if not os.path.exists(sdir):
+                continue
+            for fname in os.listdir(sdir):
+                if not fname.endswith(".desktop"):
+                    continue
+                fpath = os.path.join(sdir, fname)
+                try:
+                    name, exec_cmd, desc, nodisplay = None, None, "", False
+                    with open(fpath, "r", errors="ignore") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith("Name=") and not name:
+                                name = line.split("=", 1)[1]
+                            elif line.startswith("Exec=") and not exec_cmd:
+                                exec_cmd = line.split("=", 1)[1].split()[0]
+                            elif line.startswith("Comment=") and not desc:
+                                desc = line.split("=", 1)[1]
+                            elif line.startswith("NoDisplay=true"):
+                                nodisplay = True
+                                break
+                    if nodisplay or not name or not exec_cmd:
+                        continue
+                    if name in seen:
+                        continue
+                    seen.add(name)
+                    
+                    # Determine icon emoji
+                    icon_emoji = "📦"
+                    lower_n = name.lower()
+                    if "code" in lower_n or "develop" in lower_n:
+                        icon_emoji = "💻"
+                    elif "browser" in lower_n or "web" in lower_n or "firefox" in lower_n:
+                        icon_emoji = "🌐"
+                    elif "terminal" in lower_n or "konsole" in lower_n:
+                        icon_emoji = "⌨️"
+                    elif "calc" in lower_n or "settings" in lower_n:
+                        icon_emoji = "⚙️"
+                    elif "image" in lower_n or "gimp" in lower_n or "paint" in lower_n:
+                        icon_emoji = "🎨"
+                    elif "music" in lower_n or "audio" in lower_n or "vlc" in lower_n or "video" in lower_n:
+                        icon_emoji = "🎬"
+
+                    apps.append({
+                        "name": name,
+                        "pkg": os.path.basename(exec_cmd),
+                        "source": "pacman",
+                        "icon": icon_emoji,
+                        "desc": desc or f"Installed system application ({name})",
+                        "version": "Installed",
+                        "compat": CompatibilityRating.NATIVE,
+                        "compat_desc": "Native Linux application",
+                        "installed": True
+                    })
+                except Exception:
+                    pass
+        return sorted(apps, key=lambda x: x["name"].lower())
+
 
 class SearchService:
     """Advanced search query parser for files, directories, and system settings."""

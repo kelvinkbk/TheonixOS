@@ -405,6 +405,14 @@ class AppCard(GlassCard):
         else:
             badge = Badge("CONFIG", "yellow")
 
+        pkg = self.data.get("pkg", self.data["name"])
+        src = self.data.get("source", "pacman")
+        is_installed = self.data.get("installed") or PackageService.is_installed(pkg, src)
+
+        if is_installed:
+            inst_badge = Badge("✓ INSTALLED", "green")
+            h_title.addWidget(inst_badge)
+
         h_title.addWidget(badge)
         h_title.addStretch()
         v_box.addLayout(h_title)
@@ -421,11 +429,18 @@ class AppCard(GlassCard):
         details_btn.clicked.connect(self._open_details)
         layout.addWidget(details_btn)
 
-        btn = QPushButton("Install")
-        btn.setProperty("class", "PrimaryBtn")
-        btn.setFixedWidth(90)
-        btn.clicked.connect(self._install_app)
-        layout.addWidget(btn)
+        if is_installed:
+            launch_btn = QPushButton("🚀 Launch")
+            launch_btn.setProperty("class", "PrimaryBtn")
+            launch_btn.setFixedWidth(100)
+            launch_btn.clicked.connect(self._launch_app)
+            layout.addWidget(launch_btn)
+        else:
+            btn = QPushButton("Install")
+            btn.setProperty("class", "PrimaryBtn")
+            btn.setFixedWidth(90)
+            btn.clicked.connect(self._install_app)
+            layout.addWidget(btn)
 
     def _open_details(self):
         dlg = AppDetailDialog(self.data, self.parent_window)
@@ -434,6 +449,19 @@ class AppCard(GlassCard):
     def _install_app(self):
         dlg = AppInstallDialog(self.data, self.parent_window)
         dlg.exec()
+
+    def _launch_app(self):
+        pkg = self.data.get("pkg", self.data["name"])
+        src = self.data.get("source", "pacman")
+        if src == "pacman":
+            bin_name = pkg.split(".")[0]
+            subprocess.Popen([bin_name], stderr=subprocess.DEVNULL)
+        elif src == "flatpak":
+            subprocess.Popen(["flatpak", "run", pkg], stderr=subprocess.DEVNULL)
+        elif src == "uacl":
+            uacl_cache_dir = os.path.expanduser("~/.cache/theonix/uacl")
+            local_exe = os.path.join(uacl_cache_dir, pkg)
+            UACLService.launch(local_exe if os.path.exists(local_exe) else pkg)
 
 
 class StoreWorker(QThread):
@@ -619,12 +647,18 @@ class TheonixStoreWindow(QMainWindow):
                     self.cards_layout.addWidget(card)
 
         elif idx == 6:
-            hdr = QLabel("Installed Applications")
+            installed_apps = PackageService.get_installed_apps()
+            hdr = QLabel(f"📥 Installed Applications ({len(installed_apps)} detected)")
             hdr.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFFFFF;")
             self.cards_layout.addWidget(hdr)
-            lbl = QLabel("To view and launch Windows/UACL and native packages, use the App Manager.")
-            lbl.setStyleSheet("color: #94A3B8;")
-            self.cards_layout.addWidget(lbl)
+            
+            sub = QLabel("Native system binaries, sandboxed Flatpaks, and UACL Windows apps available on your device.")
+            sub.setStyleSheet("color: #94A3B8; font-size: 13px; margin-bottom: 8px;")
+            self.cards_layout.addWidget(sub)
+
+            for app_data in installed_apps:
+                card = AppCard(app_data, self)
+                self.cards_layout.addWidget(card)
 
         elif idx == 7:
             hdr = QLabel("Pending Software Updates")
