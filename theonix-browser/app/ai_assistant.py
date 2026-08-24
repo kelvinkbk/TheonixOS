@@ -1,12 +1,6 @@
-"""
-Theonix Browser — Ask Theonix AI Assistant (THAID).
-Provides 3-Level Browser & Page Intelligence:
-  Level 1: Page Intelligence (Summaries, Code Extraction, Translation, Selected Text, Tables)
-  Level 2: Browser State Intelligence (Current URL, Title, Open Tabs, Multi-tab Comparisons)
-  Level 3: Browser Action Automation (Navigation, Tab Management, Element Clicking, Form Typing)
-"""
-
+import json
 import os
+import re
 from typing import List, Dict, Optional
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
@@ -35,12 +29,7 @@ class AIWorkerThread(QThread):
         # 1. Build multi-layer prompt using ContextManager
         messages = ContextManager.build_prompt(
             user_prompt=self.prompt,
-            browser_ctx=self.browser_ctx,
-            system_instructions=(
-                "You are THAID, the native intelligence engine built into Theonix Browser and Theonix OS. "
-                "You have full context over the current webpage, tabs, and browser state. "
-                "Provide accurate, actionable, clean answers with Markdown formatting."
-            )
+            browser_ctx=self.browser_ctx
         )
 
         # 2. Intelligent Model Routing
@@ -51,8 +40,28 @@ class AIWorkerThread(QThread):
             user_preference=self.model_preference
         )
 
+        full_output = ""
+        action_triggered = False
+
         try:
             for token in AIService.stream_chat(messages, model_id=selected_model):
+                full_output += token
+                
+                # Check for autonomous action blocks in stream
+                if "<action>" in full_output and "</action>" in full_output and not action_triggered:
+                    match = re.search(r"<action>(.*?)</action>", full_output, re.DOTALL)
+                    if match:
+                        try:
+                            action_data = json.loads(match.group(1).strip())
+                            tool = action_data.get("tool")
+                            params = action_data.get("params", {})
+                            if tool:
+                                action_triggered = True
+                                self.action_requested.emit(tool, params)
+                        except Exception as parse_err:
+                            print(f"[THAID] Error parsing action JSON: {parse_err}")
+
+                # Emit visible token to UI
                 self.chunk_received.emit(token)
         except Exception as e:
             self.chunk_received.emit(f"\n[THAID Error: {e}]\n")
@@ -123,13 +132,13 @@ class AskTheonixDrawer(QFrame):
             "background-color: rgba(14, 18, 28, 0.9); border: 1px solid rgba(255,255,255,0.08); "
             "border-radius: 10px; color: #F8FAFC; padding: 10px; font-size: 12.5px; line-height: 1.5;"
         )
-        self.chat_log.setPlaceholderText("Ask THAID to analyze this page, compare open tabs, or execute browser actions...")
+        self.chat_log.setPlaceholderText("Ask THAID to analyze this page, compare open tabs, or command browser in natural language...")
         layout.addWidget(self.chat_log)
 
         # Prompt Input
         input_row = QHBoxLayout()
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Ask THAID or command browser...")
+        self.input_field.setPlaceholderText("Ask anything or tell THAID what to do...")
         self.input_field.returnPressed.connect(self._send_custom_prompt)
 
         send_btn = QPushButton("Ask")
@@ -177,38 +186,6 @@ class AskTheonixDrawer(QFrame):
         self._dispatch_with_context(text)
 
     def _dispatch_with_context(self, prompt: str, selected_override: str = ""):
-        p_lower = prompt.strip().lower()
-
-        # Level 3: Direct Browser Actions safely executed on Main GUI Thread
-        if p_lower.startswith("open tab") or p_lower.startswith("new tab"):
-            self.chat_log.append(f"<b>You:</b> {prompt}\n")
-            parts = prompt.split(" ", 2)
-            target = parts[2] if len(parts) > 2 else "theonix://newtab"
-            target = target.strip("'\"<>` ")
-            if not target.startswith(("http://", "https://", "theonix://")):
-                target = "https://" + target
-            BrowserService.open_tab(target)
-            self.chat_log.append(f"<b>THAID:</b> ✓ Opened new tab: `{target}`\n")
-            return
-
-        if p_lower.startswith("scroll down"):
-            self.chat_log.append(f"<b>You:</b> {prompt}\n")
-            BrowserService.scroll("down", 600)
-            self.chat_log.append("<b>THAID:</b> ✓ Scrolled down.\n")
-            return
-
-        if p_lower.startswith("scroll up"):
-            self.chat_log.append(f"<b>You:</b> {prompt}\n")
-            BrowserService.scroll("up", 600)
-            self.chat_log.append("<b>THAID:</b> ✓ Scrolled up.\n")
-            return
-
-        if p_lower.startswith("close tab"):
-            self.chat_log.append(f"<b>You:</b> {prompt}\n")
-            BrowserService.close_current_tab()
-            self.chat_log.append("<b>THAID:</b> ✓ Closed tab.\n")
-            return
-
         self.chat_log.append(f"<b>You:</b> {prompt}\n")
         self.chat_log.append("<b>THAID:</b> <i>Thinking...</i>\n")
 
@@ -241,10 +218,39 @@ class AskTheonixDrawer(QFrame):
 
     def _start_worker(self, prompt: str, ctx: BrowserContext):
         self.worker = AIWorkerThread(prompt, browser_ctx=ctx, model_preference=self._get_model_pref())
-        self.worker.chunk_received.connect(lambda c: self.chat_log.append(c))
+        self.worker.chunk_received.connect(self._on_chunk_received)
         self.worker.action_requested.connect(self._handle_async_action)
         self.worker.start()
 
+    @pyqtSlot(str)
+    def _on_chunk_received(self, chunk: str):
+        # Don't show raw <action> tag metadata to the user
+        cleaned = re.sub(r"<action>.*?</action>", "", chunk, flags=re.DOTALL)
+        if cleaned:
+            self.chat_log.append(cleaned)
+
     @pyqtSlot(str, dict)
     def _handle_async_action(self, tool_name: str, params: dict):
-        tools.execute(tool_name, **params)
+        if tool_name == "browser.open_tab":
+            url = params.get("url", "https://google.com").strip("'\"<>` ")
+            if not url.startswith(("http://", "https://", "theonix://")):
+                url = "https://" + url
+            BrowserService.open_tab(url)
+            self.chat_log.append(f"<br><span style='color:#00FFAA;'>⚡ <b>Action Executed:</b> Opened new tab <code>{url}</code></span><br>")
+        elif tool_name == "browser.navigate":
+            url = params.get("url", "https://google.com").strip("'\"<>` ")
+            if not url.startswith(("http://", "https://", "theonix://")):
+                url = "https://" + url
+            BrowserService.navigate(url)
+            self.chat_log.append(f"<br><span style='color:#00FFAA;'>⚡ <b>Action Executed:</b> Navigated to <code>{url}</code></span><br>")
+        elif tool_name == "browser.scroll":
+            direction = params.get("direction", "down")
+            BrowserService.scroll(direction)
+            self.chat_log.append(f"<br><span style='color:#00FFAA;'>⚡ <b>Action Executed:</b> Scrolled {direction}</span><br>")
+        elif tool_name == "browser.close_tab":
+            BrowserService.close_current_tab()
+            self.chat_log.append("<br><span style='color:#00FFAA;'>⚡ <b>Action Executed:</b> Closed current tab</span><br>")
+        else:
+            tools.execute(tool_name, **params)
+            self.chat_log.append(f"<br><span style='color:#00FFAA;'>⚡ <b>Action Executed:</b> <code>{tool_name}</code></span><br>")
+
