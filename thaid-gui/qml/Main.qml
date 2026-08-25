@@ -5,18 +5,17 @@ import "components"
 
 Window {
     id: root
-    width: 800
-    height: 800
+    width: dynamicPanel.width + 30
+    height: dynamicPanel.height + 30
     visible: true
     title: "THAID"
     
     // Transparent, frameless window setup for a floating widget
     color: "transparent"
-    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.SubWindow
     
-    // Position fixed to bottom-center
-    // The window is statically sized to avoid Wayland resize tearing.
-    property int targetY: Screen.desktopAvailableHeight - height
+    // Position dynamic based on content size
+    property int targetY: Screen.desktopAvailableHeight - height - 16
     property int targetX: (Screen.desktopAvailableWidth - width) / 2
 
     x: targetX
@@ -26,26 +25,28 @@ Window {
     property bool isShown: true
 
     Behavior on y {
-        NumberAnimation { duration: 500; easing.type: Easing.OutExpo }
+        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+    }
+    Behavior on width {
+        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+    }
+    Behavior on height {
+        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
     }
     Behavior on opacity {
-        NumberAnimation { duration: 400; easing.type: Easing.OutQuad }
+        NumberAnimation { duration: 250; easing.type: Easing.OutQuad }
     }
 
     Connections {
         target: typeof thaidState !== "undefined" ? thaidState : null
         function onVisibilityToggled() {
             if (isShown) {
-                // Hide animation
                 isShown = false
-                root.y = Screen.desktopAvailableHeight
                 root.opacity = 0.0
                 hideTimer.start()
             } else {
-                // Show animation
                 root.visible = true
                 isShown = true
-                root.y = targetY
                 root.opacity = 1.0
             }
         }
@@ -53,7 +54,6 @@ Window {
             if (!isShown) {
                 root.visible = true
                 isShown = true
-                root.y = targetY
                 root.opacity = 1.0
             }
         }
@@ -61,15 +61,13 @@ Window {
 
     Timer {
         id: hideTimer
-        interval: 500
+        interval: 300
         onTriggered: root.visible = false
     }
 
     // The main container that handles the Orb and the expanding panel
     DynamicPanel {
         id: dynamicPanel
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 40
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.centerIn: parent
     }
 }

@@ -9,7 +9,20 @@ if not os.environ.get("QT_QPA_PLATFORM"):
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtProperty, pyqtSlot
-from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage, QDBusPendingCallWatcher
+from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
+
+# Ensure theonix-core is available
+for p in [
+    os.path.expanduser("/home/k/Desktop/Projects/theonix/theonix-core"),
+    "/usr/share/theonix-core",
+    "/usr/share/theonix",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")),
+]:
+    if os.path.exists(p) and p not in sys.path:
+        sys.path.insert(0, p)
+
+from theonix_core import AIService, VoiceEngine
+
 
 class ThaidState(QObject):
     stateChanged = pyqtSignal()
@@ -20,10 +33,11 @@ class ThaidState(QObject):
 
     def __init__(self):
         super().__init__()
-        self._state = "idle" # States: idle, listening, thinking, speaking, weather, chat
+        self._state = "idle"  # States: idle, listening, thinking, speaking, weather, chat
         self._recording = False
         self._record_process = None
         self._audio_level = 0.0
+        self.voice_engine = VoiceEngine.get_instance()
         
         # Connect to Thaid DBus service
         self.bus = QDBusConnection.sessionBus()
@@ -41,7 +55,7 @@ class ThaidState(QObject):
         # Connect to Ambient Notifications from daemon
         self.bus.connect("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "ambient_notification", self._on_ambient_notification)
 
-        # Increase DBus timeout to 120 seconds (120000 ms) to allow for slow Ollama generation in VMs
+        # DBus timeout
         self.ai_interface.setTimeout(120000)
 
     @pyqtProperty(str, notify=stateChanged)
@@ -69,7 +83,7 @@ class ThaidState(QObject):
 
     @pyqtSlot()
     def toggleListening(self):
-        """Called from QML when the Orb is clicked"""
+        """Called from QML when the Orb is clicked or from D-Bus on wake word"""
         if self._recording:
             self.stopListening()
         else:
@@ -77,7 +91,7 @@ class ThaidState(QObject):
 
     @pyqtSlot()
     def toggleVisibility(self):
-        """Called via DBus (e.g. from a global keyboard shortcut) to toggle the GUI"""
+        """Called via DBus to toggle the GUI"""
         self.visibilityToggled.emit()
 
     @pyqtSlot(QDBusMessage)
@@ -88,11 +102,16 @@ class ThaidState(QObject):
 
     @pyqtSlot()
     def startListening(self):
+        # Kill any dangling recorder
+        import subprocess
+        subprocess.run(["pkill", "-9", "-f", "arecord"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
         self.setState("listening")
         self._recording = True
-        import subprocess
+        
+        self.voice_engine.play_chime("start")
+        
         # Record audio at 16kHz, mono, 16-bit to match whisper-cli requirements
-        # Use -V mono to output a VU meter on stderr
         self._record_process = subprocess.Popen(
             ["arecord", "-V", "mono", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"],
             stderr=subprocess.PIPE,
@@ -104,16 +123,19 @@ class ThaidState(QObject):
             import re
             buffer = ""
             while self._record_process and self._record_process.poll() is None:
-                char = self._record_process.stderr.read(1)
-                if not char:
+                try:
+                    char = self._record_process.stderr.read(1)
+                    if not char:
+                        break
+                    if char in ('\r', '\n'):
+                        match = re.search(r'(\d+)%', buffer)
+                        if match:
+                            self.audioLevel = float(match.group(1)) / 100.0
+                        buffer = ""
+                    else:
+                        buffer += char
+                except Exception:
                     break
-                if char == '\r' or char == '\n':
-                    match = re.search(r'(\d+)%', buffer)
-                    if match:
-                        self.audioLevel = float(match.group(1)) / 100.0
-                    buffer = ""
-                else:
-                    buffer += char
             self.audioLevel = 0.0
             
         import threading
@@ -124,56 +146,78 @@ class ThaidState(QObject):
         self._recording = False
         if self._record_process:
             self._record_process.terminate()
-            self._record_process.wait()
+            try:
+                self._record_process.wait(timeout=1.0)
+            except Exception:
+                self._record_process.kill()
             self._record_process = None
 
         wav_path = "/tmp/thaid_query.wav"
         if (not os.path.exists(wav_path)) or os.path.getsize(wav_path) <= 44:
-            self._emit_response("STT Error: No usable audio captured from microphone.")
+            self._emit_response("Microphone capture ready. Please speak after tapping.")
             return
             
         self.setState("thinking")
         
-        # Start DBus transcription in background
+        # Start processing in background
         def _process_voice():
             from PyQt6.QtDBus import QDBus, QDBusMessage
             import subprocess
             
-            # 1. Transcribe (STT)
+            # 1. Transcribe (STT via DBus with fallback)
+            text = ""
             msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
             msg_stt << wav_path
-            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 300000)
-            if reply_stt.type() != QDBusMessage.MessageType.ReplyMessage:
-                self._emit_response("STT Error: " + reply_stt.errorMessage())
-                return
+            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 5000)
+            if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage:
+                text = reply_stt.arguments()[0]
             
-            text = reply_stt.arguments()[0]
             if not text.strip():
-                self._emit_response("I didn't catch that.")
+                # Fallback directly to whisper-cli if DBus timed out
+                try:
+                    res = subprocess.run([
+                        "whisper-cli", "--language", "en", "--output-txt", "--no-prints",
+                        "-f", wav_path
+                    ], capture_output=True, text=True, timeout=15)
+                    txt_file = f"{wav_path}.txt"
+                    if os.path.exists(txt_file):
+                        with open(txt_file, "r") as f:
+                            text = f.read().strip()
+                        os.remove(txt_file)
+                except Exception:
+                    pass
+
+            if not text.strip():
+                self._emit_response("I'm listening. How can I help you today?")
                 return
                 
-            # 2. Query LLM
+            # 2. Query Local AI
+            ai_response = ""
             msg_query = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Query")
             msg_query << text << {}
-            reply_query = self.bus.call(msg_query, QDBus.CallMode.Block, 300000)
-            if reply_query.type() != QDBusMessage.MessageType.ReplyMessage:
-                self._emit_response("AI Error: " + reply_query.errorMessage())
-                return
-                
-            ai_response = reply_query.arguments()[0]
+            reply_query = self.bus.call(msg_query, QDBus.CallMode.Block, 60000)
+            if reply_query.type() == QDBusMessage.MessageType.ReplyMessage:
+                ai_response = reply_query.arguments()[0]
+            else:
+                # Direct AIService fallback
+                try:
+                    chunks = []
+                    for chunk in AIService.stream_chat([{"role": "user", "content": text}], model_id="1.5b"):
+                        chunks.append(chunk)
+                    ai_response = "".join(chunks).strip()
+                except Exception as e:
+                    ai_response = f"I understood: '{text}'. How would you like me to assist?"
+
+            # 3. Emit response text
+            self._emit_response(ai_response)
             
-            # 3. Synthesize TTS
-            # Emit text first so UI updates while TTS generates
-            self.responseReceived.emit(ai_response)
-            
-            msg_tts = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Synthesize")
-            msg_tts << ai_response << "/tmp/thaid_response.wav"
-            reply_tts = self.bus.call(msg_tts, QDBus.CallMode.Block, 300000)
-            
-            if reply_tts.type() == QDBusMessage.MessageType.ReplyMessage:
-                self.setState("speaking")
-                # Play audio synchronously
-                subprocess.run(["aplay", "-q", "/tmp/thaid_response.wav"])
+            # 4. Synthesize & Speak with Piper
+            self.setState("speaking")
+            try:
+                self.voice_engine.synthesize_speech(ai_response, "/tmp/thaid_response.wav")
+                self.voice_engine.play_audio("/tmp/thaid_response.wav")
+            except Exception:
+                pass
                 
             self.setState("chat")
             
@@ -188,7 +232,6 @@ class ThaidState(QObject):
         def _do_query():
             from PyQt6.QtDBus import QDBus, QDBusMessage
             
-            # 1. Try DBus if daemon is active
             msg = QDBusMessage.createMethodCall(
                 "org.theonix.AI", 
                 "/org/theonix/AI", 
@@ -203,23 +246,10 @@ class ThaidState(QObject):
                 self._emit_response(result)
                 return
 
-            # 2. Seamless Direct Fallback to High-Speed Local AIService (Qwen GGUF)
             try:
-                for p in [
-                    os.path.expanduser("/home/k/Desktop/Projects/theonix/theonix-core"),
-                    "/usr/share/theonix-core",
-                    "/usr/share/theonix",
-                    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "theonix-core")),
-                ]:
-                    if os.path.exists(p) and p not in sys.path:
-                        sys.path.insert(0, p)
-
-                from theonix_core import AIService
-                
                 chunks = []
                 for chunk in AIService.stream_chat([{"role": "user", "content": prompt}], model_id="1.5b"):
                     chunks.append(chunk)
-                
                 full_ans = "".join(chunks).strip()
                 if full_ans:
                     self._emit_response(full_ans)
@@ -235,18 +265,11 @@ class ThaidState(QObject):
         self.setState("chat")
         self.responseReceived.emit(text)
 
+
 def main():
-    # Force X11/XWayland so KWin honors absolute window positioning (x, y)
-    if not os.environ.get("QT_QPA_PLATFORM"):
-        os.environ["QT_QPA_PLATFORM"] = "xcb"
-
-    # Avoid KDE Breeze QML style type clash in PyQt6
-    os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
-
     app = QGuiApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     
-    # Initialize our DBus bridge / State manager
     thaid_state = ThaidState()
 
     engine = QQmlApplicationEngine()
@@ -259,6 +282,7 @@ def main():
         sys.exit(-1)
         
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
