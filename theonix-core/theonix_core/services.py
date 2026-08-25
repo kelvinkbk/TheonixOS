@@ -807,5 +807,57 @@ class SearchClient:
             pass
 
 
+class InputClient:
+    """High-level client for the decoupled org.theonix.Input D-Bus service."""
+
+    @staticmethod
+    def get_gesture_config() -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Input", "/org/theonix/Input", "", "GetGestureConfig"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {}
+
+    @staticmethod
+    def set_gesture_config(config_data: Dict[str, Any]) -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Input", "/org/theonix/Input", "", "SetGestureConfig"
+            )
+            msg << json.dumps(config_data)
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
+    def trigger_gesture(gesture_name: str) -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Input", "/org/theonix/Input", "", "TriggerGestureAction"
+            )
+            msg << gesture_name
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+
+
 
 

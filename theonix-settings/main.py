@@ -602,21 +602,14 @@ class TouchpadGesturesPage(QWidget):
         self._load_current_settings()
 
     def _load_current_settings(self):
-        kcm_path = os.path.expanduser("~/.config/kcminputrc")
-        if os.path.exists(kcm_path):
-            try:
-                import configparser
-                config = configparser.ConfigParser(interpolation=None)
-                config.read(kcm_path)
-                for section in config.sections():
-                    if "Libinput" in section and ("Touchpad" in section or "touchpad" in section):
-                        self.tap_click_cb.setChecked(config[section].get("TapToClick", "true").lower() == "true")
-                        self.tap_drag_cb.setChecked(config[section].get("TapAndDrag", "true").lower() == "true")
-                        self.natural_scroll_cb.setChecked(config[section].get("NaturalScroll", "true").lower() == "true")
-                        self.dwt_cb.setChecked(config[section].get("DisableWhileTyping", "true").lower() == "true")
-                        break
-            except Exception:
-                pass
+        from theonix_core import InputClient
+        cfg = InputClient.get_gesture_config()
+        if cfg:
+            self.tap_click_cb.setChecked(cfg.get("tap_to_click", True))
+            self.tap_drag_cb.setChecked(cfg.get("tap_and_drag", True))
+            self.natural_scroll_cb.setChecked(cfg.get("natural_scroll", True))
+            self.dwt_cb.setChecked(cfg.get("disable_while_typing", True))
+            self.speed_slider.setValue(cfg.get("pointer_speed", 6))
 
     def _apply_windows_profile(self):
         self.tap_click_cb.setChecked(True)
@@ -637,11 +630,24 @@ class TouchpadGesturesPage(QWidget):
         )
 
     def _save_settings(self, show_msg=True):
-        tap_click = self.tap_click_cb.isChecked()
-        tap_drag = self.tap_drag_cb.isChecked()
-        natural_scroll = self.natural_scroll_cb.isChecked()
-        dwt = self.dwt_cb.isChecked()
-        speed_val = (self.speed_slider.value() - 5) * 0.08
+        from theonix_core import InputClient
+        cfg_data = {
+            "tap_to_click": self.tap_click_cb.isChecked(),
+            "tap_and_drag": self.tap_drag_cb.isChecked(),
+            "natural_scroll": self.natural_scroll_cb.isChecked(),
+            "disable_while_typing": self.dwt_cb.isChecked(),
+            "pointer_speed": self.speed_slider.value(),
+            "gestures": {
+                "swipe_3_up": "overview",
+                "swipe_3_down": "show_desktop",
+                "swipe_3_left": "switch_apps",
+                "swipe_3_right": "switch_apps",
+                "swipe_4_left": "prev_desktop",
+                "swipe_4_right": "next_desktop",
+                "pinch_4": "omni_search"
+            }
+        }
+        InputClient.set_gesture_config(cfg_data)
 
         # 1. Update kcminputrc
         kcm_path = os.path.expanduser("~/.config/kcminputrc")
