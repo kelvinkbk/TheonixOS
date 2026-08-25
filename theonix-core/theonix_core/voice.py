@@ -178,14 +178,33 @@ class VoiceEngine:
     def synthesize_speech(self, text: str, output_wav: str = "/tmp/thaid_response.wav") -> bool:
         """Synthesizes text to speech with Piper neural TTS."""
         voice_name = self.config.get("voice_model", "en_US-lessac-medium")
-        voice_path = f"/usr/share/theonix/models/piper/{voice_name}.onnx"
+        candidate_paths = [
+            f"/usr/share/theonix/models/piper/{voice_name}.onnx",
+            os.path.expanduser(f"~/.local/share/theonix/models/piper/{voice_name}.onnx"),
+            "/usr/share/theonix/models/piper/en_US-lessac-medium.onnx",
+            os.path.expanduser("~/.local/share/theonix/models/piper/en_US-lessac-medium.onnx"),
+        ]
         
-        if not os.path.exists(voice_path):
-            local_path = os.path.expanduser(f"~/.local/share/theonix/models/piper/{voice_name}.onnx")
-            if os.path.exists(local_path):
-                voice_path = local_path
-            else:
-                return False
+        voice_path = None
+        for cp in candidate_paths:
+            if os.path.exists(cp) and os.path.getsize(cp) > 1000:
+                voice_path = cp
+                break
+
+        if not voice_path:
+            # Search for any installed .onnx model in piper directory
+            for dir_path in ["/usr/share/theonix/models/piper", os.path.expanduser("~/.local/share/theonix/models/piper")]:
+                if os.path.isdir(dir_path):
+                    for f in os.listdir(dir_path):
+                        if f.endswith(".onnx"):
+                            voice_path = os.path.join(dir_path, f)
+                            break
+                if voice_path:
+                    break
+
+        if not voice_path:
+            print("[VoiceEngine] No Piper voice model found.")
+            return False
 
         try:
             p = subprocess.Popen(
@@ -196,7 +215,7 @@ class VoiceEngine:
                 text=True
             )
             p.communicate(input=text, timeout=30.0)
-            return p.returncode == 0 and os.path.exists(output_wav)
+            return p.returncode == 0 and os.path.exists(output_wav) and os.path.getsize(output_wav) > 100
         except Exception as e:
             print(f"[VoiceEngine] Speech synthesis failed: {e}")
             return False
