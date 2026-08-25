@@ -297,7 +297,14 @@ class ThaidState(QObject):
                 self._speak(fallback_msg)
                 return
                 
-            # 2. Query Local AI Engine
+            # 2. Check for native OS action / system intent first
+            system_action_msg = self._handle_system_intent(text)
+            if system_action_msg:
+                self._emit_response(system_action_msg)
+                self._speak(system_action_msg)
+                return
+
+            # 3. Query Local AI Engine for complex reasoning / questions
             ai_response = ""
             msg_query = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Query")
             msg_query << text << {}
@@ -317,13 +324,50 @@ class ThaidState(QObject):
             if not ai_response:
                 ai_response = f"I understood: \"{text}\"."
 
-            # 3. Emit response text to UI
+            # 4. Emit response text to UI
             self._emit_response(ai_response)
             
-            # 4. Speak response aloud with Piper Neural TTS
+            # 5. Speak response aloud with Piper Neural TTS
             self._speak(ai_response)
             
         threading.Thread(target=_process_voice, daemon=True).start()
+
+    def _handle_system_intent(self, prompt: str):
+        p = prompt.strip().lower()
+        if any(k in p for k in ["open settings", "launch settings", "settings", "control center"]):
+            subprocess.Popen(["theonix-settings"])
+            return "Opening Theonix Settings."
+        if any(k in p for k in ["open browser", "launch browser", "open web", "open internet", "browse"]):
+            subprocess.Popen(["theonix-browser"])
+            return "Opening Theonix Browser."
+        if any(k in p for k in ["open store", "app store", "install app", "open market"]):
+            subprocess.Popen(["theonix-store"])
+            return "Opening Theonix Store."
+        if any(k in p for k in ["open files", "file manager", "my files", "open dolphin"]):
+            subprocess.Popen(["theonix-files"])
+            return "Opening Theonix Files."
+        if any(k in p for k in ["open messages", "messages", "chat app"]):
+            subprocess.Popen(["theonix-messages"])
+            return "Opening Theonix Messages."
+        if any(k in p for k in ["open terminal", "terminal", "open console", "konsole"]):
+            subprocess.Popen(["konsole"])
+            return "Opening Terminal."
+        if any(k in p for k in ["screenshot", "capture screen", "screen grab"]):
+            subprocess.Popen(["spectacle"])
+            return "Opening Screenshot tool."
+        if "mute" in p:
+            subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "1"])
+            return "Audio muted."
+        if "unmute" in p:
+            subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "0"])
+            return "Audio unmuted."
+        if "volume up" in p or "increase volume" in p:
+            subprocess.run(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+"])
+            return "Volume increased."
+        if "volume down" in p or "decrease volume" in p:
+            subprocess.run(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"])
+            return "Volume decreased."
+        return None
 
     def _speak(self, text: str):
         """Synthesizes text and plays audio through active audio sink"""

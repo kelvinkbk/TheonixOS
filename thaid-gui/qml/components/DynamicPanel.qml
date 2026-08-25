@@ -31,8 +31,8 @@ Item {
         anchors.fill: parent
         radius: targetRadius
         
-        color: "#d9050814" // Translucent dark glass
-        border.color: panelContainer.aiState === "listening" ? "#4400FFAA" : "#22ffffff" // Subtle cyan border when listening
+        color: "#f5050814" // Deep solid dark obsidian glass (prevents background text bleed)
+        border.color: panelContainer.aiState === "listening" ? "#8800FFAA" : "rgba(255, 255, 255, 0.15)"
         border.width: panelContainer.aiState === "listening" ? 1.5 : 1
 
         Behavior on radius { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
