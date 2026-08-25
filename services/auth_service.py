@@ -541,40 +541,64 @@ class AuthService(QObject):
 
     @pyqtSlot(str, str, result=str)
     def AuthenticatePasskey(self, rp_id: str, challenge: str) -> str:
+        clean_rp = rp_id.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0].strip()
+        root_rp = clean_rp[4:] if clean_rp.startswith("www.") else clean_rp
+
         conn = sqlite3.connect(AUTH_DB_PATH)
         c = conn.cursor()
-        c.execute("SELECT id, user_name, private_key, sign_count FROM passkeys WHERE rp_id = ? ORDER BY last_used DESC LIMIT 1", (rp_id,))
+        c.execute("""
+            SELECT id, user_name, private_key, sign_count, rp_id FROM passkeys 
+            WHERE rp_id = ? OR rp_id = ? OR rp_id LIKE ? OR ? LIKE '%' || rp_id || '%'
+            ORDER BY last_used DESC LIMIT 1
+        """, (clean_rp, root_rp, f"%{root_rp}%", clean_rp))
         row = c.fetchone()
         conn.close()
 
         if not row:
             return json.dumps({"success": False, "error": f"No Passkey found for {rp_id}"})
 
-        passkey_id, user_name, priv_pem, sign_count = row
+        passkey_id, user_name, priv_pem, sign_count, actual_rp = row
 
-        dlg = GlassPasskeyDialog("auth", rp_id, user_name)
+        dlg = GlassPasskeyDialog("auth", actual_rp, user_name)
         dlg.exec()
         if not dlg.confirmed:
             return json.dumps({"success": False, "error": "Passkey authentication cancelled."})
 
         try:
             private_key = serialization.load_pem_private_key(priv_pem.encode("utf-8"), password=None)
-            signature = private_key.sign(challenge.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+            
+            # WebAuthn Specification: authData (37 bytes) + SHA-256(clientDataJSON)
+            new_count = sign_count + 1
+            rp_hash = hashlib.sha256(actual_rp.encode("utf-8")).digest()
+            auth_data = rp_hash + b"\x05" + struct.pack(">I", new_count)
+
+            client_data = json.dumps({
+                "type": "webauthn.get",
+                "challenge": challenge,
+                "origin": f"https://{actual_rp}",
+                "crossOrigin": False
+            })
+            client_data_hash = hashlib.sha256(client_data.encode("utf-8")).digest()
+            signed_data = auth_data + client_data_hash
+
+            signature = private_key.sign(signed_data, ec.ECDSA(hashes.SHA256()))
             sig_b64 = base64.b64encode(signature).decode("utf-8")
 
-            new_count = sign_count + 1
             conn = sqlite3.connect(AUTH_DB_PATH)
             c = conn.cursor()
             c.execute("UPDATE passkeys SET sign_count = ?, last_used = CURRENT_TIMESTAMP WHERE id = ?", (new_count, passkey_id))
             conn.commit()
             conn.close()
 
-            self.passkeyAuthenticated.emit(rp_id, user_name)
+            self.passkeyAuthenticated.emit(actual_rp, user_name)
             return json.dumps({
                 "success": True,
                 "credential_id": passkey_id,
                 "user_name": user_name,
                 "signature_b64": sig_b64,
+                "auth_data_b64": base64.b64encode(auth_data).decode("utf-8"),
+                "client_data_b64": base64.b64encode(client_data.encode("utf-8")).decode("utf-8"),
+                "rawId_b64": base64.b64encode(passkey_id.encode("utf-8")).decode("utf-8"),
                 "sign_count": new_count
             })
         except Exception as e:
