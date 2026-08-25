@@ -85,7 +85,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: typeof thaidState !== "undefined" && thaidState.liveTranscript ? thaidState.liveTranscript : "Listening..."
             color: typeof thaidState !== "undefined" && thaidState.liveTranscript ? "#00FFAA" : "#94A3B8"
-            font.pixelSize: 13.5
+            font.pixelSize: 14
             font.bold: true
             font.family: "Inter, Roboto, sans-serif"
             elide: Text.ElideRight
@@ -108,7 +108,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: "Thinking..."
             color: "#38BDF8"
-            font.pixelSize: 13.5
+            font.pixelSize: 14
             font.bold: true
             font.family: "Inter, Roboto, sans-serif"
         }
@@ -129,7 +129,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: "Speaking..."
             color: "#A855F7"
-            font.pixelSize: 13.5
+            font.pixelSize: 14
             font.bold: true
             font.family: "Inter, Roboto, sans-serif"
         }
