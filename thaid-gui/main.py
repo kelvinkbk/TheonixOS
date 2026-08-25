@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import wave
 import time
 import subprocess
 import threading
@@ -116,9 +117,26 @@ class ThaidState(QObject):
         if msg.arguments():
             self.ambientNotificationReceived.emit(str(msg.arguments()[0]))
 
+    def _raw_to_wav(self, raw_path: str, wav_path: str) -> bool:
+        """Encapsulates raw 16kHz mono PCM into a clean RIFF WAV container"""
+        if not os.path.exists(raw_path) or os.path.getsize(raw_path) < 100:
+            return False
+        try:
+            with open(raw_path, 'rb') as f_in:
+                raw_bytes = f_in.read()
+            with wave.open(wav_path, 'wb') as f_out:
+                f_out.setnchannels(1)
+                f_out.setsampwidth(2)
+                f_out.setframerate(16000)
+                f_out.writeframes(raw_bytes)
+            return os.path.exists(wav_path) and os.path.getsize(wav_path) > 100
+        except Exception as e:
+            print(f"[THAID-GUI] PCM to WAV conversion error: {e}")
+            return False
+
     @pyqtSlot()
     def startListening(self):
-        # Kill any dangling recorder
+        # Clean up any leftover processes
         subprocess.run(["pkill", "-9", "-f", "pw-record"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["pkill", "-9", "-f", "arecord"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
@@ -128,17 +146,17 @@ class ThaidState(QObject):
         
         self.voice_engine.play_chime("start")
         
-        # Record audio at 16kHz, mono, 16-bit using PipeWire default source (e.g. AirPods Pro / mic)
-        wav_path = "/tmp/thaid_query.wav"
-        if os.path.exists(wav_path):
+        raw_path = "/tmp/thaid_query.raw"
+        if os.path.exists(raw_path):
             try:
-                os.remove(wav_path)
+                os.remove(raw_path)
             except Exception:
                 pass
 
-        rec_cmd = ["pw-record", "--rate", "16000", "--channels", "1", "--format", "s16", wav_path]
+        # Record pure raw PCM to avoid partial WAV header corruption
+        rec_cmd = ["pw-record", "--rate", "16000", "--channels", "1", "--format", "s16", raw_path]
         if not os.path.exists("/usr/bin/pw-record"):
-            rec_cmd = ["arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", wav_path]
+            rec_cmd = ["arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "-t", "raw", raw_path]
 
         try:
             self._record_process = subprocess.Popen(rec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -159,26 +177,25 @@ class ThaidState(QObject):
 
         # Real-time live speech subtitle streamer
         def _live_stt_streamer():
-            time.sleep(1.2)  # Wait for initial buffer
+            time.sleep(0.8)
             model_path = "/usr/share/theonix/models/whisper/ggml-base.bin"
             if not os.path.exists(model_path):
                 model_path = os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-base.bin")
 
+            live_wav = "/tmp/thaid_live.wav"
             while self._recording:
-                if os.path.exists(wav_path) and os.path.getsize(wav_path) > 16000:
+                if self._raw_to_wav(raw_path, live_wav):
                     try:
-                        # Fast partial transcribe
-                        tmp_out = f"{wav_path}.live.txt"
                         res = subprocess.run([
                             "whisper-cli",
                             "--model", model_path,
                             "--language", "en",
                             "--no-prints",
                             "--output-txt",
-                            "-f", wav_path
-                        ], capture_output=True, text=True, timeout=3.5)
+                            "-f", live_wav
+                        ], capture_output=True, text=True, timeout=2.5)
                         
-                        txt_file = f"{wav_path}.txt"
+                        txt_file = f"{live_wav}.txt"
                         if os.path.exists(txt_file):
                             with open(txt_file, "r") as f:
                                 partial = f.read().strip()
@@ -187,13 +204,13 @@ class ThaidState(QObject):
                                 self.liveTranscript = f"\"{clean}\""
                     except Exception:
                         pass
-                time.sleep(1.0)
+                time.sleep(0.7)
 
         threading.Thread(target=_live_stt_streamer, daemon=True).start()
 
-        # Automatic timeout after 7.0 seconds of listening
+        # Automatic timeout after 6.5 seconds of listening
         def _auto_stop_after_timeout():
-            time.sleep(7.0)
+            time.sleep(6.5)
             if self._recording:
                 self.stopListening()
 
@@ -208,15 +225,16 @@ class ThaidState(QObject):
         if self._record_process:
             self._record_process.terminate()
             try:
-                self._record_process.wait(timeout=1.0)
+                self._record_process.wait(timeout=0.8)
             except Exception:
                 self._record_process.kill()
             self._record_process = None
 
         subprocess.run(["pkill", "-2", "-f", "pw-record"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+        raw_path = "/tmp/thaid_query.raw"
         wav_path = "/tmp/thaid_query.wav"
-        if (not os.path.exists(wav_path)) or os.path.getsize(wav_path) <= 44:
+        if not self._raw_to_wav(raw_path, wav_path):
             msg = "I'm listening. Please speak and tap the Orb."
             self._emit_response(msg)
             self._speak(msg)
@@ -228,10 +246,10 @@ class ThaidState(QObject):
         def _process_voice():
             from PyQt6.QtDBus import QDBus, QDBusMessage
             
-            # Find best whisper model (small preferred for final accuracy)
+            # Find best whisper model (small model preferred for final accuracy)
             model_candidates = [
-                "/usr/share/theonix/models/whisper/ggml-small.bin",
                 os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-small.bin"),
+                "/usr/share/theonix/models/whisper/ggml-small.bin",
                 "/usr/share/theonix/models/whisper/ggml-base.bin",
                 os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-base.bin"),
             ]
@@ -261,6 +279,14 @@ class ThaidState(QObject):
                         os.remove(txt_file)
                 except Exception as e:
                     print(f"[THAID-GUI] Final whisper failed: {e}")
+
+            # Fallback to DBus if direct CLI didn't return text
+            if not text.strip():
+                msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
+                msg_stt << wav_path
+                reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 8000)
+                if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage and reply_stt.arguments():
+                    text = str(reply_stt.arguments()[0])
 
             # Clean Whisper hallucinations/silence markers
             text = re.sub(r'\[.*?\]|\(.*?\)', '', text).strip()
