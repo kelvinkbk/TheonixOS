@@ -1239,32 +1239,74 @@ class AdvancedPage(QWidget):
 
         keys = AuthClient.list_passkeys()
         if not keys:
-            # Sample demo placeholder if empty
-            keys = [
-                {"id": "demo_1", "rp_id": "github.com", "user_name": "kelvin@theonix", "created_at": "Today"},
-                {"id": "demo_2", "rp_id": "google.com", "user_name": "kelvin.theonixtest", "created_at": "Yesterday"}
-            ]
+            # Check SQLite directly if D-Bus returned empty list
+            try:
+                import sqlite3, os
+                db_path = os.path.expanduser("~/.config/theonix/auth_vault.db")
+                if os.path.exists(db_path):
+                    conn = sqlite3.connect(db_path)
+                    c = conn.cursor()
+                    c.execute("SELECT id, rp_id, user_name, created_at, last_used, sign_count FROM passkeys ORDER BY created_at DESC")
+                    rows = c.fetchall()
+                    conn.close()
+                    keys = [
+                        {"id": r[0], "rp_id": r[1], "user_name": r[2], "created_at": r[3], "last_used": r[4] or "Never", "sign_count": r[5]}
+                        for r in rows
+                    ]
+            except Exception:
+                keys = []
 
         for k in keys:
             row = self.passkey_table.rowCount()
             self.passkey_table.insertRow(row)
             self.passkey_table.setItem(row, 0, QTableWidgetItem(f"🔑  {k.get('rp_id', '')}"))
             self.passkey_table.setItem(row, 1, QTableWidgetItem(k.get('user_name', '')))
+            
             del_btn = QPushButton("Remove")
             del_btn.setProperty("class", "ActionBtn")
-            del_btn.clicked.connect(lambda _, kid=k.get("id"): self._delete_passkey(kid))
+            del_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(239, 68, 68, 0.15);
+                    color: #F87171;
+                    border: 1px solid rgba(239, 68, 68, 0.3);
+                    border-radius: 6px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+                QPushButton:hover {
+                    background: rgba(239, 68, 68, 0.35);
+                    color: #FFFFFF;
+                }
+            """)
+            passkey_id = k.get("id", "")
+            rp_id = k.get("rp_id", "")
+            del_btn.clicked.connect(lambda _, kid=passkey_id, r=rp_id: self._delete_passkey(kid, r))
             self.passkey_table.setCellWidget(row, 2, del_btn)
 
     def _create_test_passkey(self):
         from theonix_core import AuthClient
-        res = AuthClient.create_passkey("theonixos.xyz", "user@theonix")
+        res = AuthClient.create_passkey("theonixos.xyz", "kelvin@theonix.os")
         if res.get("success"):
-            QMessageBox.information(self, "Passkey Created", "✓ New FIDO2 Passkey saved to Theonix Auth Vault!")
             self._load_passkeys()
 
-    def _delete_passkey(self, kid: str):
+    def _delete_passkey(self, kid: str, rp_id: str = ""):
         from theonix_core import AuthClient
         AuthClient.delete_passkey(kid)
+        
+        # Also ensure deletion from local DB directly
+        try:
+            import sqlite3, os
+            db_path = os.path.expanduser("~/.config/theonix/auth_vault.db")
+            if os.path.exists(db_path):
+                conn = sqlite3.connect(db_path)
+                c = conn.cursor()
+                c.execute("DELETE FROM passkeys WHERE id = ?", (kid,))
+                conn.commit()
+                conn.close()
+        except Exception:
+            pass
+
         self._load_passkeys()
 
 
