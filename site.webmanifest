@@ -1,0 +1,16 @@
+{
+  "name": "TheonixOS",
+  "short_name": "TheonixOS",
+  "description": "A modern Arch-based Linux distribution with KDE Plasma 6, Wayland and a rolling release model.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06090f",
+  "theme_color": "#06090f",
+  "lang": "en",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    { "src": "assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
