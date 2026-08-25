@@ -337,6 +337,19 @@ class ThaidState(QObject):
         if any(k in p for k in ["open settings", "launch settings", "settings", "control center"]):
             subprocess.Popen(["theonix-settings"])
             return "Opening Theonix Settings."
+        if any(k in p for k in ["open chrome", "launch chrome", "chrome", "google chrome"]):
+            for bin_cmd in ["google-chrome", "google-chrome-stable", "chromium", "theonix-browser"]:
+                if subprocess.run(["which", bin_cmd], stdout=subprocess.DEVNULL).returncode == 0:
+                    subprocess.Popen([bin_cmd])
+                    return "Opening Google Chrome."
+            subprocess.Popen(["theonix-browser"])
+            return "Opening Browser."
+        if any(k in p for k in ["open firefox", "launch firefox", "firefox"]):
+            if subprocess.run(["which", "firefox"], stdout=subprocess.DEVNULL).returncode == 0:
+                subprocess.Popen(["firefox"])
+                return "Opening Firefox."
+            subprocess.Popen(["theonix-browser"])
+            return "Opening Browser."
         if any(k in p for k in ["open browser", "launch browser", "open web", "open internet", "browse"]):
             subprocess.Popen(["theonix-browser"])
             return "Opening Theonix Browser."
@@ -355,6 +368,9 @@ class ThaidState(QObject):
         if any(k in p for k in ["screenshot", "capture screen", "screen grab"]):
             subprocess.Popen(["spectacle"])
             return "Opening Screenshot tool."
+        if any(k in p for k in ["task manager", "system monitor", "resource monitor"]):
+            subprocess.Popen(["plasma-systemmonitor"])
+            return "Opening System Monitor."
         if "mute" in p:
             subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "1"])
             return "Audio muted."
