@@ -123,8 +123,7 @@ class VoiceEngine:
         # 2. Trigger THAID GUI Orb over D-Bus
         try:
             subprocess.Popen([
-                "qdbus6", "org.theonix.AIGUI", "/org/theonix/AIGUI",
-                "org.theonix.AIGUI.startListening"
+                "qdbus6", "org.theonix.AIGUI", "/org/theonix/AIGUI", "toggleListening"
             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
