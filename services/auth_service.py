@@ -22,7 +22,7 @@ if not os.environ.get("QT_QPA_PLATFORM"):
 
 from PyQt6.QtWidgets import (
     QApplication, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QLineEdit, QPushButton, QGraphicsDropShadowEffect
+    QLineEdit, QPushButton, QComboBox, QGraphicsDropShadowEffect
 )
 from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QColor
@@ -216,9 +216,9 @@ class GlassAuthDialog(QDialog):
 
 
 class GlassPasskeyDialog(QDialog):
-    """Interactive modal prompt for Passkey creation and biometric/password confirmation."""
+    """Interactive modal prompt for Passkey creation, account selection, and biometric confirmation."""
 
-    def __init__(self, mode: str, rp_id: str, user_name: str):
+    def __init__(self, mode: str, rp_id: str, accounts: List[Dict[str, Any]] = None, user_name: str = ""):
         super().__init__()
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint | 
@@ -226,12 +226,14 @@ class GlassPasskeyDialog(QDialog):
             Qt.WindowType.Dialog
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(450, 260)
+        self.setFixedSize(460, 290)
         self.confirmed = False
+        self.selected_account = None
+        self.accounts = accounts or []
 
-        self._init_ui(mode, rp_id, user_name)
+        self._init_ui(mode, rp_id, accounts, user_name)
 
-    def _init_ui(self, mode: str, rp_id: str, user_name: str):
+    def _init_ui(self, mode: str, rp_id: str, accounts: List[Dict[str, Any]] = None, user_name: str = ""):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
 
@@ -268,16 +270,49 @@ class GlassPasskeyDialog(QDialog):
         h_row.addStretch()
         c_layout.addLayout(h_row)
 
-        # Details
-        info_text = f"<b>Website / App:</b> <span style='color: #00FFAA;'>{rp_id}</span> &nbsp;|&nbsp; " \
-                    f"<b>Account:</b> <span style='color: #94A3B8;'>{user_name}</span>"
+        # Website Info
+        info_text = f"<b>Website / App:</b> <span style='color: #00FFAA;'>{rp_id}</span>"
         info_lbl = QLabel(info_text)
         info_lbl.setFont(QFont("Inter", 12))
         c_layout.addWidget(info_lbl)
 
+        # Account Selector / Username Display
+        if mode == "auth" and accounts and len(accounts) > 1:
+            sel_lbl = QLabel("Select Account:")
+            sel_lbl.setStyleSheet("color: #94A3B8; font-size: 11px; font-weight: 600;")
+            c_layout.addWidget(sel_lbl)
+
+            self.account_selector = QComboBox()
+            self.account_selector.setStyleSheet("""
+                QComboBox {
+                    background: rgba(255, 255, 255, 0.08);
+                    border: 1.5px solid #A855F7;
+                    border-radius: 8px;
+                    padding: 6px 12px;
+                    color: #00FFAA;
+                    font-size: 13px;
+                    font-weight: bold;
+                }
+                QComboBox QAbstractItemView {
+                    background: #0B0E17;
+                    color: #FFFFFF;
+                    selection-background-color: #A855F7;
+                    border: 1px solid #A855F7;
+                    padding: 4px;
+                }
+            """)
+            for acc in accounts:
+                self.account_selector.addItem(f"👤 {acc['user_name']}", acc)
+            c_layout.addWidget(self.account_selector)
+        else:
+            display_user = user_name or (accounts[0]['user_name'] if accounts else "User")
+            user_lbl = QLabel(f"<b>Account:</b> <span style='color: #38BDF8;'>{display_user}</span>")
+            user_lbl.setFont(QFont("Inter", 12))
+            c_layout.addWidget(user_lbl)
+
         # Password / PIN unlock field
         self.pwd_input = QLineEdit()
-        self.pwd_input.setPlaceholderText("Enter system password or PIN to unlock passkey...")
+        self.pwd_input.setPlaceholderText("Enter system password or PIN (optional)...")
         self.pwd_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.pwd_input.setStyleSheet("""
             QLineEdit {
@@ -343,10 +378,13 @@ class GlassPasskeyDialog(QDialog):
         layout.addWidget(container)
 
     def _on_password_submit(self):
-        self.confirmed = True
-        self.accept()
+        self._on_confirm()
 
     def _on_confirm(self):
+        if hasattr(self, 'account_selector') and self.account_selector.count() > 0:
+            self.selected_account = self.account_selector.currentData()
+        elif self.accounts:
+            self.selected_account = self.accounts[0]
         self.confirmed = True
         self.accept()
 
@@ -534,20 +572,30 @@ class AuthService(QObject):
         c.execute("""
             SELECT id, user_name, private_key, sign_count, rp_id FROM passkeys 
             WHERE rp_id = ? OR rp_id = ? OR rp_id LIKE ? OR ? LIKE '%' || rp_id || '%'
-            ORDER BY last_used DESC LIMIT 1
+            ORDER BY last_used DESC
         """, (clean_rp, root_rp, f"%{root_rp}%", clean_rp))
-        row = c.fetchone()
+        rows = c.fetchall()
         conn.close()
 
-        if not row:
+        if not rows:
             return json.dumps({"success": False, "error": f"No Passkey found for {rp_id}"})
 
-        passkey_id, user_name, priv_pem, sign_count, actual_rp = row
+        accounts = [
+            {"id": r[0], "user_name": r[1], "private_key": r[2], "sign_count": r[3], "rp_id": r[4]}
+            for r in rows
+        ]
 
-        dlg = GlassPasskeyDialog("auth", actual_rp, user_name)
+        dlg = GlassPasskeyDialog("auth", clean_rp, accounts=accounts)
         dlg.exec()
         if not dlg.confirmed:
             return json.dumps({"success": False, "error": "Passkey authentication cancelled."})
+
+        sel_acc = dlg.selected_account or accounts[0]
+        passkey_id = sel_acc["id"]
+        user_name = sel_acc["user_name"]
+        priv_pem = sel_acc["private_key"]
+        sign_count = sel_acc["sign_count"]
+        actual_rp = sel_acc["rp_id"]
 
         try:
             private_key = serialization.load_pem_private_key(priv_pem.encode("utf-8"), password=None)
