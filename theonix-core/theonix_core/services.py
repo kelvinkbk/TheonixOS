@@ -817,6 +817,20 @@ class AuthClient:
             "hardware_key_connected": False
         }
 
+    @staticmethod
+    def verify_password(password: str) -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "VerifyPassword")
+            msg << password
+            reply = bus.call(msg, QDBus.CallMode.Block, 3000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
 
 class NotificationClient:
     """High-level client for the decoupled org.theonix.Notifications D-Bus service."""
