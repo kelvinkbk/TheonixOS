@@ -775,4 +775,37 @@ class NotificationClient:
         return 0
 
 
+class SearchClient:
+    """High-level client for the decoupled org.theonix.Search D-Bus service."""
+
+    @staticmethod
+    def query(query_text: str, limit: int = 8) -> List[Dict[str, Any]]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Search", "/org/theonix/Search", "", "Query"
+            )
+            msg << query_text << limit
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return []
+
+    @staticmethod
+    def toggle_overlay():
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Search", "/org/theonix/Search", "", "Toggle"
+            )
+            bus.send(msg)
+        except Exception:
+            pass
+
+
+
 

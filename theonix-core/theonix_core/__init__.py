@@ -27,7 +27,8 @@ from .services import (
     CompatibilityRating,
     UpdateClient,
     AuthClient,
-    NotificationClient
+    NotificationClient,
+    SearchClient
 )
 
 # 7-Pillar THAID Architecture
