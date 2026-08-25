@@ -1164,17 +1164,18 @@ class UpdatesPage(QWidget):
 
         title = QLabel("Software & System Updates")
         title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
-        subtitle = QLabel("Keep Theonix OS, system packages, and Flatpaks up to date")
+        subtitle = QLabel("Decoupled system update orchestrator connected to org.theonix.Updates")
         subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 
+        # Status Card
         card = GlassCard()
         c_layout = QVBoxLayout(card)
         c_layout.setSpacing(14)
 
         self.update_status = QLabel("Checking for system updates...")
-        self.update_status.setStyleSheet("font-size: 15px; font-weight: bold; color: #FFFFFF;")
+        self.update_status.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFFFFF;")
         c_layout.addWidget(self.update_status)
 
         self.update_detail = QLabel("Connected to official Arch & Theonix mirrors.")
@@ -1186,9 +1187,9 @@ class UpdatesPage(QWidget):
         self.check_btn.setProperty("class", "ActionBtn")
         self.check_btn.clicked.connect(self._check_updates)
 
-        self.install_btn = QPushButton("Update Entire System")
+        self.install_btn = QPushButton("Install All Updates")
         self.install_btn.setProperty("class", "PrimaryBtn")
-        self.install_btn.clicked.connect(lambda: subprocess.Popen(["konsole", "-e", "sudo", "pacman", "-Syu"]))
+        self.install_btn.clicked.connect(self._install_updates)
 
         btn_row.addWidget(self.check_btn)
         btn_row.addWidget(self.install_btn)
@@ -1196,6 +1197,22 @@ class UpdatesPage(QWidget):
         c_layout.addLayout(btn_row)
 
         layout.addWidget(card)
+
+        # Changelog / Release Notes Card
+        cl_card = GlassCard()
+        cl_layout = QVBoxLayout(cl_card)
+        cl_layout.setSpacing(10)
+
+        cl_title = QLabel("📋  System Release Notes")
+        cl_title.setStyleSheet("font-size: 15px; font-weight: bold; color: #00FFAA;")
+        cl_layout.addWidget(cl_title)
+
+        self.cl_text = QLabel("Loading latest release notes...")
+        self.cl_text.setStyleSheet("color: #CBD5E1; font-size: 12.5px; line-height: 1.4;")
+        self.cl_text.setWordWrap(True)
+        cl_layout.addWidget(self.cl_text)
+
+        layout.addWidget(cl_card)
         layout.addStretch()
         self._check_updates()
 
@@ -1203,23 +1220,28 @@ class UpdatesPage(QWidget):
         self.update_status.setText("Checking mirrors for updates...")
         
         def _task():
-            try:
-                res = subprocess.run(["checkupdates"], capture_output=True, text=True, timeout=15)
-                lines = [l for l in res.stdout.strip().splitlines() if l]
-                return len(lines), lines[:5]
-            except Exception:
-                return 0, []
+            from theonix_core import UpdateClient
+            return UpdateClient.check_for_updates(), UpdateClient.get_system_status()
 
         def _cb(res):
-            count, sample = res
+            upd, sys_status = res
+            count = upd.get("total_count", 0)
             if count > 0:
                 self.update_status.setText(f"📦  {count} System Updates Available")
-                self.update_detail.setText("Includes packages: " + ", ".join([s.split()[0] for s in sample]) + ("..." if count > 5 else ""))
+                pkgs = [p.get("name", "") for p in upd.get("native", []) + upd.get("theonix", [])][:6]
+                self.update_detail.setText(f"Includes: {', '.join(pkgs)}...")
             else:
                 self.update_status.setText("✅  Your Theonix system is up to date!")
-                self.update_detail.setText("All packages and kernels are running the latest versions.")
+                self.update_detail.setText(f"Kernel {sys_status.get('kernel', '')} | All packages running latest version.")
+            
+            self.cl_text.setText("Theonix OS 2.0.0 (Nebula Release)\n• Unified D-Bus Architecture (org.theonix.Updates & org.theonix.Auth)\n• THAID AI Assistant with Whisper-Small & Piper neural voice\n• Modern Glass Control Center & Cyber-Obsidian Store.")
 
         threading.Thread(target=lambda: _cb(_task()), daemon=True).start()
+
+    def _install_updates(self):
+        self.update_status.setText("🚀  Initiating system update...")
+        from theonix_core import UpdateClient
+        UpdateClient.install_updates()
 
 
 class TheonixSettingsWindow(QMainWindow):

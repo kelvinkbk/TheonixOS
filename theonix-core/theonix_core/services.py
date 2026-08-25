@@ -684,3 +684,65 @@ class UACLService:
             subprocess.Popen(["theonix-uacl", "launch", "--id", target_path])
 
 
+class UpdateClient:
+    """High-level client for the decoupled org.theonix.Updates D-Bus service."""
+
+    @staticmethod
+    def get_system_status() -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Updates", "/org/theonix/Updates", "", "GetSystemStatus")
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {"os_name": "Theonix OS", "os_version": "2.0.0", "status": "standalone"}
+
+    @staticmethod
+    def check_for_updates() -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Updates", "/org/theonix/Updates", "", "CheckForUpdates")
+            reply = bus.call(msg, QDBus.CallMode.Block, 5000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {"status": "offline", "total_count": 0}
+
+    @staticmethod
+    def install_updates() -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Updates", "/org/theonix/Updates", "", "InstallUpdates")
+            msg << "all"
+            reply = bus.call(msg, QDBus.CallMode.Block, 5000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+
+class AuthClient:
+    """High-level client for the decoupled org.theonix.Auth D-Bus service."""
+
+    @staticmethod
+    def request_authorization(app_name: str, action: str, target: str, risk_level: str = "CONFIRM") -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "RequestAuthorization")
+            msg << app_name << action << target << risk_level
+            reply = bus.call(msg, QDBus.CallMode.Block, 35000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return True
+
+

@@ -38,17 +38,32 @@ class PermissionManager:
             return True
 
         if level == PermissionLevel.CONFIRM:
-            # Check if user previously approved for this session
             if self._session_allowances.get(action_name):
                 return True
-            
+
             if self._confirm_handler:
                 approved = self._confirm_handler(action_name, description)
                 if approved:
                     self._session_allowances[action_name] = True
                 return approved
 
-            # Default safe fallback: allow if no handler is registered
+            # Query org.theonix.Auth over D-Bus
+            try:
+                from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+                bus = QDBusConnection.sessionBus()
+                msg = QDBusMessage.createMethodCall(
+                    "org.theonix.Auth", "/org/theonix/Auth", "org.theonix.Auth", "RequestAuthorization"
+                )
+                msg << "THAID" << action_name << description << "CONFIRM"
+                reply = bus.call(msg, QDBus.CallMode.Block, 35000)
+                if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                    approved = bool(reply.arguments()[0])
+                    if approved:
+                        self._session_allowances[action_name] = True
+                    return approved
+            except Exception:
+                pass
+
             return True
 
         return False
