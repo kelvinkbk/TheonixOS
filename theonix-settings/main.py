@@ -1367,16 +1367,16 @@ class TheonixSettingsWindow(QMainWindow):
         sb_layout.addLayout(search_box_layout)
 
         self.nav_items = [
-            ("💻  System & About", SystemAboutPage, ["hardware", "kernel", "specs", "cpu", "ram", "about"]),
-            ("🧠  AI & THAID", AISettingsPage, ["ai", "ollama", "models", "thaid", "gpu", "inference"]),
+            ("💻  System · About", SystemAboutPage, ["hardware", "kernel", "specs", "cpu", "ram", "about"]),
+            ("🧠  AI · THAID", AISettingsPage, ["ai", "ollama", "models", "thaid", "gpu", "inference"]),
             ("🎨  Appearance", AppearancePage, ["theme", "wallpaper", "colors", "dark", "blur", "effects"]),
-            ("🖥️  Display & Scaling", DisplayPage, ["resolution", "refresh", "scaling", "monitor", "night light"]),
-            ("🖐️  Touchpad & Gestures", TouchpadGesturesPage, ["touchpad", "gestures", "mouse", "scroll", "swipe", "tap", "click"]),
+            ("🖥️  Display · Scaling", DisplayPage, ["resolution", "refresh", "scaling", "monitor", "night light"]),
+            ("🖐️  Touchpad · Gestures", TouchpadGesturesPage, ["touchpad", "gestures", "mouse", "scroll", "swipe", "tap", "click"]),
             ("🎙️  Voice Assistant", VoiceAssistantPage, ["voice", "microphone", "speech", "whisper", "piper", "wake word", "thaid"]),
-            ("🌐  Network & Wi-Fi", NetworkPage, ["wifi", "network", "ethernet", "ip", "dns", "internet"]),
-            ("🔊  Sound & Audio", AudioPage, ["sound", "audio", "volume", "speakers", "pipewire", "mute"]),
-            ("💾  Storage & Snapshots", StoragePage, ["storage", "disk", "btrfs", "snapshots", "backup", "restore"]),
-            ("🛠️  Advanced & Developer", AdvancedPage, ["developer", "terminal", "logs", "recovery", "debug"]),
+            ("🌐  Network · Wi-Fi", NetworkPage, ["wifi", "network", "ethernet", "ip", "dns", "internet"]),
+            ("🔊  Sound · Audio", AudioPage, ["sound", "audio", "volume", "speakers", "pipewire", "mute"]),
+            ("💾  Storage · Snapshots", StoragePage, ["storage", "disk", "btrfs", "snapshots", "backup", "restore"]),
+            ("🛠️  Advanced · Developer", AdvancedPage, ["developer", "terminal", "logs", "recovery", "debug", "passkey", "passkeys"]),
             ("🔄  System Updates", UpdatesPage, ["update", "pacman", "packages", "upgrade", "mirrors"]),
         ]
 
