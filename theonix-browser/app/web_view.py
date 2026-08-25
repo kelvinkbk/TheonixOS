@@ -7,8 +7,10 @@ permissions routing, and native WebAuthn / FIDO2 Passkey bridge to org.theonix.A
 import os
 import json
 import base64
+import struct
+import hashlib
 from typing import Callable
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QObject, pyqtSlot
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QObject, pyqtSlot, QFile, QIODevice
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextBrowser, QMessageBox
 
@@ -19,9 +21,56 @@ try:
         QWebEnginePage, QWebEngineProfile, QWebEngineSettings, QWebEngineScript
     )
     from PyQt6.QtWebChannel import QWebChannel
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives import serialization
     HAS_WEBENGINE = True
 except ImportError:
     pass
+
+
+def get_qwebchannel_js() -> str:
+    """Reads Qt's built-in qwebchannel.js resource."""
+    try:
+        f = QFile(":/qtwebchannel/qwebchannel.js")
+        if f.open(QIODevice.OpenModeFlag.ReadOnly):
+            content = bytes(f.readAll()).decode("utf-8")
+            f.close()
+            return content
+    except Exception:
+        pass
+    return ""
+
+
+def build_fido2_auth_data(rp_id: str, cred_id_bytes: bytes, pub_key_ec) -> bytes:
+    """Constructs compliant FIDO2/WebAuthn AuthenticatorData with Attested Credential Data."""
+    rp_id_hash = hashlib.sha256(rp_id.encode()).digest()
+    flags = b"\x45"  # User Present (0x01) + User Verified (0x04) + Attested Credential Data (0x40)
+    sign_count = struct.pack(">I", 1)
+    aaguid = b"\x00" * 16
+    cred_len = struct.pack(">H", len(cred_id_bytes))
+
+    # COSE Key representation for ECDSA P-256 (ES256)
+    numbers = pub_key_ec.public_numbers()
+    x_bytes = numbers.x.to_bytes(32, "big")
+    y_bytes = numbers.y.to_bytes(32, "big")
+
+    cose_key = (
+        b"\xa5\x01\x02\x03\x26\x20\x01"
+        b"\x21\x58\x20" + x_bytes +
+        b"\x22\x58\x20" + y_bytes
+    )
+
+    return rp_id_hash + flags + sign_count + aaguid + cred_len + cred_id_bytes + cose_key
+
+
+def build_attestation_object(auth_data: bytes) -> bytes:
+    """Constructs compliant CBOR AttestationObject map."""
+    header = b"\xa3\x63fmt\x64none\x67attStmt\xa0\x68authData"
+    if len(auth_data) < 256:
+        len_prefix = b"\x58" + struct.pack(">B", len(auth_data))
+    else:
+        len_prefix = b"\x59" + struct.pack(">H", len(auth_data))
+    return header + len_prefix + auth_data
 
 
 class WebAuthnBridge(QObject):
@@ -39,22 +88,26 @@ class WebAuthnBridge(QObject):
                 return json.dumps({"success": False, "error": res.get("error", "Passkey creation cancelled.")})
 
             cred_id = res.get("credential_id", "")
+            pub_pem = res.get("public_key_pem", "")
+
+            # Load public key to build compliant COSE Attestation Object
+            pub_key = serialization.load_pem_public_key(pub_pem.encode("utf-8"))
+            auth_data = build_fido2_auth_data(rp_id, cred_id.encode("utf-8"), pub_key)
+            attestation_obj = build_attestation_object(auth_data)
+
             client_data = json.dumps({
                 "type": "webauthn.create",
                 "challenge": challenge_b64,
                 "origin": f"https://{rp_id}",
                 "crossOrigin": False
             })
-            client_data_b64 = base64.b64encode(client_data.encode()).decode()
-            raw_id_b64 = base64.b64encode(cred_id.encode()).decode()
-            attestation_b64 = base64.b64encode(b"\xa3\x63fmt\x64none\x67attStmt\xa0\x68authData" + (b"\x00" * 37)).decode()
 
             return json.dumps({
                 "success": True,
                 "id": cred_id,
-                "rawId_b64": raw_id_b64,
-                "clientDataJSON_b64": client_data_b64,
-                "attestationObject_b64": attestation_b64,
+                "rawId_b64": base64.b64encode(cred_id.encode("utf-8")).decode("utf-8"),
+                "clientDataJSON_b64": base64.b64encode(client_data.encode("utf-8")).decode("utf-8"),
+                "attestationObject_b64": base64.b64encode(attestation_obj).decode("utf-8"),
                 "type": "public-key"
             })
         except Exception as e:
@@ -77,18 +130,19 @@ class WebAuthnBridge(QObject):
                 "origin": f"https://{rp_id}",
                 "crossOrigin": False
             })
-            client_data_b64 = base64.b64encode(client_data.encode()).decode()
-            auth_data_b64 = base64.b64encode(b"\x00" * 37).decode()
-            raw_id_b64 = base64.b64encode(cred_id.encode()).decode()
+
+            # AuthenticatorData for assertion (37 bytes: rpIdHash (32) + flags (1 = 0x05) + signCount (4))
+            rp_hash = hashlib.sha256(rp_id.encode()).digest()
+            auth_data = rp_hash + b"\x05" + struct.pack(">I", res.get("sign_count", 1))
 
             return json.dumps({
                 "success": True,
                 "id": cred_id,
-                "rawId_b64": raw_id_b64,
-                "clientDataJSON_b64": client_data_b64,
-                "authenticatorData_b64": auth_data_b64,
+                "rawId_b64": base64.b64encode(cred_id.encode("utf-8")).decode("utf-8"),
+                "clientDataJSON_b64": base64.b64encode(client_data.encode("utf-8")).decode("utf-8"),
+                "authenticatorData_b64": base64.b64encode(auth_data).decode("utf-8"),
                 "signature_b64": sig_b64,
-                "userHandle_b64": base64.b64encode(b"user").decode(),
+                "userHandle_b64": base64.b64encode(b"user").decode("utf-8"),
                 "type": "public-key"
             })
         except Exception as e:
@@ -97,9 +151,6 @@ class WebAuthnBridge(QObject):
 
 WEBAUTHN_INJECTION_JS = """
 (function() {
-    if (window._theonix_webauthn_ready) return;
-    window._theonix_webauthn_ready = true;
-
     function b64ToBuf(b64) {
         let bin = atob(b64);
         let buf = new Uint8Array(bin.length);
@@ -127,23 +178,24 @@ WEBAUTHN_INJECTION_JS = """
                 reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
                 return;
             }
-            let resJson = window.webauthnBridge.createCredential(rpId, userName, challengeB64);
-            let res = JSON.parse(resJson);
-            if (!res.success) {
-                reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
-                return;
-            }
-            let cred = {
-                id: res.id,
-                rawId: b64ToBuf(res.rawId_b64),
-                type: 'public-key',
-                response: {
-                    clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
-                    attestationObject: b64ToBuf(res.attestationObject_b64)
-                },
-                getClientExtensionResults: () => ({})
-            };
-            resolve(cred);
+            window.webauthnBridge.createCredential(rpId, userName, challengeB64, function(resJson) {
+                let res = JSON.parse(resJson);
+                if (!res.success) {
+                    reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
+                    return;
+                }
+                let cred = {
+                    id: res.id,
+                    rawId: b64ToBuf(res.rawId_b64),
+                    type: 'public-key',
+                    response: {
+                        clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
+                        attestationObject: b64ToBuf(res.attestationObject_b64)
+                    },
+                    getClientExtensionResults: () => ({})
+                };
+                resolve(cred);
+            });
         });
     };
 
@@ -158,28 +210,29 @@ WEBAUTHN_INJECTION_JS = """
                 reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
                 return;
             }
-            let resJson = window.webauthnBridge.getAssertion(rpId, challengeB64);
-            let res = JSON.parse(resJson);
-            if (!res.success) {
-                reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
-                return;
-            }
-            let cred = {
-                id: res.id,
-                rawId: b64ToBuf(res.rawId_b64),
-                type: 'public-key',
-                response: {
-                    clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
-                    authenticatorData: b64ToBuf(res.authenticatorData_b64),
-                    signature: b64ToBuf(res.signature_b64),
-                    userHandle: res.userHandle_b64 ? b64ToBuf(res.userHandle_b64) : null
-                },
-                getClientExtensionResults: () => ({})
-            };
-            resolve(cred);
+            window.webauthnBridge.getAssertion(rpId, challengeB64, function(resJson) {
+                let res = JSON.parse(resJson);
+                if (!res.success) {
+                    reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
+                    return;
+                }
+                let cred = {
+                    id: res.id,
+                    rawId: b64ToBuf(res.rawId_b64),
+                    type: 'public-key',
+                    response: {
+                        clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
+                        authenticatorData: b64ToBuf(res.authenticatorData_b64),
+                        signature: b64ToBuf(res.signature_b64),
+                        userHandle: res.userHandle_b64 ? b64ToBuf(res.userHandle_b64) : null
+                    },
+                    getClientExtensionResults: () => ({})
+                };
+                resolve(cred);
+            });
         });
     };
-    console.log("[Theonix] Native WebAuthn Passkey Bridge active.");
+    console.log("[Theonix] Native WebAuthn Passkey Bridge active on " + window.location.hostname);
 })();
 """
 
@@ -248,16 +301,17 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
 
     def _on_load_finished(self, ok: bool):
         if ok and HAS_WEBENGINE:
-            # Inject QWebChannel initialization and WebAuthn interceptor
+            qwebchannel_code = get_qwebchannel_js()
             init_js = f"""
-            if (typeof QWebChannel !== 'undefined') {{
-                new QWebChannel(qt.webChannelTransport, function(channel) {{
-                    window.webauthnBridge = channel.objects.webauthnBridge;
-                    {WEBAUTHN_INJECTION_JS}
-                }});
-            }} else {{
-                {WEBAUTHN_INJECTION_JS}
-            }}
+            (function() {{
+                {qwebchannel_code}
+                if (typeof QWebChannel !== 'undefined' && typeof qt !== 'undefined' && qt.webChannelTransport) {{
+                    new QWebChannel(qt.webChannelTransport, function(channel) {{
+                        window.webauthnBridge = channel.objects.webauthnBridge;
+                        {WEBAUTHN_INJECTION_JS}
+                    }});
+                }}
+            }})();
             """
             self.page().runJavaScript(init_js)
 
