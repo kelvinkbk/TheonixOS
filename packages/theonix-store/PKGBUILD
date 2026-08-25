@@ -22,4 +22,7 @@ prepare() {
 package() {
     install -Dm755 "$srcdir/theonix-store/main.py" "$pkgdir/usr/bin/theonix-store"
     install -Dm644 "$srcdir/theonix-store.desktop" "$pkgdir/usr/share/applications/theonix-store.desktop"
+    if [ -f "$srcdir/theonix-store/theonix-store.svg" ]; then
+        install -Dm644 "$srcdir/theonix-store/theonix-store.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/theonix-store.svg"
+    fi
 }

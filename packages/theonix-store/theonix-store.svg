@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="64" y1="32" x2="448" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0b1021"/>
+      <stop offset="50%" stop-color="#070a14"/>
+      <stop offset="100%" stop-color="#03040a"/>
+    </linearGradient>
+
+    <!-- Glowing Rim Gradient -->
+    <linearGradient id="rim-grad" x1="96" y1="48" x2="416" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00FFAA" stop-opacity="0.8"/>
+      <stop offset="30%" stop-color="#00E5FF" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#8A2BE2" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#D946EF" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Store Bag Gradient -->
+    <linearGradient id="bag-grad" x1="128" y1="160" x2="384" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#141c38"/>
+      <stop offset="50%" stop-color="#0d1226"/>
+      <stop offset="100%" stop-color="#090c1a"/>
+    </linearGradient>
+
+    <!-- Handle Gradient -->
+    <linearGradient id="handle-grad" x1="192" y1="80" x2="320" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00FFAA"/>
+      <stop offset="50%" stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+
+    <!-- Front Facet Highlight -->
+    <linearGradient id="facet-grad" x1="160" y1="180" x2="352" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00FFAA" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#9333EA" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <!-- Central Neural Spark Gradient -->
+    <linearGradient id="spark-grad" x1="210" y1="230" x2="302" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00FFAA"/>
+      <stop offset="40%" stop-color="#00E5FF"/>
+      <stop offset="80%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <!-- Central Glow Filter -->
+    <filter id="neon-glow" x="140" y="170" width="232" height="232" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft Drop Shadow -->
+    <filter id="drop-shadow" x="32" y="32" width="448" height="460" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feOffset dx="0" dy="16"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.6"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Base Squircle Container with Neon Rim -->
+  <rect x="40" y="40" width="432" height="432" rx="100" fill="url(#bg-grad)" filter="url(#drop-shadow)"/>
+  <rect x="41.5" y="41.5" width="429" height="429" rx="98.5" stroke="url(#rim-grad)" stroke-width="2.5" fill="none"/>
+
+  <!-- Ambient Glow Behind Bag -->
+  <ellipse cx="256" cy="300" rx="130" ry="100" fill="#00E5FF" opacity="0.12" filter="url(#neon-glow)"/>
+  <ellipse cx="256" cy="270" rx="100" ry="80" fill="#A855F7" opacity="0.14" filter="url(#neon-glow)"/>
+
+  <!-- Store Bag Handle (Behind Bag Lip) -->
+  <path d="M 196 180 C 196 120 316 120 316 180" 
+        stroke="url(#handle-grad)" 
+        stroke-width="18" 
+        stroke-linecap="round" 
+        fill="none" />
+
+  <!-- Handle Core Glow -->
+  <path d="M 196 180 C 196 120 316 120 316 180" 
+        stroke="#FFFFFF" 
+        stroke-width="5" 
+        stroke-linecap="round" 
+        fill="none" 
+        opacity="0.75"/>
+
+  <!-- Main Store Bag Body -->
+  <path d="M 136 186 
+           C 136 172, 146 162, 160 162 
+           L 352 162 
+           C 366 162, 376 172, 376 186 
+           L 396 384 
+           C 398 404, 382 422, 362 422 
+           L 150 422 
+           C 130 422, 114 404, 116 384 
+           Z" 
+        fill="url(#bag-grad)" 
+        stroke="url(#rim-grad)" 
+        stroke-width="2.5"/>
+
+  <!-- Bag Front Facet Cut / Glass Shimmer -->
+  <path d="M 160 164 
+           L 352 164 
+           L 332 300 
+           L 180 300 
+           Z" 
+        fill="url(#facet-grad)"/>
+
+  <path d="M 180 300 
+           L 332 300 
+           L 362 420 
+           L 150 420 
+           Z" 
+        fill="#00FFAA" 
+        opacity="0.04"/>
+
+  <!-- Bag Fold Accents -->
+  <line x1="160" y1="164" x2="180" y2="300" stroke="#00FFAA" stroke-width="1.5" stroke-opacity="0.4"/>
+  <line x1="352" y1="164" x2="332" y2="300" stroke="#A855F7" stroke-width="1.5" stroke-opacity="0.4"/>
+  <line x1="180" y1="300" x2="150" y2="420" stroke="#00FFAA" stroke-width="1.5" stroke-opacity="0.3"/>
+  <line x1="332" y1="300" x2="362" y2="420" stroke="#A855F7" stroke-width="1.5" stroke-opacity="0.3"/>
+
+  <!-- Glowing Central Spark / Four-Point Quantum Star (Theonix App Diamond) -->
+  <g filter="url(#neon-glow)">
+    <!-- 4-point Diamond Star Shape -->
+    <path d="M 256 222 
+             C 256 260, 268 272, 306 272 
+             C 268 272, 256 284, 256 322 
+             C 256 284, 244 272, 206 272 
+             C 244 272, 256 260, 256 222 Z" 
+          fill="url(#spark-grad)"/>
+  </g>
+
+  <!-- Star Brilliant Core -->
+  <circle cx="256" cy="272" r="6" fill="#FFFFFF"/>
+  <circle cx="256" cy="272" r="14" fill="#00FFAA" opacity="0.4"/>
+
+  <!-- Floating Software Nodes / Orbital Bits -->
+  <circle cx="210" cy="336" r="4.5" fill="#00FFAA" opacity="0.85"/>
+  <circle cx="302" cy="336" r="4.5" fill="#C084FC" opacity="0.85"/>
+  <circle cx="256" cy="360" r="3.5" fill="#00E5FF" opacity="0.75"/>
+  
+  <!-- Subtle Neural Link Lines -->
+  <line x1="256" y1="322" x2="210" y2="336" stroke="#00FFAA" stroke-width="1.5" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+  <line x1="256" y1="322" x2="302" y2="336" stroke="#C084FC" stroke-width="1.5" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+  <line x1="210" y1="336" x2="256" y2="360" stroke="#00E5FF" stroke-width="1.2" stroke-opacity="0.4"/>
+  <line x1="302" y1="336" x2="256" y2="360" stroke="#00E5FF" stroke-width="1.2" stroke-opacity="0.4"/>
+
+  <!-- Subtle Top Rim Light Reflection -->
+  <path d="M 80 80 Q 256 60 432 80" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.25" fill="none" stroke-linecap="round"/>
+</svg>
