@@ -145,6 +145,9 @@ debtap
 python-pyqt6
 
 ollama
+whisper-cpp
+ggml-cpu
+ggml-vulkan
 networkmanager
 pipewire
 pipewire-jack
