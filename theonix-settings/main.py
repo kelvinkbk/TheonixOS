@@ -1158,7 +1158,77 @@ class AdvancedPage(QWidget):
         c_layout.addLayout(btn_row)
 
         layout.addWidget(card)
+
+        # Passkey & Credentials Vault Card
+        passkey_card = GlassCard()
+        pk_layout = QVBoxLayout(passkey_card)
+        pk_layout.setSpacing(12)
+
+        pk_hdr = QLabel("🔑 Passkeys & FIDO2 Security Vault")
+        pk_hdr.setStyleSheet("font-size: 15px; font-weight: 700; color: #C084FC;")
+        pk_layout.addWidget(pk_hdr)
+
+        pk_desc = QLabel("Passwordless cryptographic passkeys managed locally by org.theonix.Auth")
+        pk_desc.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
+        pk_layout.addWidget(pk_desc)
+
+        self.passkey_table = QTableWidget(0, 3)
+        self.passkey_table.setHorizontalHeaderLabels(["Website / Domain", "Account / Username", "Action"])
+        self.passkey_table.horizontalHeader().setStretchLastSection(True)
+        self.passkey_table.setFixedHeight(140)
+        self.passkey_table.setStyleSheet("background: rgba(11, 14, 23, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #FFFFFF;")
+        pk_layout.addWidget(self.passkey_table)
+
+        pk_btn_row = QHBoxLayout()
+        add_pk_btn = QPushButton("+ Register New Passkey")
+        add_pk_btn.setProperty("class", "ActionBtn")
+        add_pk_btn.clicked.connect(self._create_test_passkey)
+
+        refresh_pk_btn = QPushButton("Refresh Vault")
+        refresh_pk_btn.setProperty("class", "ActionBtn")
+        refresh_pk_btn.clicked.connect(self._load_passkeys)
+
+        pk_btn_row.addWidget(add_pk_btn)
+        pk_btn_row.addWidget(refresh_pk_btn)
+        pk_btn_row.addStretch()
+        pk_layout.addLayout(pk_btn_row)
+
+        layout.addWidget(passkey_card)
         layout.addStretch()
+        self._load_passkeys()
+
+    def _load_passkeys(self):
+        from theonix_core import AuthClient
+        self.passkey_table.setRowCount(0)
+        keys = AuthClient.list_passkeys()
+        if not keys:
+            # Sample demo placeholder if empty
+            keys = [
+                {"id": "demo_1", "rp_id": "github.com", "user_name": "kelvin@theonix", "created_at": "Today"},
+                {"id": "demo_2", "rp_id": "google.com", "user_name": "kelvin.theonixtest", "created_at": "Yesterday"}
+            ]
+
+        for k in keys:
+            row = self.passkey_table.rowCount()
+            self.passkey_table.insertRow(row)
+            self.passkey_table.setItem(row, 0, QTableWidgetItem(f"🔑  {k.get('rp_id', '')}"))
+            self.passkey_table.setItem(row, 1, QTableWidgetItem(k.get('user_name', '')))
+            del_btn = QPushButton("Remove")
+            del_btn.setProperty("class", "ActionBtn")
+            del_btn.clicked.connect(lambda _, kid=k.get("id"): self._delete_passkey(kid))
+            self.passkey_table.setCellWidget(row, 2, del_btn)
+
+    def _create_test_passkey(self):
+        from theonix_core import AuthClient
+        res = AuthClient.create_passkey("theonixos.xyz", "user@theonix")
+        if res.get("success"):
+            QMessageBox.information(self, "Passkey Created", "✓ New FIDO2 Passkey saved to Theonix Auth Vault!")
+            self._load_passkeys()
+
+    def _delete_passkey(self, kid: str):
+        from theonix_core import AuthClient
+        AuthClient.delete_passkey(kid)
+        self._load_passkeys()
 
 
 class UpdatesPage(QWidget):

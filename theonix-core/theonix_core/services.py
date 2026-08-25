@@ -745,6 +745,61 @@ class AuthClient:
             pass
         return True
 
+    @staticmethod
+    def create_passkey(rp_id: str, user_name: str, user_display_name: str = "") -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "CreatePasskey")
+            msg << rp_id << user_name << user_display_name
+            reply = bus.call(msg, QDBus.CallMode.Block, 35000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {"success": False, "error": "Auth service unavailable."}
+
+    @staticmethod
+    def authenticate_passkey(rp_id: str, challenge: str) -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "AuthenticatePasskey")
+            msg << rp_id << challenge
+            reply = bus.call(msg, QDBus.CallMode.Block, 35000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {"success": False, "error": "Auth service unavailable."}
+
+    @staticmethod
+    def list_passkeys() -> List[Dict[str, Any]]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "ListPasskeys")
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return []
+
+    @staticmethod
+    def delete_passkey(passkey_id: str) -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "DeletePasskey")
+            msg << passkey_id
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
 
 class NotificationClient:
     """High-level client for the decoupled org.theonix.Notifications D-Bus service."""

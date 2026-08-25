@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 """
-Theonix OS — Authentication & Permission Approval Service (org.theonix.Auth)
-Provides centralized security, credential vault, and interactive THAID authorization prompts.
+Theonix OS — Authentication & Passkey Service (org.theonix.Auth)
+Provides centralized security, credential vault, WebAuthn/FIDO2 Passkey engine,
+and interactive Theonix Glass authorization modals.
 """
 
 import sys
 import os
+import time
 import json
+import base64
 import sqlite3
 import hashlib
-import threading
-from typing import Dict, Any
+import secrets
+from typing import Dict, Any, List
 
 os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
 if not os.environ.get("QT_QPA_PLATFORM"):
     os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 from PyQt6.QtWidgets import (
-    QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
+    QApplication, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QPushButton, QGraphicsDropShadowEffect
 )
 from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtDBus import QDBusConnection
+
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes, serialization
 
 
 AUTH_DB_PATH = os.path.expanduser("~/.config/theonix/auth_vault.db")
@@ -44,7 +50,6 @@ class GlassAuthDialog(QDialog):
 
         self._init_ui(app_name, action, target, risk_level)
 
-        # Auto-reject after 30s of inactivity
         self.timeout_timer = QTimer(self)
         self.timeout_timer.setSingleShot(True)
         self.timeout_timer.timeout.connect(self.reject)
@@ -54,7 +59,6 @@ class GlassAuthDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
 
-        # Glass Container
         container = QDialog(self)
         container.setObjectName("container")
         container.setStyleSheet("""
@@ -73,7 +77,6 @@ class GlassAuthDialog(QDialog):
         c_layout.setContentsMargins(24, 20, 24, 20)
         c_layout.setSpacing(12)
 
-        # Header with Security Badge
         h_layout = QHBoxLayout()
         icon_lbl = QLabel("🛡️")
         icon_lbl.setFont(QFont("Inter", 22))
@@ -87,7 +90,6 @@ class GlassAuthDialog(QDialog):
         h_layout.addStretch()
         c_layout.addLayout(h_layout)
 
-        # Detail text
         desc_text = f"<b>{app_name}</b> is requesting permission to:<br><br>" \
                     f"<span style='color: #38BDF8;'>Action:</span> <b>{action}</b><br>" \
                     f"<span style='color: #94A3B8;'>Target:</span> <code>{target}</code>"
@@ -97,7 +99,6 @@ class GlassAuthDialog(QDialog):
         c_layout.addWidget(detail_lbl)
         c_layout.addStretch()
 
-        # Action Buttons
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(12)
 
@@ -151,9 +152,120 @@ class GlassAuthDialog(QDialog):
         self.accept()
 
 
+class GlassPasskeyDialog(QDialog):
+    """Interactive modal prompt for Passkey creation and biometric/key confirmation."""
+
+    def __init__(self, mode: str, rp_id: str, user_name: str):
+        super().__init__()
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint | 
+            Qt.WindowType.WindowStaysOnTopHint | 
+            Qt.WindowType.Dialog
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedSize(440, 220)
+        self.confirmed = False
+
+        self._init_ui(mode, rp_id, user_name)
+
+    def _init_ui(self, mode: str, rp_id: str, user_name: str):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+
+        container = QWidget(self)
+        container.setObjectName("container")
+        container.setStyleSheet("""
+            QWidget#container {
+                background-color: #f5060913;
+                border: 1.5px solid #A855F7;
+                border-radius: 18px;
+            }
+            QLabel {
+                color: #FFFFFF;
+                font-family: 'Inter', sans-serif;
+            }
+        """)
+
+        c_layout = QVBoxLayout(container)
+        c_layout.setContentsMargins(20, 18, 20, 18)
+        c_layout.setSpacing(10)
+
+        # Header
+        h_row = QHBoxLayout()
+        icon = QLabel("🔑")
+        icon.setFont(QFont("Inter", 20))
+        
+        title_text = "Create Passkey" if mode == "create" else "Sign in with Passkey"
+        title_lbl = QLabel(title_text)
+        title_lbl.setFont(QFont("Inter", 14, QFont.Weight.Bold))
+        title_lbl.setStyleSheet("color: #C084FC;")
+        
+        h_row.addWidget(icon)
+        h_row.addWidget(title_lbl)
+        h_row.addStretch()
+        c_layout.addLayout(h_row)
+
+        # Details
+        info_text = f"<b>Website / App:</b> <span style='color: #00FFAA;'>{rp_id}</span><br>" \
+                    f"<b>Account:</b> <span style='color: #94A3B8;'>{user_name}</span>"
+        info_lbl = QLabel(info_text)
+        info_lbl.setFont(QFont("Inter", 12))
+        c_layout.addWidget(info_lbl)
+        c_layout.addStretch()
+
+        # Buttons
+        b_row = QHBoxLayout()
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.08);
+                color: #E2E8F0;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 8px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 0.15);
+            }
+        """)
+        cancel_btn.clicked.connect(self.reject)
+
+        action_btn_text = "Save Passkey" if mode == "create" else "Use Passkey"
+        confirm_btn = QPushButton(action_btn_text)
+        confirm_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #A855F7, stop:1 #6366F1);
+                color: #FFFFFF;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 20px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #A855F7;
+            }
+        """)
+        confirm_btn.clicked.connect(self._on_confirm)
+
+        b_row.addStretch()
+        b_row.addWidget(cancel_btn)
+        b_row.addWidget(confirm_btn)
+        c_layout.addLayout(b_row)
+
+        layout.addWidget(container)
+
+    def _on_confirm(self):
+        self.confirmed = True
+        self.accept()
+
+
 class AuthService(QObject):
-    authorizationGranted = pyqtSignal(str, str)   # app, action
+    authorizationGranted = pyqtSignal(str, str)
     authorizationDenied = pyqtSignal(str, str)
+    passkeyCreated = pyqtSignal(str, str)      # rp_id, user_name
+    passkeyAuthenticated = pyqtSignal(str, str)
 
     def __init__(self):
         super().__init__()
@@ -172,16 +284,27 @@ class AuthService(QObject):
                 PRIMARY KEY(namespace, key)
             )
         """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS passkeys (
+                id TEXT PRIMARY KEY,
+                rp_id TEXT NOT NULL,
+                user_name TEXT NOT NULL,
+                user_handle TEXT,
+                public_key TEXT NOT NULL,
+                private_key TEXT NOT NULL,
+                sign_count INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_used DATETIME
+            )
+        """)
         conn.commit()
         conn.close()
 
+    # ---- 1. THAID & System Action Authorization ----
     @pyqtSlot(str, str, str, str, result=bool)
     def RequestAuthorization(self, app_name: str, action: str, target: str, risk_level: str = "CONFIRM") -> bool:
-        """Presents an interactive authorization prompt and returns boolean decision."""
-        print(f"[AuthService] Prompting approval for {app_name}: {action} on {target}")
         dlg = GlassAuthDialog(app_name, action, target, risk_level)
         dlg.exec()
-        
         if dlg.approved:
             self.authorizationGranted.emit(app_name, action)
             return True
@@ -189,9 +312,9 @@ class AuthService(QObject):
             self.authorizationDenied.emit(app_name, action)
             return False
 
+    # ---- 2. Keyring Credential Vault ----
     @pyqtSlot(str, str, str, result=bool)
     def StoreSecret(self, namespace: str, key: str, value: str) -> bool:
-        """Securely saves a credential key-value pair."""
         try:
             conn = sqlite3.connect(AUTH_DB_PATH)
             c = conn.cursor()
@@ -208,7 +331,6 @@ class AuthService(QObject):
 
     @pyqtSlot(str, str, result=str)
     def GetSecret(self, namespace: str, key: str) -> str:
-        """Retrieves a stored secret value."""
         try:
             conn = sqlite3.connect(AUTH_DB_PATH)
             c = conn.cursor()
@@ -222,7 +344,6 @@ class AuthService(QObject):
 
     @pyqtSlot(str, str, result=bool)
     def DeleteSecret(self, namespace: str, key: str) -> bool:
-        """Deletes a stored secret."""
         try:
             conn = sqlite3.connect(AUTH_DB_PATH)
             c = conn.cursor()
@@ -232,6 +353,135 @@ class AuthService(QObject):
             return True
         except Exception as e:
             print(f"[AuthService] DeleteSecret error: {e}")
+            return False
+
+    # ---- 3. WebAuthn / FIDO2 Passkey Engine ----
+    @pyqtSlot(str, str, str, result=str)
+    def CreatePasskey(self, rp_id: str, user_name: str, user_display_name: str = "") -> str:
+        """Generates a cryptographic FIDO2 Passkey for a website or service."""
+        dlg = GlassPasskeyDialog("create", rp_id, user_name)
+        dlg.exec()
+        if not dlg.confirmed:
+            return json.dumps({"success": False, "error": "Passkey registration cancelled by user."})
+
+        try:
+            # Generate SECP256R1 (P-256 standard WebAuthn curve) keypair
+            private_key = ec.generate_private_key(ec.SECP256R1())
+            public_key = private_key.public_key()
+
+            priv_pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            ).decode("utf-8")
+
+            pub_pem = public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            ).decode("utf-8")
+
+            passkey_id = secrets.token_urlsafe(32)
+            user_handle = secrets.token_hex(16)
+
+            conn = sqlite3.connect(AUTH_DB_PATH)
+            c = conn.cursor()
+            c.execute("""
+                INSERT INTO passkeys (id, rp_id, user_name, user_handle, public_key, private_key, sign_count)
+                VALUES (?, ?, ?, ?, ?, ?, 0)
+            """, (passkey_id, rp_id, user_name, user_handle, pub_pem, priv_pem))
+            conn.commit()
+            conn.close()
+
+            self.passkeyCreated.emit(rp_id, user_name)
+            return json.dumps({
+                "success": True,
+                "credential_id": passkey_id,
+                "rp_id": rp_id,
+                "user_name": user_name,
+                "public_key_pem": pub_pem,
+                "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        except Exception as e:
+            return json.dumps({"success": False, "error": str(e)})
+
+    @pyqtSlot(str, str, result=str)
+    def AuthenticatePasskey(self, rp_id: str, challenge: str) -> str:
+        """Signs a cryptographic authentication challenge using the stored Passkey."""
+        conn = sqlite3.connect(AUTH_DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT id, user_name, private_key, sign_count FROM passkeys WHERE rp_id = ? ORDER BY last_used DESC LIMIT 1", (rp_id,))
+        row = c.fetchone()
+        conn.close()
+
+        if not row:
+            return json.dumps({"success": False, "error": f"No Passkey found for {rp_id}"})
+
+        passkey_id, user_name, priv_pem, sign_count = row
+
+        dlg = GlassPasskeyDialog("auth", rp_id, user_name)
+        dlg.exec()
+        if not dlg.confirmed:
+            return json.dumps({"success": False, "error": "Passkey authentication cancelled."})
+
+        try:
+            private_key = serialization.load_pem_private_key(priv_pem.encode("utf-8"), password=None)
+            signature = private_key.sign(challenge.encode("utf-8"), ec.ECDSA(hashes.SHA256()))
+            sig_b64 = base64.b64encode(signature).decode("utf-8")
+
+            # Increment sign counter and last used
+            new_count = sign_count + 1
+            conn = sqlite3.connect(AUTH_DB_PATH)
+            c = conn.cursor()
+            c.execute("UPDATE passkeys SET sign_count = ?, last_used = CURRENT_TIMESTAMP WHERE id = ?", (new_count, passkey_id))
+            conn.commit()
+            conn.close()
+
+            self.passkeyAuthenticated.emit(rp_id, user_name)
+            return json.dumps({
+                "success": True,
+                "credential_id": passkey_id,
+                "user_name": user_name,
+                "signature_b64": sig_b64,
+                "sign_count": new_count
+            })
+        except Exception as e:
+            return json.dumps({"success": False, "error": str(e)})
+
+    @pyqtSlot(result=str)
+    def ListPasskeys(self) -> str:
+        """Returns all registered Passkeys in the vault."""
+        try:
+            conn = sqlite3.connect(AUTH_DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT id, rp_id, user_name, created_at, last_used, sign_count FROM passkeys ORDER BY created_at DESC")
+            rows = c.fetchall()
+            conn.close()
+            keys = [
+                {
+                    "id": r[0],
+                    "rp_id": r[1],
+                    "user_name": r[2],
+                    "created_at": r[3],
+                    "last_used": r[4] or "Never",
+                    "sign_count": r[5]
+                }
+                for r in rows
+            ]
+            return json.dumps(keys)
+        except Exception as e:
+            return json.dumps([])
+
+    @pyqtSlot(str, result=bool)
+    def DeletePasskey(self, passkey_id: str) -> bool:
+        try:
+            conn = sqlite3.connect(AUTH_DB_PATH)
+            c = conn.cursor()
+            c.execute("DELETE FROM passkeys WHERE id = ?", (passkey_id,))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"[AuthService] DeletePasskey error: {e}")
             return False
 
 
@@ -248,7 +498,7 @@ def main():
         print("[AuthService] Failed to register D-Bus object at '/org/theonix/Auth'")
         sys.exit(1)
 
-    print("[AuthService] Theonix Authentication Service active on org.theonix.Auth [/org/theonix/Auth]")
+    print("[AuthService] Theonix Authentication & Passkey Service active on org.theonix.Auth [/org/theonix/Auth]")
     sys.exit(app.exec())
 
 
