@@ -402,6 +402,32 @@ class AuthService(QObject):
                 last_used DATETIME
             )
         """)
+
+        # Seed predefined passkeys if empty
+        c.execute("SELECT COUNT(*) FROM passkeys")
+        if c.fetchone()[0] == 0:
+            predefined_sites = [
+                ("passkeys.io", "kelvin@theonix.os"),
+                ("github.com", "kelvin@theonix.os"),
+                ("google.com", "kelvin@theonix.os"),
+                ("theonixos.xyz", "kelvin@theonix.os")
+            ]
+            for rp, user in predefined_sites:
+                priv = ec.generate_private_key(ec.SECP256R1())
+                priv_pem = priv.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                ).decode("utf-8")
+                pub_pem = priv.public_key().public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ).decode("utf-8")
+                c.execute("""
+                    INSERT INTO passkeys (id, rp_id, user_name, user_handle, public_key, private_key, sign_count)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                """, (secrets.token_urlsafe(32), rp, user, secrets.token_hex(16), pub_pem, priv_pem))
+
         conn.commit()
         conn.close()
 

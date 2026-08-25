@@ -250,9 +250,8 @@ class TheonixWebPage(QWebEnginePage if HAS_WEBENGINE else object):
         self.setFeaturePermission(security_origin, feature, QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
 
     def createWindow(self, window_type):
-        temp_view = TheonixWebView()
         self.new_tab_requested.emit(QUrl())
-        return temp_view.page()
+        return None
 
 
 class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):

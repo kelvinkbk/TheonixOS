@@ -1179,9 +1179,29 @@ class AdvancedPage(QWidget):
 
         self.passkey_table = QTableWidget(0, 3)
         self.passkey_table.setHorizontalHeaderLabels(["Website / Domain", "Account / Username", "Action"])
-        self.passkey_table.horizontalHeader().setStretchLastSection(True)
-        self.passkey_table.setFixedHeight(140)
-        self.passkey_table.setStyleSheet("background: rgba(11, 14, 23, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #FFFFFF;")
+        self.passkey_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.passkey_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.passkey_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.passkey_table.setColumnWidth(0, 190)
+        self.passkey_table.setColumnWidth(2, 90)
+        self.passkey_table.setFixedHeight(160)
+        self.passkey_table.setStyleSheet("""
+            QTableWidget {
+                background: rgba(11, 14, 23, 0.6);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 8px;
+                color: #FFFFFF;
+                gridline-color: rgba(255,255,255,0.05);
+            }
+            QHeaderView::section {
+                background: rgba(20, 26, 40, 0.9);
+                color: #94A3B8;
+                font-weight: 700;
+                font-size: 11px;
+                padding: 6px;
+                border: none;
+            }
+        """)
         pk_layout.addWidget(self.passkey_table)
 
         pk_btn_row = QHBoxLayout()
