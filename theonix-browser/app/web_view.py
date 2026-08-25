@@ -123,24 +123,15 @@ class WebAuthnBridge(QObject):
 
             cred_id = res.get("credential_id", "")
             sig_b64 = res.get("signature_b64", "")
-
-            client_data = json.dumps({
-                "type": "webauthn.get",
-                "challenge": challenge_b64,
-                "origin": f"https://{rp_id}",
-                "crossOrigin": False
-            })
-
-            # AuthenticatorData for assertion (37 bytes: rpIdHash (32) + flags (1 = 0x05) + signCount (4))
-            rp_hash = hashlib.sha256(rp_id.encode()).digest()
-            auth_data = rp_hash + b"\x05" + struct.pack(">I", res.get("sign_count", 1))
+            auth_data_b64 = res.get("auth_data_b64", "")
+            client_data_b64 = res.get("client_data_b64", "")
 
             return json.dumps({
                 "success": True,
                 "id": cred_id,
                 "rawId_b64": base64.b64encode(cred_id.encode("utf-8")).decode("utf-8"),
-                "clientDataJSON_b64": base64.b64encode(client_data.encode("utf-8")).decode("utf-8"),
-                "authenticatorData_b64": base64.b64encode(auth_data).decode("utf-8"),
+                "clientDataJSON_b64": client_data_b64,
+                "authenticatorData_b64": auth_data_b64,
                 "signature_b64": sig_b64,
                 "userHandle_b64": base64.b64encode(b"user").decode("utf-8"),
                 "type": "public-key"
