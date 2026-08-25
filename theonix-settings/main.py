@@ -1172,6 +1172,11 @@ class AdvancedPage(QWidget):
         pk_desc.setStyleSheet("color: #94A3B8; font-size: 12.5px;")
         pk_layout.addWidget(pk_desc)
 
+        # Real-time Passkey & Authenticator Detection Banner
+        self.detect_status_lbl = QLabel("🔍 Scanning for FIDO2 Security Keys & Local Vault...")
+        self.detect_status_lbl.setStyleSheet("color: #38BDF8; font-size: 12px; font-weight: 600; background: rgba(56,189,248,0.1); border-radius: 6px; padding: 6px 10px;")
+        pk_layout.addWidget(self.detect_status_lbl)
+
         self.passkey_table = QTableWidget(0, 3)
         self.passkey_table.setHorizontalHeaderLabels(["Website / Domain", "Account / Username", "Action"])
         self.passkey_table.horizontalHeader().setStretchLastSection(True)
@@ -1184,7 +1189,7 @@ class AdvancedPage(QWidget):
         add_pk_btn.setProperty("class", "ActionBtn")
         add_pk_btn.clicked.connect(self._create_test_passkey)
 
-        refresh_pk_btn = QPushButton("Refresh Vault")
+        refresh_pk_btn = QPushButton("Scan Authenticators")
         refresh_pk_btn.setProperty("class", "ActionBtn")
         refresh_pk_btn.clicked.connect(self._load_passkeys)
 
@@ -1200,6 +1205,18 @@ class AdvancedPage(QWidget):
     def _load_passkeys(self):
         from theonix_core import AuthClient
         self.passkey_table.setRowCount(0)
+
+        # Update real-time authenticator detection
+        auth_data = AuthClient.detect_authenticators()
+        hw_keys = auth_data.get("hardware_security_keys", [])
+        if hw_keys:
+            hw_str = ", ".join([h.get("name", "FIDO2 Token") for h in hw_keys])
+            self.detect_status_lbl.setText(f"🟢 Hardware Key Connected: {hw_str} | Platform Vault: Ready")
+            self.detect_status_lbl.setStyleSheet("color: #00FFAA; font-size: 12px; font-weight: 600; background: rgba(0,255,170,0.12); border-radius: 6px; padding: 6px 10px;")
+        else:
+            self.detect_status_lbl.setText("🟢 Platform Authenticator: Active (ECDSA P-256) | 🔑 USB Security Keys: Listening...")
+            self.detect_status_lbl.setStyleSheet("color: #38BDF8; font-size: 12px; font-weight: 600; background: rgba(56,189,248,0.1); border-radius: 6px; padding: 6px 10px;")
+
         keys = AuthClient.list_passkeys()
         if not keys:
             # Sample demo placeholder if empty

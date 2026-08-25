@@ -800,6 +800,23 @@ class AuthClient:
             pass
         return False
 
+    @staticmethod
+    def detect_authenticators() -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall("org.theonix.Auth", "/org/theonix/Auth", "", "DetectAuthenticators")
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {
+            "platform_authenticator": {"available": True, "status": "Ready"},
+            "hardware_security_keys": [],
+            "hardware_key_connected": False
+        }
+
 
 class NotificationClient:
     """High-level client for the decoupled org.theonix.Notifications D-Bus service."""

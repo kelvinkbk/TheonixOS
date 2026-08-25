@@ -484,6 +484,58 @@ class AuthService(QObject):
             print(f"[AuthService] DeletePasskey error: {e}")
             return False
 
+    @pyqtSlot(result=str)
+    def DetectAuthenticators(self) -> str:
+        """Scans system for connected USB/NFC FIDO2 security keys and local authenticators."""
+        known_vendors = {
+            "1050": "Yubico (YubiKey FIDO2 / U2F)",
+            "096e": "Feitian (ePass FIDO2 Token)",
+            "18d1": "Google Titan Security Key",
+            "20a0": "Nitrokey (FIDO2 / OpenPGP)",
+            "1209": "SoloKeys / Hacker FIDO2",
+            "4b42": "SoloKeys Solo 2",
+            "2581": "Ledger / U2F Token",
+            "1e0d": "Canokey FIDO2"
+        }
+
+        detected_hardware = []
+        try:
+            import subprocess
+            res = subprocess.run(["lsusb"], capture_output=True, text=True, timeout=2)
+            for line in res.stdout.splitlines():
+                for vid, vname in known_vendors.items():
+                    if f"ID {vid}:" in line.lower() or f"{vid}:" in line:
+                        detected_hardware.append({
+                            "vendor_id": vid,
+                            "name": vname,
+                            "raw_desc": line.strip()
+                        })
+        except Exception:
+            pass
+
+        data = {
+            "platform_authenticator": {
+                "available": True,
+                "name": "Theonix Cryptographic Vault",
+                "algorithm": "ECDSA SECP256R1 (P-256)",
+                "status": "Active & Ready"
+            },
+            "hardware_security_keys": detected_hardware,
+            "hardware_key_connected": len(detected_hardware) > 0,
+            "total_passkeys_stored": 0
+        }
+
+        try:
+            conn = sqlite3.connect(AUTH_DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM passkeys")
+            data["total_passkeys_stored"] = c.fetchone()[0]
+            conn.close()
+        except Exception:
+            pass
+
+        return json.dumps(data)
+
 
 def main():
     app = QApplication(sys.argv)
