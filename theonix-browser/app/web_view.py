@@ -151,17 +151,21 @@ class WebAuthnBridge(QObject):
 
 WEBAUTHN_INJECTION_JS = """
 (function() {
-    function b64ToBuf(b64) {
-        let bin = atob(b64);
+    function bufToBase64Url(buf) {
+        let bytes = new Uint8Array(buf);
+        let str = '';
+        for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+        return btoa(str).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');
+    }
+
+    function base64UrlToBuf(str) {
+        if (!str) return new ArrayBuffer(0);
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        let bin = atob(str);
         let buf = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
         return buf.buffer;
-    }
-    function bufToB64(buf) {
-        let bin = '';
-        let bytes = new Uint8Array(buf);
-        for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
     }
 
     if (!navigator.credentials) navigator.credentials = {};
@@ -171,14 +175,14 @@ WEBAUTHN_INJECTION_JS = """
         let pk = options.publicKey;
         let rpId = pk.rp ? (pk.rp.id || window.location.hostname) : window.location.hostname;
         let userName = pk.user ? (pk.user.name || pk.user.displayName || "User") : "User";
-        let challengeB64 = pk.challenge ? bufToB64(pk.challenge) : "challenge";
+        let challengeB64Url = pk.challenge ? bufToBase64Url(pk.challenge) : "challenge";
 
         return new Promise((resolve, reject) => {
             if (!window.webauthnBridge) {
                 reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
                 return;
             }
-            window.webauthnBridge.createCredential(rpId, userName, challengeB64, function(resJson) {
+            window.webauthnBridge.createCredential(rpId, userName, challengeB64Url, function(resJson) {
                 let res = JSON.parse(resJson);
                 if (!res.success) {
                     reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
@@ -186,11 +190,11 @@ WEBAUTHN_INJECTION_JS = """
                 }
                 let cred = {
                     id: res.id,
-                    rawId: b64ToBuf(res.rawId_b64),
+                    rawId: base64UrlToBuf(res.id),
                     type: 'public-key',
                     response: {
-                        clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
-                        attestationObject: b64ToBuf(res.attestationObject_b64)
+                        clientDataJSON: base64UrlToBuf(res.clientDataJSON_b64),
+                        attestationObject: base64UrlToBuf(res.attestationObject_b64)
                     },
                     getClientExtensionResults: () => ({})
                 };
@@ -203,14 +207,14 @@ WEBAUTHN_INJECTION_JS = """
         if (!options || !options.publicKey) return null;
         let pk = options.publicKey;
         let rpId = pk.rpId || window.location.hostname;
-        let challengeB64 = pk.challenge ? bufToB64(pk.challenge) : "challenge";
+        let challengeB64Url = pk.challenge ? bufToBase64Url(pk.challenge) : "challenge";
 
         return new Promise((resolve, reject) => {
             if (!window.webauthnBridge) {
                 reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
                 return;
             }
-            window.webauthnBridge.getAssertion(rpId, challengeB64, function(resJson) {
+            window.webauthnBridge.getAssertion(rpId, challengeB64Url, function(resJson) {
                 let res = JSON.parse(resJson);
                 if (!res.success) {
                     reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
@@ -218,13 +222,13 @@ WEBAUTHN_INJECTION_JS = """
                 }
                 let cred = {
                     id: res.id,
-                    rawId: b64ToBuf(res.rawId_b64),
+                    rawId: base64UrlToBuf(res.id),
                     type: 'public-key',
                     response: {
-                        clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
-                        authenticatorData: b64ToBuf(res.authenticatorData_b64),
-                        signature: b64ToBuf(res.signature_b64),
-                        userHandle: res.userHandle_b64 ? b64ToBuf(res.userHandle_b64) : null
+                        clientDataJSON: base64UrlToBuf(res.clientDataJSON_b64),
+                        authenticatorData: base64UrlToBuf(res.authenticatorData_b64),
+                        signature: base64UrlToBuf(res.signature_b64),
+                        userHandle: res.userHandle_b64 ? base64UrlToBuf(res.userHandle_b64) : null
                     },
                     getClientExtensionResults: () => ({})
                 };
