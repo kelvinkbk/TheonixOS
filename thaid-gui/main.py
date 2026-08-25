@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import time
 import subprocess
 import threading
 
@@ -40,6 +41,7 @@ class ThaidState(QObject):
         self._recording = False
         self._record_process = None
         self._audio_level = 0.0
+        self._auto_stop_timer = None
         self.voice_engine = VoiceEngine.get_instance()
         
         # Connect to Thaid DBus service
@@ -126,20 +128,29 @@ class ThaidState(QObject):
 
         # Pulse audio level for Orb visualizer while recording
         def _simulate_audio_pulse():
-            import time
             import math
             t = 0
             while self._recording:
-                # Dynamic soundwave oscillation
-                self.audioLevel = 0.3 + 0.5 * abs(math.sin(t * 8.0))
-                time.sleep(0.08)
-                t += 0.08
+                self.audioLevel = 0.35 + 0.55 * abs(math.sin(t * 8.0))
+                time.sleep(0.06)
+                t += 0.06
             self.audioLevel = 0.0
 
         threading.Thread(target=_simulate_audio_pulse, daemon=True).start()
 
+        # Automatic stop after 6 seconds if user doesn't click again
+        def _auto_stop_after_timeout():
+            time.sleep(6.5)
+            if self._recording:
+                self.stopListening()
+
+        threading.Thread(target=_auto_stop_after_timeout, daemon=True).start()
+
     @pyqtSlot()
     def stopListening(self):
+        if not self._recording:
+            return
+            
         self._recording = False
         if self._record_process:
             self._record_process.terminate()
@@ -154,7 +165,7 @@ class ThaidState(QObject):
 
         wav_path = "/tmp/thaid_query.wav"
         if (not os.path.exists(wav_path)) or os.path.getsize(wav_path) <= 44:
-            msg = "Microphone capture ready. Please speak after clicking the Orb."
+            msg = "I'm listening. Please speak and tap the Orb."
             self._emit_response(msg)
             self._speak(msg)
             return
@@ -165,25 +176,32 @@ class ThaidState(QObject):
         def _process_voice():
             from PyQt6.QtDBus import QDBus, QDBusMessage
             
-            # 1. Transcribe with Whisper (via D-Bus or direct CLI)
+            # Find best whisper model
+            model_candidates = [
+                "/usr/share/theonix/models/whisper/ggml-small.bin",
+                os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-small.bin"),
+                "/usr/share/theonix/models/whisper/ggml-base.bin",
+                os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-base.bin"),
+            ]
+            model_path = None
+            for mp in model_candidates:
+                if os.path.exists(mp) and os.path.getsize(mp) > 10000:
+                    model_path = mp
+                    break
+
             text = ""
-            msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
-            msg_stt << wav_path
-            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 8000)
-            if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage and reply_stt.arguments():
-                text = str(reply_stt.arguments()[0])
-            
-            if not text.strip():
-                # Direct whisper-cli fallback
+            if model_path:
                 try:
                     subprocess.run([
                         "whisper-cli",
-                        "--model", "/usr/share/theonix/models/whisper/ggml-base.bin",
+                        "--model", model_path,
                         "--language", "en",
+                        "--beam-size", "5",
+                        "--threads", "4",
                         "--output-txt",
                         "--no-prints",
                         "-f", wav_path
-                    ], capture_output=True, text=True, timeout=15)
+                    ], capture_output=True, text=True, timeout=20)
                     txt_file = f"{wav_path}.txt"
                     if os.path.exists(txt_file):
                         with open(txt_file, "r") as f:
@@ -192,11 +210,19 @@ class ThaidState(QObject):
                 except Exception as e:
                     print(f"[THAID-GUI] Direct whisper failed: {e}")
 
+            # Fallback to DBus if direct CLI didn't return text
+            if not text.strip():
+                msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
+                msg_stt << wav_path
+                reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 8000)
+                if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage and reply_stt.arguments():
+                    text = str(reply_stt.arguments()[0])
+
             # Clean Whisper hallucinations/silence markers
             text = re.sub(r'\[.*?\]|\(.*?\)', '', text).strip()
 
-            if not text:
-                fallback_msg = "I didn't catch that. Please speak into your microphone and tap the Orb again."
+            if not text or len(text) < 2:
+                fallback_msg = "I didn't catch that clearly. Please speak into your microphone and try again."
                 self._emit_response(fallback_msg)
                 self._speak(fallback_msg)
                 return
@@ -216,7 +242,7 @@ class ThaidState(QObject):
                         chunks.append(chunk)
                     ai_response = "".join(chunks).strip()
                 except Exception:
-                    ai_response = f"I heard: \"{text}\". I'm ready to assist you on Theonix OS."
+                    ai_response = f"I heard: \"{text}\". How can I help you today?"
 
             if not ai_response:
                 ai_response = f"I understood: \"{text}\"."
