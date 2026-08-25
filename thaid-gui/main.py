@@ -1,5 +1,8 @@
 import sys
 import os
+import re
+import subprocess
+import threading
 
 # Must be set before importing PyQt6 to prevent Breeze style type clash
 os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
@@ -103,7 +106,7 @@ class ThaidState(QObject):
     @pyqtSlot()
     def startListening(self):
         # Kill any dangling recorder
-        import subprocess
+        subprocess.run(["pkill", "-9", "-f", "pw-record"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["pkill", "-9", "-f", "arecord"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
         self.setState("listening")
@@ -111,35 +114,29 @@ class ThaidState(QObject):
         
         self.voice_engine.play_chime("start")
         
-        # Record audio at 16kHz, mono, 16-bit to match whisper-cli requirements
-        self._record_process = subprocess.Popen(
-            ["arecord", "-V", "mono", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"],
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        
-        # Background thread to monitor real-time microphone volume for the QML Orb
-        def _monitor_volume():
-            import re
-            buffer = ""
-            while self._record_process and self._record_process.poll() is None:
-                try:
-                    char = self._record_process.stderr.read(1)
-                    if not char:
-                        break
-                    if char in ('\r', '\n'):
-                        match = re.search(r'(\d+)%', buffer)
-                        if match:
-                            self.audioLevel = float(match.group(1)) / 100.0
-                        buffer = ""
-                    else:
-                        buffer += char
-                except Exception:
-                    break
+        # Record audio at 16kHz, mono, 16-bit using PipeWire default source (e.g. AirPods Pro / built-in mic)
+        rec_cmd = ["pw-record", "--rate", "16000", "--channels", "1", "--format", "s16", "/tmp/thaid_query.wav"]
+        if not os.path.exists("/usr/bin/pw-record"):
+            rec_cmd = ["arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "/tmp/thaid_query.wav"]
+
+        try:
+            self._record_process = subprocess.Popen(rec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[THAID-GUI] Failed to start recorder: {e}")
+
+        # Pulse audio level for Orb visualizer while recording
+        def _simulate_audio_pulse():
+            import time
+            import math
+            t = 0
+            while self._recording:
+                # Dynamic soundwave oscillation
+                self.audioLevel = 0.3 + 0.5 * abs(math.sin(t * 8.0))
+                time.sleep(0.08)
+                t += 0.08
             self.audioLevel = 0.0
-            
-        import threading
-        threading.Thread(target=_monitor_volume, daemon=True).start()
+
+        threading.Thread(target=_simulate_audio_pulse, daemon=True).start()
 
     @pyqtSlot()
     def stopListening(self):
@@ -152,31 +149,39 @@ class ThaidState(QObject):
                 self._record_process.kill()
             self._record_process = None
 
+        # Clean up any pw-record processes
+        subprocess.run(["pkill", "-2", "-f", "pw-record"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         wav_path = "/tmp/thaid_query.wav"
         if (not os.path.exists(wav_path)) or os.path.getsize(wav_path) <= 44:
-            self._emit_response("Microphone capture ready. Please speak after tapping.")
+            msg = "Microphone capture ready. Please speak after clicking the Orb."
+            self._emit_response(msg)
+            self._speak(msg)
             return
             
         self.setState("thinking")
         
-        # Start processing in background
+        # Start processing in background thread
         def _process_voice():
             from PyQt6.QtDBus import QDBus, QDBusMessage
-            import subprocess
             
-            # 1. Transcribe (STT via DBus with fallback)
+            # 1. Transcribe with Whisper (via D-Bus or direct CLI)
             text = ""
             msg_stt = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Transcribe")
             msg_stt << wav_path
-            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 5000)
-            if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage:
-                text = reply_stt.arguments()[0]
+            reply_stt = self.bus.call(msg_stt, QDBus.CallMode.Block, 8000)
+            if reply_stt.type() == QDBusMessage.MessageType.ReplyMessage and reply_stt.arguments():
+                text = str(reply_stt.arguments()[0])
             
             if not text.strip():
-                # Fallback directly to whisper-cli if DBus timed out
+                # Direct whisper-cli fallback
                 try:
-                    res = subprocess.run([
-                        "whisper-cli", "--language", "en", "--output-txt", "--no-prints",
+                    subprocess.run([
+                        "whisper-cli",
+                        "--model", "/usr/share/theonix/models/whisper/ggml-base.bin",
+                        "--language", "en",
+                        "--output-txt",
+                        "--no-prints",
                         "-f", wav_path
                     ], capture_output=True, text=True, timeout=15)
                     txt_file = f"{wav_path}.txt"
@@ -184,45 +189,58 @@ class ThaidState(QObject):
                         with open(txt_file, "r") as f:
                             text = f.read().strip()
                         os.remove(txt_file)
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"[THAID-GUI] Direct whisper failed: {e}")
 
-            if not text.strip():
-                self._emit_response("I'm listening. How can I help you today?")
+            # Clean Whisper hallucinations/silence markers
+            text = re.sub(r'\[.*?\]|\(.*?\)', '', text).strip()
+
+            if not text:
+                fallback_msg = "I didn't catch that. Please speak into your microphone and tap the Orb again."
+                self._emit_response(fallback_msg)
+                self._speak(fallback_msg)
                 return
                 
-            # 2. Query Local AI
+            # 2. Query Local AI Engine
             ai_response = ""
             msg_query = QDBusMessage.createMethodCall("org.theonix.AI", "/org/theonix/AI", "org.theonix.AI", "Query")
             msg_query << text << {}
             reply_query = self.bus.call(msg_query, QDBus.CallMode.Block, 60000)
-            if reply_query.type() == QDBusMessage.MessageType.ReplyMessage:
-                ai_response = reply_query.arguments()[0]
+            if reply_query.type() == QDBusMessage.MessageType.ReplyMessage and reply_query.arguments():
+                ai_response = str(reply_query.arguments()[0])
             else:
-                # Direct AIService fallback
+                # Direct high-speed AIService fallback
                 try:
                     chunks = []
                     for chunk in AIService.stream_chat([{"role": "user", "content": text}], model_id="1.5b"):
                         chunks.append(chunk)
                     ai_response = "".join(chunks).strip()
-                except Exception as e:
-                    ai_response = f"I understood: '{text}'. How would you like me to assist?"
+                except Exception:
+                    ai_response = f"I heard: \"{text}\". I'm ready to assist you on Theonix OS."
 
-            # 3. Emit response text
+            if not ai_response:
+                ai_response = f"I understood: \"{text}\"."
+
+            # 3. Emit response text to UI
             self._emit_response(ai_response)
             
-            # 4. Synthesize & Speak with Piper
-            self.setState("speaking")
-            try:
-                self.voice_engine.synthesize_speech(ai_response, "/tmp/thaid_response.wav")
-                self.voice_engine.play_audio("/tmp/thaid_response.wav")
-            except Exception:
-                pass
-                
-            self.setState("chat")
+            # 4. Speak response aloud with Piper Neural TTS
+            self._speak(ai_response)
             
-        import threading
         threading.Thread(target=_process_voice, daemon=True).start()
+
+    def _speak(self, text: str):
+        """Synthesizes text and plays audio through active audio sink"""
+        self.setState("speaking")
+        try:
+            # Clean markdown formatting from speech
+            clean_speech = re.sub(r'[*_#`]', '', text).strip()
+            if self.voice_engine.synthesize_speech(clean_speech, "/tmp/thaid_response.wav"):
+                self.voice_engine.play_audio("/tmp/thaid_response.wav")
+        except Exception as e:
+            print(f"[THAID-GUI] TTS playback error: {e}")
+        finally:
+            self.setState("chat")
 
     @pyqtSlot(str)
     def submitQuery(self, prompt):
@@ -241,9 +259,10 @@ class ThaidState(QObject):
             msg << prompt << {}
             
             reply = self.bus.call(msg, QDBus.CallMode.Block, 2000)
-            if reply.type() == QDBusMessage.MessageType.ReplyMessage:
-                result = reply.arguments()[0]
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                result = str(reply.arguments()[0])
                 self._emit_response(result)
+                self._speak(result)
                 return
 
             try:
@@ -251,14 +270,14 @@ class ThaidState(QObject):
                 for chunk in AIService.stream_chat([{"role": "user", "content": prompt}], model_id="1.5b"):
                     chunks.append(chunk)
                 full_ans = "".join(chunks).strip()
-                if full_ans:
-                    self._emit_response(full_ans)
-                else:
-                    self._emit_response("Local AI engine is ready. Please try your question again.")
+                if not full_ans:
+                    full_ans = "Local AI engine is ready. How can I help you today?"
+                self._emit_response(full_ans)
+                self._speak(full_ans)
             except Exception as e:
-                self._emit_response(f"AI Backend Error: {e}")
+                err_msg = f"AI Backend Error: {e}"
+                self._emit_response(err_msg)
                 
-        import threading
         threading.Thread(target=_do_query, daemon=True).start()
             
     def _emit_response(self, text):
