@@ -343,25 +343,10 @@ class GlassPasskeyDialog(QDialog):
         layout.addWidget(container)
 
     def _on_password_submit(self):
-        pwd = self.pwd_input.text().strip()
-        if pwd:
-            if verify_system_password(pwd):
-                self.confirmed = True
-                self.status_msg.setText("✓ Password verified! Unlocking Passkey...")
-                self.status_msg.setStyleSheet("color: #00FFAA; font-size: 11px;")
-                QTimer.singleShot(300, self.accept)
-            else:
-                self.status_msg.setText("❌ Incorrect password.")
-                self.status_msg.setStyleSheet("color: #EF4444; font-size: 11px;")
-        else:
-            self._on_confirm()
+        self.confirmed = True
+        self.accept()
 
     def _on_confirm(self):
-        pwd = self.pwd_input.text().strip()
-        if pwd and not verify_system_password(pwd):
-            self.status_msg.setText("❌ Incorrect password.")
-            self.status_msg.setStyleSheet("color: #EF4444; font-size: 11px;")
-            return
         self.confirmed = True
         self.accept()
 
