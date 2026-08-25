@@ -12,14 +12,15 @@ Item {
     width: targetWidth
     height: targetHeight
     
-    Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
-    Behavior on height { NumberAnimation { duration: 600; easing.type: Easing.OutElastic; easing.amplitude: 0.8; easing.period: 0.5 } }
+    Behavior on width { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
+    Behavior on height { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
     
     property int targetWidth: 40
     property int targetHeight: 40
     property int targetRadius: 20
     property int orbXOffset: 0
     property real orbScale: 1.0
+    property real orbOpacity: 1.0
 
     property int chatDynamicHeight: Math.min(600, Math.max(120, chatText.paintedHeight + 60))
     property int typingDynamicHeight: Math.min(300, Math.max(80, typingInput.contentHeight + 40))
@@ -30,12 +31,12 @@ Item {
         anchors.fill: parent
         radius: targetRadius
         
-        color: "#aa050505" // Translucent dark glass
-        border.color: "#22ffffff" // Subtle glass edge
-        border.width: 1
+        color: "#d9050814" // Translucent dark glass
+        border.color: panelContainer.aiState === "listening" ? "#4400FFAA" : "#22ffffff" // Subtle cyan border when listening
+        border.width: panelContainer.aiState === "listening" ? 1.5 : 1
 
-        // Smooth physics-based spring animation for expansion
-        Behavior on radius { NumberAnimation { duration: 400; easing.type: Easing.InOutQuad } }
+        Behavior on radius { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
+        Behavior on border.color { ColorAnimation { duration: 250 } }
     }
 
     // Shadow effect for depth
@@ -45,8 +46,8 @@ Item {
         shadowEnabled: true
         shadowColor: "black"
         shadowOpacity: 0.8
-        shadowBlur: 30
-        shadowVerticalOffset: 10
+        shadowBlur: 24
+        shadowVerticalOffset: 8
         z: -1
     }
 
@@ -62,9 +63,76 @@ Item {
         scale: orbScale
         opacity: orbOpacity
         
-        Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
-        Behavior on transform { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
-        Behavior on opacity { NumberAnimation { duration: 400 } }
+        Behavior on scale { NumberAnimation { duration: 350; easing.type: Easing.OutBack } }
+        Behavior on transform { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 300 } }
+    }
+
+    // Live Listening Subtitle Ribbon
+    Item {
+        id: contentListening
+        anchors.fill: parent
+        anchors.margins: 6
+        anchors.leftMargin: 46
+        anchors.rightMargin: 16
+        opacity: panelContainer.aiState === "listening" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Text {
+            id: liveListeningText
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            text: typeof thaidState !== "undefined" && thaidState.liveTranscript ? thaidState.liveTranscript : "Listening..."
+            color: typeof thaidState !== "undefined" && thaidState.liveTranscript ? "#00FFAA" : "#94A3B8"
+            font.pixelSize: 13.5
+            font.bold: true
+            font.family: "Inter, Roboto, sans-serif"
+            elide: Text.ElideRight
+            horizontalAlignment: Text.AlignLeft
+        }
+    }
+
+    // Thinking Indicator
+    Item {
+        id: contentThinking
+        anchors.fill: parent
+        anchors.margins: 6
+        anchors.leftMargin: 46
+        opacity: panelContainer.aiState === "thinking" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Text {
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            text: "Thinking..."
+            color: "#38BDF8"
+            font.pixelSize: 13.5
+            font.bold: true
+            font.family: "Inter, Roboto, sans-serif"
+        }
+    }
+
+    // Speaking Indicator
+    Item {
+        id: contentSpeaking
+        anchors.fill: parent
+        anchors.margins: 6
+        anchors.leftMargin: 46
+        opacity: panelContainer.aiState === "speaking" ? 1.0 : 0.0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Text {
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            text: "Speaking..."
+            color: "#A855F7"
+            font.pixelSize: 13.5
+            font.bold: true
+            font.family: "Inter, Roboto, sans-serif"
+        }
     }
 
     // Weather Card Content
@@ -78,7 +146,7 @@ Item {
 
         Row {
             anchors.centerIn: parent
-            spacing: 50 // reduced spacing to fit better
+            spacing: 50
             
             Column {
                 Text { text: "Jaipur"; color: "#888"; font.pixelSize: 14; font.letterSpacing: 1 }
@@ -109,16 +177,15 @@ Item {
                 width: parent.width
                 height: Math.max(paintedHeight, parent.height)
                 verticalAlignment: Text.AlignVCenter
-                text: "\"I have updated the system configuration for Wayland. Would you like me to apply it now?\""
+                text: "\"How can I assist you on Theonix OS?\""
                 color: "#eeeeee"
-                font.pixelSize: 16
+                font.pixelSize: 15
                 font.family: "Inter, Roboto, sans-serif"
                 wrapMode: Text.WordWrap
                 font.weight: Font.Normal
                 lineHeight: 1.4
                 horizontalAlignment: Text.AlignHCenter
                 
-                // Listen to the python/DBus backend for real responses
                 Connections {
                     target: typeof thaidState !== "undefined" ? thaidState : null
                     function onResponseReceived(response) {
@@ -180,10 +247,8 @@ Item {
                 
                 Keys.onReturnPressed: (event) => {
                     if (event.modifiers & Qt.ShiftModifier) {
-                        // Allow Shift+Enter for new line
                         event.accepted = false;
                     } else {
-                        // Enter submits
                         event.accepted = true;
                         if (text.trim() !== "") {
                             if (typeof thaidState !== "undefined") {
@@ -198,7 +263,6 @@ Item {
                     }
                 }
                 
-                // Auto-focus when state becomes typing
                 Connections {
                     target: panelContainer
                     function onAiStateChanged() {
@@ -212,8 +276,6 @@ Item {
     }
 
     // --- State Machine ---
-    property real orbOpacity: 1.0
-
     states: [
         State {
             name: "idle"
@@ -223,22 +285,22 @@ Item {
         State {
             name: "listening"
             when: panelContainer.aiState === "listening"
-            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 320; targetHeight: 46; targetRadius: 23; orbXOffset: -136; orbScale: 0.85; orbOpacity: 1.0 }
         },
         State {
             name: "thinking"
             when: panelContainer.aiState === "thinking"
-            PropertyChanges { target: panelContainer; targetWidth: 40; targetHeight: 40; targetRadius: 20; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 160; targetHeight: 46; targetRadius: 23; orbXOffset: -56; orbScale: 0.85; orbOpacity: 1.0 }
         },
         State {
             name: "speaking"
             when: panelContainer.aiState === "speaking"
-            PropertyChanges { target: panelContainer; targetWidth: 50; targetHeight: 50; targetRadius: 25; orbXOffset: 0; orbScale: 1.0; orbOpacity: 1.0 }
+            PropertyChanges { target: panelContainer; targetWidth: 170; targetHeight: 46; targetRadius: 23; orbXOffset: -61; orbScale: 0.85; orbOpacity: 1.0 }
         },
         State {
             name: "weather"
             when: panelContainer.aiState === "weather"
-            PropertyChanges { target: panelContainer; targetWidth: 240; targetHeight: 100; targetRadius: 24; orbXOffset: -80; orbScale: 0.6; orbOpacity: 0.2 } // Faded behind text
+            PropertyChanges { target: panelContainer; targetWidth: 240; targetHeight: 100; targetRadius: 24; orbXOffset: -80; orbScale: 0.6; orbOpacity: 0.2 }
         },
         State {
             name: "chat"
