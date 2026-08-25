@@ -1,5 +1,11 @@
 import sys
 import os
+
+# Must be set before importing PyQt6 to prevent Breeze style type clash
+os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
+if not os.environ.get("QT_QPA_PLATFORM"):
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtProperty, pyqtSlot
@@ -233,6 +239,9 @@ def main():
     # Force X11/XWayland so KWin honors absolute window positioning (x, y)
     if not os.environ.get("QT_QPA_PLATFORM"):
         os.environ["QT_QPA_PLATFORM"] = "xcb"
+
+    # Avoid KDE Breeze QML style type clash in PyQt6
+    os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
 
     app = QGuiApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)

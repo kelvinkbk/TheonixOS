@@ -159,19 +159,24 @@ Item {
             contentWidth: availableWidth
             clip: true
 
-            TextArea {
+            TextEdit {
                 id: typingInput
                 width: parent.width
-                height: Math.max(contentHeight, parent.height)
-                verticalAlignment: TextInput.AlignVCenter
-                placeholderText: "Type a command..."
+                verticalAlignment: TextEdit.AlignVCenter
                 color: "white"
-                placeholderTextColor: "#888"
                 font.pixelSize: 16
                 font.family: "Inter, Roboto, sans-serif"
-                wrapMode: Text.WordWrap
-                
-                background: Item {} // Transparent background
+                wrapMode: TextEdit.Wrap
+
+                Text {
+                    anchors.fill: parent
+                    text: "Type a command..."
+                    color: "#888"
+                    font.pixelSize: 16
+                    font.family: "Inter, Roboto, sans-serif"
+                    visible: !typingInput.text && !typingInput.activeFocus
+                    verticalAlignment: Text.AlignVCenter
+                }
                 
                 Keys.onReturnPressed: (event) => {
                     if (event.modifiers & Qt.ShiftModifier) {
