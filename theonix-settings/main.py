@@ -27,7 +27,7 @@ from PyQt6.QtWidgets import (
 from theonix_core import (
     THEONIX_THEME_QSS, GlassCard, NavButton, Badge,
     TelemetryBar, SearchBar, apply_theonix_style,
-    ThemeService, SystemService
+    ThemeService, SystemService, VoiceEngine
 )
 
 
@@ -709,6 +709,165 @@ class TouchpadGesturesPage(QWidget):
             QMessageBox.information(self, "Touchpad Settings", "✓ Touchpad settings saved and applied successfully!")
 
 
+class VoiceAssistantPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.voice_engine = VoiceEngine.get_instance()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(32, 28, 32, 28)
+        layout.setSpacing(18)
+
+        title = QLabel("Voice Assistant & Wake Word")
+        title.setStyleSheet("font-size: 26px; font-weight: 800; color: #FFFFFF;")
+        subtitle = QLabel("Hands-free \"Hey Theonix\" wake word detection, Piper neural voice synthesis, and local Whisper speech recognition")
+        subtitle.setStyleSheet("font-size: 13.5px; color: #94A3B8;")
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+
+        # Wake Word Trigger Card
+        wake_card = GlassCard()
+        w_layout = QVBoxLayout(wake_card)
+        w_layout.setContentsMargins(20, 20, 20, 20)
+        w_layout.setSpacing(16)
+
+        w_header = QLabel("🎙️ Wake Word Detection (\"Hey Theonix\")")
+        w_header.setStyleSheet("font-size: 16px; font-weight: bold; color: #00FFAA;")
+        w_layout.addWidget(w_header)
+
+        self.wake_cb = QCheckBox("Enable continuous wake word listening (\"Hey Theonix\" / \"Hey THAID\")")
+        self.wake_cb.setChecked(self.voice_engine.config.get("wake_word_enabled", True))
+        self.wake_cb.setStyleSheet("color: #FFFFFF; font-size: 14px; font-weight: 600;")
+        w_layout.addWidget(self.wake_cb)
+
+        self.chime_cb = QCheckBox("Play acoustic interaction chimes on wake & answer")
+        self.chime_cb.setChecked(self.voice_engine.config.get("play_chimes", True))
+        self.chime_cb.setStyleSheet("color: #E2E8F0; font-size: 13px;")
+        w_layout.addWidget(self.chime_cb)
+
+        # Sensitivity Row
+        sens_row = QHBoxLayout()
+        sens_lbl = QLabel("Wake Word Sensitivity:")
+        sens_lbl.setStyleSheet("color: #94A3B8; font-size: 13px; font-weight: 600;")
+        self.sens_slider = QSlider(Qt.Orientation.Horizontal)
+        self.sens_slider.setRange(1, 10)
+        self.sens_slider.setValue(int(self.voice_engine.config.get("sensitivity", 0.65) * 10))
+        self.sens_val_lbl = QLabel(f"{self.sens_slider.value() * 10}%")
+        self.sens_val_lbl.setStyleSheet("color: #00FFAA; font-weight: bold;")
+        self.sens_slider.valueChanged.connect(lambda v: self.sens_val_lbl.setText(f"{v * 10}%"))
+        sens_row.addWidget(sens_lbl)
+        sens_row.addWidget(self.sens_slider)
+        sens_row.addWidget(self.sens_val_lbl)
+        w_layout.addLayout(sens_row)
+
+        test_wake_btn = QPushButton("⚡ Test Wake Word Trigger")
+        test_wake_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(0, 255, 170, 0.15);
+                color: #00FFAA;
+                border: 1px solid rgba(0, 255, 170, 0.4);
+                border-radius: 8px;
+                padding: 10px 16px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background: rgba(0, 255, 170, 0.28);
+            }
+        """)
+        test_wake_btn.clicked.connect(self._test_wake_word)
+        w_layout.addWidget(test_wake_btn)
+        layout.addWidget(wake_card)
+
+        # Voice & Speech Synthesis Card (Piper Neural TTS)
+        tts_card = GlassCard()
+        t_layout = QVBoxLayout(tts_card)
+        t_layout.setContentsMargins(20, 20, 20, 20)
+        t_layout.setSpacing(16)
+
+        t_header = QLabel("🔊 Neural Text-to-Speech (Piper Voice Engine)")
+        t_header.setStyleSheet("font-size: 16px; font-weight: bold; color: #00FFAA;")
+        t_layout.addWidget(t_header)
+
+        voice_row = QHBoxLayout()
+        voice_lbl = QLabel("Neural Voice Model:")
+        voice_lbl.setStyleSheet("color: #94A3B8; font-size: 13px; font-weight: 600;")
+        self.voice_combo = QComboBox()
+        self.voice_combo.addItems([
+            "en_US-lessac-medium (Default Natural Female)",
+            "en_US-ryan-medium (Natural Male)",
+            "en_US-amy-medium (Expressive Female)",
+            "en_GB-alan-medium (British Male)"
+        ])
+        voice_row.addWidget(voice_lbl)
+        voice_row.addWidget(self.voice_combo)
+        t_layout.addLayout(voice_row)
+
+        test_speak_btn = QPushButton("▶️ Test Voice Sample")
+        test_speak_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(56, 189, 248, 0.15);
+                color: #38BDF8;
+                border: 1px solid rgba(56, 189, 248, 0.4);
+                border-radius: 8px;
+                padding: 10px 16px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background: rgba(56, 189, 248, 0.28);
+            }
+        """)
+        test_speak_btn.clicked.connect(self._test_voice_sample)
+        t_layout.addWidget(test_speak_btn)
+        layout.addWidget(tts_card)
+
+        # Save Button
+        save_btn = QPushButton("💾 Save Voice Settings")
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00FFAA, stop:1 #00B8D4);
+                color: #030712;
+                font-weight: 800;
+                font-size: 14px;
+                border-radius: 10px;
+                padding: 12px;
+            }
+            QPushButton:hover {
+                background: #00FFAA;
+            }
+        """)
+        save_btn.clicked.connect(self._save_voice_settings)
+        layout.addWidget(save_btn)
+        layout.addStretch()
+
+    def _test_wake_word(self):
+        self.voice_engine.trigger_wake_event()
+        QMessageBox.information(
+            self,
+            "Wake Word Triggered",
+            "⚡ Simulated 'Hey Theonix' wake word event!\n\nThe THAID Floating Orb has been notified and awakened."
+        )
+
+    def _test_voice_sample(self):
+        sample_text = "Hello! I am THAID, your privacy-first AI copilot on Theonix OS. All my neural inference is running 100% locally on your machine."
+        threading.Thread(
+            target=lambda: (
+                self.voice_engine.synthesize_speech(sample_text, "/tmp/thaid_test.wav"),
+                self.voice_engine.play_audio("/tmp/thaid_test.wav")
+            ),
+            daemon=True
+        ).start()
+
+    def _save_voice_settings(self):
+        model_key = self.voice_combo.currentText().split(" ")[0]
+        new_cfg = {
+            "wake_word_enabled": self.wake_cb.isChecked(),
+            "play_chimes": self.chime_cb.isChecked(),
+            "sensitivity": self.sens_slider.value() / 10.0,
+            "voice_model": model_key,
+        }
+        self.voice_engine.save_config(new_cfg)
+        QMessageBox.information(self, "Voice Settings", "✓ Voice & Wake Word settings saved successfully!")
+
+
 class NetworkPage(QWidget):
     def __init__(self):
         super().__init__()
@@ -1115,6 +1274,7 @@ class TheonixSettingsWindow(QMainWindow):
             ("🎨  Appearance", AppearancePage, ["theme", "wallpaper", "colors", "dark", "blur", "effects"]),
             ("🖥️  Display & Scaling", DisplayPage, ["resolution", "refresh", "scaling", "monitor", "night light"]),
             ("🖐️  Touchpad & Gestures", TouchpadGesturesPage, ["touchpad", "gestures", "mouse", "scroll", "swipe", "tap", "click"]),
+            ("🎙️  Voice Assistant", VoiceAssistantPage, ["voice", "microphone", "speech", "whisper", "piper", "wake word", "thaid"]),
             ("🌐  Network & Wi-Fi", NetworkPage, ["wifi", "network", "ethernet", "ip", "dns", "internet"]),
             ("🔊  Sound & Audio", AudioPage, ["sound", "audio", "volume", "speakers", "pipewire", "mute"]),
             ("💾  Storage & Snapshots", StoragePage, ["storage", "disk", "btrfs", "snapshots", "backup", "restore"]),

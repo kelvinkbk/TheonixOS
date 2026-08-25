@@ -80,6 +80,7 @@ class ThaidState(QObject):
         if msg.arguments():
             self.ambientNotificationReceived.emit(str(msg.arguments()[0]))
 
+    @pyqtSlot()
     def startListening(self):
         self.setState("listening")
         self._recording = True
@@ -112,6 +113,7 @@ class ThaidState(QObject):
         import threading
         threading.Thread(target=_monitor_volume, daemon=True).start()
 
+    @pyqtSlot()
     def stopListening(self):
         self._recording = False
         if self._record_process:

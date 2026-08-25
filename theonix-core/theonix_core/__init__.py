@@ -35,3 +35,4 @@ from .context import ContextManager, BrowserContext
 from .sessions import SessionManager, session_mgr
 from .router import ModelRouter
 from .browser import BrowserService
+from .voice import VoiceEngine
