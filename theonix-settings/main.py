@@ -58,7 +58,7 @@ class SystemAboutPage(QWidget):
         hero_layout.addWidget(logo_label)
 
         hero_text = QVBoxLayout()
-        os_name = QLabel('Theonix OS 1.0 "Genesis"')
+        os_name = QLabel('Theonix OS 2.0 "Nebula"')
         os_name.setStyleSheet("font-size: 20px; font-weight: 800; color: #FFFFFF;")
         os_desc = QLabel("AI-Powered Modern Linux · Arch Base · KDE Plasma 6 (Wayland)")
         os_desc.setStyleSheet("color: #00FFAA; font-size: 13px; font-weight: 600;")

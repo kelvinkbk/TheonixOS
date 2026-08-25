@@ -178,7 +178,9 @@ class GlassCard(QFrame):
 class NavButton(QPushButton):
     """Sleek sidebar navigation button with accent indicator."""
     def __init__(self, text: str, icon_str: str = "", parent=None):
-        super().__init__(f"{icon_str}  {text}" if icon_str else text, parent)
+        raw_text = f"{icon_str}  {text}" if icon_str else text
+        safe_text = raw_text.replace("&", "&&") if "&&" not in raw_text else raw_text
+        super().__init__(safe_text, parent)
         self.setProperty("class", "NavBtn")
         self.setCheckable(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
