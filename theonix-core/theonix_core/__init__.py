@@ -26,7 +26,8 @@ from .services import (
     UACLService,
     CompatibilityRating,
     UpdateClient,
-    AuthClient
+    AuthClient,
+    NotificationClient
 )
 
 # 7-Pillar THAID Architecture

@@ -746,3 +746,33 @@ class AuthClient:
         return True
 
 
+class NotificationClient:
+    """High-level client for the decoupled org.theonix.Notifications D-Bus service."""
+
+    @staticmethod
+    def notify(
+        app_name: str,
+        title: str,
+        message: str,
+        icon: str = "🔔",
+        priority: str = "normal",
+        actions: List[str] = None,
+        timeout_ms: int = 6000
+    ) -> int:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Notifications", "/org/theonix/Notifications", "", "Notify"
+            )
+            actions_json = json.dumps(actions or [])
+            msg << app_name << title << message << icon << priority << actions_json << timeout_ms
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return int(reply.arguments()[0])
+        except Exception:
+            pass
+        return 0
+
+
+
