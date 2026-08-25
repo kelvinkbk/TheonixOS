@@ -1,11 +1,14 @@
 """
 Theonix Browser — Web View & Page Engine.
-Provides Chromium-based QtWebEngine integration, JS content extraction for THAID, and permissions routing.
+Provides Chromium-based QtWebEngine integration, JS content extraction for THAID,
+permissions routing, and native WebAuthn / FIDO2 Passkey bridge to org.theonix.Auth.
 """
 
 import os
+import json
+import base64
 from typing import Callable
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal, QObject, pyqtSlot
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextBrowser, QMessageBox
 
@@ -13,11 +16,172 @@ HAS_WEBENGINE = False
 try:
     from PyQt6.QtWebEngineWidgets import QWebEngineView
     from PyQt6.QtWebEngineCore import (
-        QWebEnginePage, QWebEngineProfile, QWebEngineSettings
+        QWebEnginePage, QWebEngineProfile, QWebEngineSettings, QWebEngineScript
     )
+    from PyQt6.QtWebChannel import QWebChannel
     HAS_WEBENGINE = True
 except ImportError:
     pass
+
+
+class WebAuthnBridge(QObject):
+    """Bridges WebAuthn (navigator.credentials) JavaScript calls directly to Theonix Auth Service."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    @pyqtSlot(str, str, str, result=str)
+    def createCredential(self, rp_id: str, user_name: str, challenge_b64: str) -> str:
+        try:
+            from theonix_core import AuthClient
+            res = AuthClient.create_passkey(rp_id, user_name)
+            if not res.get("success"):
+                return json.dumps({"success": False, "error": res.get("error", "Passkey creation cancelled.")})
+
+            cred_id = res.get("credential_id", "")
+            client_data = json.dumps({
+                "type": "webauthn.create",
+                "challenge": challenge_b64,
+                "origin": f"https://{rp_id}",
+                "crossOrigin": False
+            })
+            client_data_b64 = base64.b64encode(client_data.encode()).decode()
+            raw_id_b64 = base64.b64encode(cred_id.encode()).decode()
+            attestation_b64 = base64.b64encode(b"\xa3\x63fmt\x64none\x67attStmt\xa0\x68authData" + (b"\x00" * 37)).decode()
+
+            return json.dumps({
+                "success": True,
+                "id": cred_id,
+                "rawId_b64": raw_id_b64,
+                "clientDataJSON_b64": client_data_b64,
+                "attestationObject_b64": attestation_b64,
+                "type": "public-key"
+            })
+        except Exception as e:
+            return json.dumps({"success": False, "error": str(e)})
+
+    @pyqtSlot(str, str, result=str)
+    def getAssertion(self, rp_id: str, challenge_b64: str) -> str:
+        try:
+            from theonix_core import AuthClient
+            res = AuthClient.authenticate_passkey(rp_id, challenge_b64)
+            if not res.get("success"):
+                return json.dumps({"success": False, "error": res.get("error", "Passkey authentication cancelled.")})
+
+            cred_id = res.get("credential_id", "")
+            sig_b64 = res.get("signature_b64", "")
+
+            client_data = json.dumps({
+                "type": "webauthn.get",
+                "challenge": challenge_b64,
+                "origin": f"https://{rp_id}",
+                "crossOrigin": False
+            })
+            client_data_b64 = base64.b64encode(client_data.encode()).decode()
+            auth_data_b64 = base64.b64encode(b"\x00" * 37).decode()
+            raw_id_b64 = base64.b64encode(cred_id.encode()).decode()
+
+            return json.dumps({
+                "success": True,
+                "id": cred_id,
+                "rawId_b64": raw_id_b64,
+                "clientDataJSON_b64": client_data_b64,
+                "authenticatorData_b64": auth_data_b64,
+                "signature_b64": sig_b64,
+                "userHandle_b64": base64.b64encode(b"user").decode(),
+                "type": "public-key"
+            })
+        except Exception as e:
+            return json.dumps({"success": False, "error": str(e)})
+
+
+WEBAUTHN_INJECTION_JS = """
+(function() {
+    if (window._theonix_webauthn_ready) return;
+    window._theonix_webauthn_ready = true;
+
+    function b64ToBuf(b64) {
+        let bin = atob(b64);
+        let buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        return buf.buffer;
+    }
+    function bufToB64(buf) {
+        let bin = '';
+        let bytes = new Uint8Array(buf);
+        for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    }
+
+    if (!navigator.credentials) navigator.credentials = {};
+
+    navigator.credentials.create = async function(options) {
+        if (!options || !options.publicKey) return null;
+        let pk = options.publicKey;
+        let rpId = pk.rp ? (pk.rp.id || window.location.hostname) : window.location.hostname;
+        let userName = pk.user ? (pk.user.name || pk.user.displayName || "User") : "User";
+        let challengeB64 = pk.challenge ? bufToB64(pk.challenge) : "challenge";
+
+        return new Promise((resolve, reject) => {
+            if (!window.webauthnBridge) {
+                reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
+                return;
+            }
+            let resJson = window.webauthnBridge.createCredential(rpId, userName, challengeB64);
+            let res = JSON.parse(resJson);
+            if (!res.success) {
+                reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
+                return;
+            }
+            let cred = {
+                id: res.id,
+                rawId: b64ToBuf(res.rawId_b64),
+                type: 'public-key',
+                response: {
+                    clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
+                    attestationObject: b64ToBuf(res.attestationObject_b64)
+                },
+                getClientExtensionResults: () => ({})
+            };
+            resolve(cred);
+        });
+    };
+
+    navigator.credentials.get = async function(options) {
+        if (!options || !options.publicKey) return null;
+        let pk = options.publicKey;
+        let rpId = pk.rpId || window.location.hostname;
+        let challengeB64 = pk.challenge ? bufToB64(pk.challenge) : "challenge";
+
+        return new Promise((resolve, reject) => {
+            if (!window.webauthnBridge) {
+                reject(new DOMException("Theonix Passkey Service unavailable", "NotAllowedError"));
+                return;
+            }
+            let resJson = window.webauthnBridge.getAssertion(rpId, challengeB64);
+            let res = JSON.parse(resJson);
+            if (!res.success) {
+                reject(new DOMException(res.error || "User cancelled", "NotAllowedError"));
+                return;
+            }
+            let cred = {
+                id: res.id,
+                rawId: b64ToBuf(res.rawId_b64),
+                type: 'public-key',
+                response: {
+                    clientDataJSON: b64ToBuf(res.clientDataJSON_b64),
+                    authenticatorData: b64ToBuf(res.authenticatorData_b64),
+                    signature: b64ToBuf(res.signature_b64),
+                    userHandle: res.userHandle_b64 ? b64ToBuf(res.userHandle_b64) : null
+                },
+                getClientExtensionResults: () => ({})
+            };
+            resolve(cred);
+        });
+    };
+    console.log("[Theonix] Native WebAuthn Passkey Bridge active.");
+})();
+"""
 
 
 class TheonixWebPage(QWebEnginePage if HAS_WEBENGINE else object):
@@ -30,19 +194,16 @@ class TheonixWebPage(QWebEnginePage if HAS_WEBENGINE else object):
             self.featurePermissionRequested.connect(self._on_permission_requested)
 
     def _on_permission_requested(self, security_origin: QUrl, feature):
-        # Prompt / manage site permissions
         self.setFeaturePermission(security_origin, feature, QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
 
     def createWindow(self, window_type):
-        # Handle target="_blank" or window.open by requesting a new tab in browser
-        # Return a temporary page or signal parent
         temp_view = TheonixWebView()
         self.new_tab_requested.emit(QUrl())
         return temp_view.page()
 
 
 class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
-    """Main Web View component with Chromium rendering, JS extraction, and devtools."""
+    """Main Web View component with Chromium rendering, Passkey bridge, and THAID extraction."""
     title_updated = pyqtSignal(str)
     url_updated = pyqtSignal(QUrl)
     load_progress_changed = pyqtSignal(int)
@@ -54,10 +215,17 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
             self.custom_page = TheonixWebPage(profile or QWebEngineProfile.defaultProfile(), self)
             self.setPage(self.custom_page)
 
+            # WebAuthn QWebChannel setup
+            self.channel = QWebChannel(self.page())
+            self.webauthn_bridge = WebAuthnBridge(self)
+            self.channel.registerObject("webauthnBridge", self.webauthn_bridge)
+            self.page().setWebChannel(self.channel)
+
             # Connect core WebEngine signals
             self.titleChanged.connect(self.title_updated)
             self.urlChanged.connect(self.url_updated)
             self.loadProgress.connect(self.load_progress_changed)
+            self.loadFinished.connect(self._on_load_finished)
             self.custom_page.new_tab_requested.connect(self.new_window_requested)
 
             # Configure high-performance Chromium settings
@@ -77,6 +245,21 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
             self.browser.setStyleSheet("background-color: #07090E; border: none; color: #F8FAFC; padding: 20px;")
             layout.addWidget(self.browser)
             self._current_url = QUrl("https://duckduckgo.com")
+
+    def _on_load_finished(self, ok: bool):
+        if ok and HAS_WEBENGINE:
+            # Inject QWebChannel initialization and WebAuthn interceptor
+            init_js = f"""
+            if (typeof QWebChannel !== 'undefined') {{
+                new QWebChannel(qt.webChannelTransport, function(channel) {{
+                    window.webauthnBridge = channel.objects.webauthnBridge;
+                    {WEBAUTHN_INJECTION_JS}
+                }});
+            }} else {{
+                {WEBAUTHN_INJECTION_JS}
+            }}
+            """
+            self.page().runJavaScript(init_js)
 
     def load_url(self, url: QUrl):
         if HAS_WEBENGINE:
@@ -98,26 +281,22 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
                             background-color: #07090E;
                             color: #F8FAFC;
                             font-family: 'Segoe UI', system-ui, sans-serif;
-                            padding: 40px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
                             margin: 0;
                         }}
                         .card {{
-                            background-color: #121826;
+                            background: rgba(16, 22, 34, 0.85);
                             border: 1px solid #1E2638;
-                            border-radius: 12px;
-                            padding: 24px;
-                            max-width: 760px;
-                            margin: 0 auto;
+                            border-radius: 16px;
+                            padding: 32px;
+                            max-width: 500px;
+                            text-align: center;
                         }}
-                        h2 {{
-                            color: #FFFFFF;
-                            margin-top: 0;
-                        }}
-                        .url-text {{
-                            color: #00FFAA;
-                            font-weight: bold;
-                            word-break: break-all;
-                        }}
+                        h2 {{ color: #00FFAA; margin: 0 0 12px 0; }}
+                        .url-text {{ color: #00D4FF; word-break: break-all; }}
                     </style>
                 </head>
                 <body>
@@ -126,9 +305,6 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
                         <h2>Navigating to <span class="url-text">{domain}</span></h2>
                         <p style="color: #94A3B8; font-size: 14px; margin-top: 8px; line-height: 1.6;">
                             Resource URL: <a href="{url_str}" style="color: #00D4FF;">{url_str}</a>
-                        </p>
-                        <p style="color: #64748B; font-size: 12.5px; margin-top: 16px; border-top: 1px solid #1E2638; padding-top: 14px;">
-                            💡 <b>Note:</b> In the final ISO image, <code style="color: #00FFAA;">python-pyqt6-webengine</code> delivers native Chromium/Blink hardware-accelerated rendering for all websites.
                         </p>
                     </div>
                 </body>
@@ -145,7 +321,6 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
         return self._current_url
 
     def extract_page_text(self, callback: Callable[[str], None]):
-        """Extracts visible, readable text from the current DOM for THAID AI summarization."""
         if not HAS_WEBENGINE:
             callback(self.browser.toPlainText() if hasattr(self, "browser") else "")
             return
@@ -154,13 +329,12 @@ class TheonixWebView(QWebEngineView if HAS_WEBENGINE else QWidget):
         (function() {
             let article = document.querySelector('article') || document.querySelector('main') || document.body;
             let text = article ? article.innerText : document.body.innerText;
-            return text.substring(0, 8000); // return up to 8k chars for AI
+            return text.substring(0, 8000);
         })();
         """
         self.page().runJavaScript(js_script, callback)
 
     def extract_selected_text(self, callback: Callable[[str], None]):
-        """Extracts user selected text on the web page."""
         if not HAS_WEBENGINE:
             callback("")
             return
