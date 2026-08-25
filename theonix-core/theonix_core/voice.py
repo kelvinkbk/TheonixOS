@@ -151,11 +151,72 @@ class VoiceEngine:
             pass
 
     def _background_listener_loop(self):
-        """Monitors audio input for voice activity and trigger phrases."""
+        """Monitors audio input for voice activity and wake word phrases."""
+        import wave
+        import re
+
         while not self._stop_event.is_set():
-            # In a real environment with whisper-cpp / VAD:
-            # Polls audio input stream in short 2.5-second chunks
-            time.sleep(1.0)
+            if not self.config.get("wake_word_enabled", True):
+                time.sleep(2.0)
+                continue
+
+            chunk_raw = "/tmp/thaid_wake_chunk.raw"
+            chunk_wav = "/tmp/thaid_wake_chunk.wav"
+
+            try:
+                # Continuous low-overhead 2-second audio capture
+                rec_cmd = ["pw-record", "--rate", "16000", "--channels", "1", "--format", "s16", chunk_raw]
+                if not os.path.exists("/usr/bin/pw-record"):
+                    rec_cmd = ["arecord", "-f", "S16_LE", "-c", "1", "-r", "16000", "-q", "-t", "raw", chunk_raw]
+
+                p = subprocess.Popen(rec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                time.sleep(2.0)
+                p.terminate()
+                try:
+                    p.wait(timeout=0.5)
+                except Exception:
+                    p.kill()
+
+                if not os.path.exists(chunk_raw) or os.path.getsize(chunk_raw) < 16000:
+                    continue
+
+                # Encapsulate into valid WAV
+                with open(chunk_raw, 'rb') as f_in:
+                    raw_bytes = f_in.read()
+                with wave.open(chunk_wav, 'wb') as f_out:
+                    f_out.setnchannels(1)
+                    f_out.setsampwidth(2)
+                    f_out.setframerate(16000)
+                    f_out.writeframes(raw_bytes)
+
+                # Fast keyword check with base whisper
+                model_path = "/usr/share/theonix/models/whisper/ggml-base.bin"
+                if not os.path.exists(model_path):
+                    model_path = os.path.expanduser("~/.local/share/theonix/models/whisper/ggml-base.bin")
+
+                res = subprocess.run([
+                    "whisper-cli",
+                    "--model", model_path,
+                    "--language", "en",
+                    "--no-prints",
+                    "--output-txt",
+                    "-f", chunk_wav
+                ], capture_output=True, text=True, timeout=3.0)
+
+                txt_file = f"{chunk_wav}.txt"
+                if os.path.exists(txt_file):
+                    with open(txt_file, "r") as f:
+                        text = f.read().lower()
+                    os.remove(txt_file)
+
+                    text = re.sub(r'\[.*?\]|\(.*?\)', '', text).strip()
+                    wake_phrases = ["hey theonix", "hey thaid", "theonix", "thaid", "hey computer", "wake up"]
+                    if any(w in text for w in wake_phrases):
+                        print(f"[VoiceEngine] Wake phrase detected: '{text}'!")
+                        self.trigger_wake_event()
+                        time.sleep(4.0)  # Debounce after wake
+            except Exception as e:
+                time.sleep(1.0)
 
     def record_query(self, output_wav: str = "/tmp/thaid_query.wav", duration_seconds: float = 5.0) -> bool:
         """Records voice query from microphone at 16kHz mono."""
