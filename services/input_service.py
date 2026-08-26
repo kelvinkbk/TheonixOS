@@ -162,7 +162,30 @@ class InputService(QObject):
             except Exception as e:
                 print(f"[InputService] KWin D-Bus enable error: {e}")
 
-            # 3. Resync settings to KWin
+            # 3. Ensure Wi-Fi PCIe controller stays awake and connected
+            for p in glob.glob("/sys/bus/pci/devices/*/power/control"):
+                try:
+                    with open(p, "w") as f:
+                        f.write("on")
+                except Exception:
+                    pass
+
+            for p in glob.glob("/sys/bus/pci/devices/*/power/wakeup"):
+                try:
+                    with open(p, "w") as f:
+                        f.write("enabled")
+                except Exception:
+                    pass
+
+            # 4. Check Wi-Fi state and trigger connection if dropped
+            try:
+                nm_res = subprocess.run(["nmcli", "radio", "wifi"], capture_output=True, text=True, timeout=1)
+                if "enabled" not in nm_res.stdout.lower():
+                    subprocess.run(["nmcli", "radio", "wifi", "on"], stdout=subprocess.DEVNULL, timeout=2)
+            except Exception:
+                pass
+
+            # 5. Resync settings to KWin
             self._sync_to_system()
             return True
         except Exception as e:
