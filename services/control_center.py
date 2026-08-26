@@ -532,7 +532,7 @@ class ControlCenterWindow(QWidget):
         u_title = QLabel(f"{greeting}, {user_name}")
         u_title.setFont(QFont("Inter", 13, QFont.Weight.Bold))
         u_sub = QLabel("Theonix OS // Linux 6.x-arch")
-        u_sub.setFont(QFont("Inter", 9.5))
+        u_sub.setFont(QFont("Inter", 10))
         u_sub.setStyleSheet("color: #94A3B8;")
         u_box.addWidget(u_title)
         u_box.addWidget(u_sub)
@@ -639,7 +639,7 @@ class ControlCenterWindow(QWidget):
         self.v_btn.clicked.connect(self._toggle_mute)
         
         self.v_lbl = QLabel(f"Volume {get_audio_volume()}%")
-        self.v_lbl.setFont(QFont("Inter", 10.5, QFont.Weight.Bold))
+        self.v_lbl.setFont(QFont("Inter", 11, QFont.Weight.Bold))
 
         self.dev_combo = QComboBox()
         self.dev_combo.addItems(["Theonix Speakers", "Headphones (3.5mm)", "HDMI Output", "Bluetooth Audio"])
@@ -661,7 +661,7 @@ class ControlCenterWindow(QWidget):
         b_top = QHBoxLayout()
         b_icon = QLabel("☀️")
         self.b_lbl = QLabel(f"Brightness {get_screen_brightness()}%")
-        self.b_lbl.setFont(QFont("Inter", 10.5, QFont.Weight.Bold))
+        self.b_lbl.setFont(QFont("Inter", 11, QFont.Weight.Bold))
         disp_tag = QLabel("Display 1 • 1920×1080 @ 144Hz")
         disp_tag.setStyleSheet("color: #64748B; font-size: 9.5px; font-family: 'JetBrains Mono';")
 
