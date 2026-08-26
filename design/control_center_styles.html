@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theonix OS — Control Center Design Showroom</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <title>Theonix OS — Control Center Design Showroom (7 Styles)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-void: #050814;
             --glass-card: rgba(16, 22, 34, 0.75);
-            --glass-card-hover: rgba(25, 34, 52, 0.85);
             --glass-border: rgba(255, 255, 255, 0.08);
             --neon-cyan: #00FFAA;
             --electric-blue: #38BDF8;
             --cyber-purple: #A855F7;
+            --solar-amber: #F59E0B;
             --danger-red: #EF4444;
             --text-primary: #FFFFFF;
             --text-secondary: #94A3B8;
@@ -39,16 +39,16 @@
 
         header {
             text-align: center;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
 
         header h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 800;
             background: linear-gradient(135deg, #00FFAA, #38BDF8, #A855F7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             letter-spacing: -0.5px;
         }
 
@@ -59,30 +59,38 @@
 
         .tab-switcher {
             display: flex;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
             padding: 6px;
-            border-radius: 14px;
+            border-radius: 16px;
             border: 1px solid var(--glass-border);
-            margin-bottom: 35px;
+            margin-bottom: 30px;
+            max-width: 1100px;
         }
 
         .tab-btn {
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            padding: 10px 20px;
-            font-size: 13.5px;
+            padding: 8px 16px;
+            font-size: 13px;
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .tab-btn.active {
             background: var(--neon-cyan);
             color: #050814;
-            box-shadow: 0 0 20px rgba(0, 255, 170, 0.35);
+            box-shadow: 0 0 18px rgba(0, 255, 170, 0.35);
         }
 
         .showcase-area {
@@ -91,7 +99,7 @@
             display: flex;
             justify-content: center;
             position: relative;
-            min-height: 640px;
+            min-height: 600px;
         }
 
         .style-view {
@@ -111,28 +119,22 @@
         }
 
         /* ---------------------------------------------------- */
-        /* STYLE 1: macOS / iOS Sleek Capsule Glass             */
+        /* STYLE 1: macOS / iOS Sleek Capsule                   */
         /* ---------------------------------------------------- */
         .style-apple {
             width: 360px;
-            background: rgba(15, 20, 32, 0.7);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            background: rgba(15, 20, 32, 0.75);
+            backdrop-filter: blur(40px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 26px;
             padding: 18px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             gap: 14px;
         }
 
-        .apple-top-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
+        .apple-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .apple-tile-card {
             background: rgba(255, 255, 255, 0.06);
             border-radius: 18px;
@@ -142,105 +144,31 @@
             flex-direction: column;
             gap: 10px;
         }
-
-        .apple-toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-
+        .apple-toggle-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .apple-icon-circle {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
+            width: 34px; height: 34px; border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
         }
-
         .apple-toggle-row.active .apple-icon-circle {
-            background: var(--electric-blue);
-            color: #050814;
+            background: var(--electric-blue); color: #050814;
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
         }
-
-        .apple-toggle-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .apple-toggle-text .title {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .apple-toggle-text .sub {
-            font-size: 10.5px;
-            color: var(--text-secondary);
-        }
-
-        .apple-slider-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            height: 140px;
-        }
-
+        .apple-slider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 130px; }
         .apple-vert-slider {
             background: rgba(255, 255, 255, 0.06);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
             padding: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            position: relative; overflow: hidden; cursor: pointer;
         }
-
-        .apple-slider-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.18);
-            border-radius: 0 0 20px 20px;
-            z-index: 1;
-        }
-
-        .apple-vert-slider.bright .apple-slider-fill {
-            height: 70%;
-            background: linear-gradient(to top, rgba(0, 255, 170, 0.35), rgba(0, 255, 170, 0.15));
-        }
-
-        .apple-vert-slider.volume .apple-slider-fill {
-            height: 85%;
-            background: linear-gradient(to top, rgba(56, 189, 248, 0.35), rgba(56, 189, 248, 0.15));
-        }
-
-        .apple-vert-slider span, .apple-vert-slider svg {
-            position: relative;
-            z-index: 2;
-        }
-
-        .apple-media-card {
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 18px;
-            padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .apple-slider-fill { position: absolute; bottom: 0; left: 0; right: 0; z-index: 1; border-radius: 0 0 20px 20px; }
+        .apple-vert-slider.bright .apple-slider-fill { height: 70%; background: linear-gradient(to top, rgba(0, 255, 170, 0.35), rgba(0, 255, 170, 0.15)); }
+        .apple-vert-slider.volume .apple-slider-fill { height: 85%; background: linear-gradient(to top, rgba(56, 189, 248, 0.35), rgba(56, 189, 248, 0.15)); }
+        .apple-vert-slider span { position: relative; z-index: 2; }
 
         /* ---------------------------------------------------- */
-        /* STYLE 2: Cyber-Obsidian Bottom-Right Taskbar Flyout  */
+        /* STYLE 2: Cyber Bottom-Right Tray                     */
         /* ---------------------------------------------------- */
         .style-tray {
             width: 380px;
@@ -248,422 +176,348 @@
             border: 1px solid var(--neon-cyan);
             border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 0 35px rgba(0, 255, 170, 0.15), 0 20px 60px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 35px rgba(0, 255, 170, 0.15);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
         }
-
-        .tray-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 12px;
-        }
-
-        .tray-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
+        .tray-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .tray-tile {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 14px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 14px; padding: 12px 8px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
         }
-
-        .tray-tile.active {
-            background: rgba(0, 255, 170, 0.15);
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 15px rgba(0, 255, 170, 0.2);
-        }
-
-        .tray-tile .icon { font-size: 20px; }
-        .tray-tile .label { font-size: 11px; font-weight: 600; }
-
+        .tray-tile.active { background: rgba(0, 255, 170, 0.15); border-color: var(--neon-cyan); }
         .tray-slider-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 10px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 10px 14px;
         }
-
-        .tray-slider-bar {
-            flex: 1;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            position: relative;
-        }
-
-        .tray-slider-prog {
-            height: 100%;
-            background: var(--neon-cyan);
-            border-radius: 3px;
-            position: relative;
-        }
-
-        .tray-slider-prog::after {
-            content: '';
-            position: absolute;
-            right: -5px;
-            top: -4px;
-            width: 14px;
-            height: 14px;
-            background: #FFFFFF;
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-cyan);
+        .slider-bar { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; position: relative; }
+        .slider-prog { height: 100%; border-radius: 3px; position: relative; }
+        .slider-prog::after {
+            content: ''; position: absolute; right: -5px; top: -4px; width: 14px; height: 14px;
+            background: #FFF; border-radius: 50%;
         }
 
         /* ---------------------------------------------------- */
-        /* STYLE 3: Full-Height Futuristic Cyber Side Panel     */
+        /* STYLE 3: Blade Runner Cyber Side Panel               */
         /* ---------------------------------------------------- */
         .style-blade {
             width: 420px;
-            background: linear-gradient(180deg, rgba(8, 12, 22, 0.95) 0%, rgba(4, 7, 14, 0.98) 100%);
+            background: linear-gradient(180deg, rgba(8, 12, 22, 0.96) 0%, rgba(4, 7, 14, 0.98) 100%);
             border-left: 2px solid var(--cyber-purple);
             border-radius: 24px 0 0 24px;
             padding: 24px;
-            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8);
+            display: flex; flex-direction: column; gap: 18px;
         }
-
-        .blade-gauge-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
+        .blade-gauge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .blade-gauge-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 10px;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 10px; text-align: center;
         }
-
-        .blade-gauge-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--neon-cyan);
-        }
-
-        .blade-gauge-lbl {
-            font-size: 10px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-        }
-
-        .blade-tile-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        .blade-gauge-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--neon-cyan); }
         .blade-tile-row {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
             cursor: pointer;
+        }
+        .blade-tile-row.active { background: rgba(168, 85, 247, 0.15); border-color: var(--cyber-purple); }
+
+        /* ---------------------------------------------------- */
+        /* STYLE 4: Dynamic Island HUD (Top-Center Expand)      */
+        /* ---------------------------------------------------- */
+        .style-island {
+            width: 480px;
+            background: rgba(10, 14, 24, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.2);
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .island-capsule-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 8px 14px;
+        }
+        .island-chip-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+        }
+        .island-chip {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            cursor: pointer; font-size: 11px; font-weight: 600;
+        }
+        .island-chip.active {
+            background: rgba(56, 189, 248, 0.2); border-color: var(--electric-blue); color: #FFF;
+        }
+
+        /* ---------------------------------------------------- */
+        /* STYLE 5: VisionOS Spatial Frosted Glass (Layered)    */
+        /* ---------------------------------------------------- */
+        .style-vision {
+            width: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(50px) saturate(200%);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-radius: 32px;
+            padding: 22px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .vision-floating-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 14px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .vision-circle-btn {
+            width: 46px; height: 46px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
             transition: all 0.2s;
         }
-
-        .blade-tile-row.active {
-            background: rgba(168, 85, 247, 0.15);
-            border-color: var(--cyber-purple);
+        .vision-circle-btn.active {
+            background: #FFFFFF; color: #000; box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
         }
 
-        .blade-pill {
-            background: rgba(168, 85, 247, 0.2);
-            color: #C084FC;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 10.5px;
-            font-weight: 600;
+        /* ---------------------------------------------------- */
+        /* STYLE 6: Bento Grid Studio (Modern Linear SaaS)      */
+        /* ---------------------------------------------------- */
+        .style-bento {
+            width: 460px;
+            background: #0B0E17;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        .bento-grid-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 12px;
+        }
+        .bento-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 18px;
+            padding: 16px;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
 
-        .interactive-tag {
-            background: rgba(0, 255, 170, 0.1);
-            color: var(--neon-cyan);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 20px;
+        /* ---------------------------------------------------- */
+        /* STYLE 7: Sci-Fi Radial Arc Hub                       */
+        /* ---------------------------------------------------- */
+        .style-radial {
+            width: 440px;
+            background: radial-gradient(circle at 50% 50%, #151b2e 0%, #060911 100%);
+            border: 1.5px solid var(--neon-cyan);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 0 40px rgba(0, 255, 170, 0.2);
+            display: flex; flex-direction: column; align-items: center; gap: 16px;
+        }
+        .radial-center-orb {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: radial-gradient(circle, #00FFAA 0%, #00E5FF 50%, #0B0E17 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; box-shadow: 0 0 30px #00FFAA; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Theonix OS — Unified Control Center Showroom</h1>
-        <p>Click the style tabs below to preview and test each interactive layout</p>
+        <h1>Theonix OS — Control Center Style Showroom</h1>
+        <p>Explore 7 distinct interactive UX/UI paradigms. Click tabs to preview and test controls.</p>
     </header>
 
     <div class="tab-switcher">
-        <button class="tab-btn active" onclick="switchStyle('apple')">1. macOS / iOS Sleek Capsule</button>
-        <button class="tab-btn" onclick="switchStyle('tray')">2. Cyber Bottom-Right Tray Flyout</button>
-        <button class="tab-btn" onclick="switchStyle('blade')">3. Full-Height Cyber Side Panel</button>
+        <button class="tab-btn active" onclick="switchStyle('apple')">1. macOS Capsule</button>
+        <button class="tab-btn" onclick="switchStyle('tray')">2. Bottom Tray Flyout</button>
+        <button class="tab-btn" onclick="switchStyle('blade')">3. Cyber Side Panel</button>
+        <button class="tab-btn" onclick="switchStyle('island')">4. Dynamic Island HUD</button>
+        <button class="tab-btn" onclick="switchStyle('vision')">5. VisionOS Spatial Glass</button>
+        <button class="tab-btn" onclick="switchStyle('bento')">6. Bento Grid Studio</button>
+        <button class="tab-btn" onclick="switchStyle('radial')">7. Sci-Fi Radial Hub</button>
     </div>
 
     <div class="showcase-area">
 
-        <!-- ======================================================== -->
-        <!-- STYLE 1: macOS / iOS Sleek Capsule Glass                 -->
-        <!-- ======================================================== -->
+        <!-- 1. macOS Capsule -->
         <div id="view-apple" class="style-view active">
             <div class="style-apple">
-                <!-- Top 2-Column Capsule Grid -->
                 <div class="apple-top-grid">
-                    <!-- Connectivity Group -->
                     <div class="apple-tile-card">
                         <div class="apple-toggle-row active" onclick="this.classList.toggle('active')">
                             <div class="apple-icon-circle">📶</div>
-                            <div class="apple-toggle-text">
-                                <span class="title">Wi-Fi</span>
-                                <span class="sub">JioFiber-5G</span>
-                            </div>
+                            <div><div style="font-size: 12px; font-weight: 600;">Wi-Fi</div><div style="font-size: 10px; color: var(--text-secondary);">JioFiber-5G</div></div>
                         </div>
                         <div class="apple-toggle-row active" onclick="this.classList.toggle('active')">
                             <div class="apple-icon-circle">🔵</div>
-                            <div class="apple-toggle-text">
-                                <span class="title">Bluetooth</span>
-                                <span class="sub">AirPods Pro</span>
-                            </div>
+                            <div><div style="font-size: 12px; font-weight: 600;">Bluetooth</div><div style="font-size: 10px; color: var(--text-secondary);">AirPods Pro</div></div>
                         </div>
                     </div>
-
-                    <!-- Mode Group -->
                     <div class="apple-tile-card">
                         <div class="apple-toggle-row" onclick="this.classList.toggle('active')">
                             <div class="apple-icon-circle">🌙</div>
-                            <div class="apple-toggle-text">
-                                <span class="title">Night Light</span>
-                                <span class="sub">Warm 4500K</span>
-                            </div>
+                            <div><div style="font-size: 12px; font-weight: 600;">Night Light</div><div style="font-size: 10px; color: var(--text-secondary);">Warm 4500K</div></div>
                         </div>
                         <div class="apple-toggle-row active" onclick="this.classList.toggle('active')">
                             <div class="apple-icon-circle">⚡</div>
-                            <div class="apple-toggle-text">
-                                <span class="title">Performance</span>
-                                <span class="sub">Performance</span>
-                            </div>
+                            <div><div style="font-size: 12px; font-weight: 600;">Performance</div><div style="font-size: 10px; color: var(--text-secondary);">Boost</div></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Vertical Pill Sliders -->
                 <div class="apple-slider-grid">
-                    <div class="apple-vert-slider bright">
-                        <div class="apple-slider-fill"></div>
-                        <span style="font-size: 18px;">☀️</span>
-                        <span style="font-size: 11px; font-weight: 700;">70%</span>
-                    </div>
-                    <div class="apple-vert-slider volume">
-                        <div class="apple-slider-fill"></div>
-                        <span style="font-size: 18px;">🔊</span>
-                        <span style="font-size: 11px; font-weight: 700;">85%</span>
-                    </div>
+                    <div class="apple-vert-slider bright"><div class="apple-slider-fill"></div><span>☀️</span><span style="font-weight: 700; font-size: 11px;">70%</span></div>
+                    <div class="apple-vert-slider volume"><div class="apple-slider-fill"></div><span>🔊</span><span style="font-weight: 700; font-size: 11px;">85%</span></div>
                 </div>
-
-                <!-- Compact Now Playing -->
-                <div class="apple-media-card">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 22px;">🎵</span>
-                        <div>
-                            <div style="font-size: 12px; font-weight: 700;">Starboy</div>
-                            <div style="font-size: 10.5px; color: var(--text-secondary);">The Weeknd · Spotify</div>
-                        </div>
-                    </div>
-                    <button style="background: rgba(255,255,255,0.15); border: none; color: #FFF; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">⏸</button>
-                </div>
-
-                <!-- Status Pill -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 6px;">
-                    <span style="color: var(--neon-cyan); font-size: 11px; font-weight: 700;">🟢 Local AI · Active</span>
-                    <span style="color: var(--electric-blue); font-size: 11px; font-weight: 600;">🔋 56% Charging</span>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 0 4px;">
+                    <span style="color: var(--neon-cyan); font-weight: 700;">🟢 Local AI Active</span>
+                    <span style="color: var(--electric-blue); font-weight: 600;">🔋 56% Charging</span>
                 </div>
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- STYLE 2: Cyber Bottom-Right Tray Flyout                  -->
-        <!-- ======================================================== -->
+        <!-- 2. Bottom Tray Flyout -->
         <div id="view-tray" class="style-view">
             <div class="style-tray">
-                <div class="tray-header">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">👤</span>
-                        <span style="font-size: 13px; font-weight: 700;">kelvin</span>
-                    </div>
-                    <span style="color: var(--neon-cyan); font-size: 11px; font-weight: 700; background: rgba(0,255,170,0.1); padding: 3px 8px; border-radius: 6px;">🔋 56%</span>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+                    <span style="font-weight: 700; font-size: 13px;">👤 kelvin</span>
+                    <span style="color: var(--neon-cyan); font-size: 11px; font-weight: 700;">🔋 56%</span>
                 </div>
-
-                <!-- 3x2 Quick Tile Grid -->
                 <div class="tray-grid">
-                    <div class="tray-tile active" onclick="this.classList.toggle('active')">
-                        <span class="icon">📶</span>
-                        <span class="label">Wi-Fi</span>
-                    </div>
-                    <div class="tray-tile active" onclick="this.classList.toggle('active')">
-                        <span class="icon">🔵</span>
-                        <span class="label">Bluetooth</span>
-                    </div>
-                    <div class="tray-tile" onclick="this.classList.toggle('active')">
-                        <span class="icon">🛡️</span>
-                        <span class="label">VPN</span>
-                    </div>
-                    <div class="tray-tile active" onclick="this.classList.toggle('active')">
-                        <span class="icon">🌙</span>
-                        <span class="label">Night Light</span>
-                    </div>
-                    <div class="tray-tile active" onclick="this.classList.toggle('active')">
-                        <span class="icon">⚡</span>
-                        <span class="label">Boost</span>
-                    </div>
-                    <div class="tray-tile active" onclick="this.classList.toggle('active')">
-                        <span class="icon">🤖</span>
-                        <span class="label">THAID</span>
-                    </div>
+                    <div class="tray-tile active" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">📶</span><span style="font-size: 11px; font-weight: 600;">Wi-Fi</span></div>
+                    <div class="tray-tile active" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">🔵</span><span style="font-size: 11px; font-weight: 600;">Bluetooth</span></div>
+                    <div class="tray-tile" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">🛡️</span><span style="font-size: 11px; font-weight: 600;">VPN</span></div>
+                    <div class="tray-tile active" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">🌙</span><span style="font-size: 11px; font-weight: 600;">Night Light</span></div>
+                    <div class="tray-tile active" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">⚡</span><span style="font-size: 11px; font-weight: 600;">Boost</span></div>
+                    <div class="tray-tile active" onclick="this.classList.toggle('active')"><span style="font-size: 20px;">🤖</span><span style="font-size: 11px; font-weight: 600;">THAID</span></div>
                 </div>
-
-                <!-- Horizontal Sliders -->
                 <div class="tray-slider-row">
-                    <span style="font-size: 14px;">☀️</span>
-                    <div class="tray-slider-bar">
-                        <div class="tray-slider-prog" style="width: 65%;"></div>
-                    </div>
-                    <span style="font-size: 11px; color: var(--text-secondary); width: 30px;">65%</span>
+                    <span>☀️</span><div class="slider-bar"><div class="slider-prog" style="width: 70%; background: var(--neon-cyan);"></div></div><span style="font-size: 11px; color: var(--text-secondary);">70%</span>
                 </div>
-
                 <div class="tray-slider-row">
-                    <span style="font-size: 14px;">🔊</span>
-                    <div class="tray-slider-bar">
-                        <div class="tray-slider-prog" style="width: 80%;"></div>
-                    </div>
-                    <span style="font-size: 11px; color: var(--text-secondary); width: 30px;">80%</span>
-                </div>
-
-                <!-- Footer Quick Buttons -->
-                <div style="display: flex; gap: 8px; margin-top: 4px;">
-                    <button style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #FFF; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">⚙️ Settings</button>
-                    <button style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #FFF; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">🔒 Lock</button>
-                    <button style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #F87171; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">⏻</button>
+                    <span>🔊</span><div class="slider-bar"><div class="slider-prog" style="width: 85%; background: var(--electric-blue);"></div></div><span style="font-size: 11px; color: var(--text-secondary);">85%</span>
                 </div>
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- STYLE 3: Full-Height Futuristic Cyber Side Panel         -->
-        <!-- ======================================================== -->
+        <!-- 3. Blade Runner Side Panel -->
         <div id="view-blade" class="style-view">
             <div class="style-blade">
-                <!-- Header with Telemetry -->
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 18px; font-weight: 800; color: #FFF;">THEONIX CONTROL</div>
-                        <div style="font-size: 11px; color: var(--cyber-purple); font-weight: 600;">SYS-ARCH // KERNEL 6.X</div>
-                    </div>
-                    <span class="blade-pill">🟢 OFFLINE LOCAL AI</span>
+                    <div><div style="font-size: 17px; font-weight: 800;">THEONIX CONTROL</div><div style="font-size: 10.5px; color: var(--cyber-purple); font-weight: 600;">SYS-ARCH // KERNEL 6.X</div></div>
+                    <span style="background: rgba(168,85,247,0.2); color: #C084FC; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">🟢 LOCAL AI</span>
                 </div>
-
-                <!-- Live Hardware Telemetry Gauges -->
                 <div class="blade-gauge-grid">
-                    <div class="blade-gauge-box">
-                        <div class="blade-gauge-val">18%</div>
-                        <div class="blade-gauge-lbl">CPU</div>
+                    <div class="blade-gauge-box"><div class="blade-gauge-val">18%</div><div style="font-size: 9.5px; color: var(--text-secondary);">CPU</div></div>
+                    <div class="blade-gauge-box"><div class="blade-gauge-val">4.2G</div><div style="font-size: 9.5px; color: var(--text-secondary);">RAM</div></div>
+                    <div class="blade-gauge-box"><div class="blade-gauge-val">48°C</div><div style="font-size: 9.5px; color: var(--text-secondary);">TEMP</div></div>
+                    <div class="blade-gauge-box"><div class="blade-gauge-val">56%</div><div style="font-size: 9.5px; color: var(--text-secondary);">BAT</div></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')"><span>📶 Wi-Fi (JioFiber-5G)</span><span style="color: var(--neon-cyan); font-weight: 700; font-size: 11px;">ACTIVE</span></div>
+                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')"><span>🔵 Bluetooth</span><span style="color: var(--neon-cyan); font-weight: 700; font-size: 11px;">ON</span></div>
+                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')"><span>⚡ Performance Engine</span><span style="color: var(--cyber-purple); font-weight: 700; font-size: 11px;">MAX BOOST</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Dynamic Island HUD -->
+        <div id="view-island" class="style-view">
+            <div class="style-island">
+                <div class="island-capsule-row">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🤖</span>
+                        <div><div style="font-size: 13px; font-weight: 700;">THAID Core Island</div><div style="font-size: 10.5px; color: var(--neon-cyan);">Ready · Zero Telemetry</div></div>
                     </div>
-                    <div class="blade-gauge-box">
-                        <div class="blade-gauge-val">4.2G</div>
-                        <div class="blade-gauge-lbl">RAM</div>
+                    <span style="color: var(--electric-blue); font-size: 11.5px; font-weight: 700;">🔋 56%</span>
+                </div>
+                <div class="island-chip-grid">
+                    <div class="island-chip active" onclick="this.classList.toggle('active')"><span>📶</span><span>Wi-Fi</span></div>
+                    <div class="island-chip active" onclick="this.classList.toggle('active')"><span>🔵</span><span>Bluetooth</span></div>
+                    <div class="island-chip" onclick="this.classList.toggle('active')"><span>🛡️</span><span>VPN</span></div>
+                    <div class="island-chip active" onclick="this.classList.toggle('active')"><span>🌙</span><span>Night</span></div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span style="font-size: 16px;">☀️</span>
+                    <div class="slider-bar"><div class="slider-prog" style="width: 70%; background: var(--electric-blue);"></div></div>
+                    <span style="font-size: 16px;">🔊</span>
+                    <div class="slider-bar"><div class="slider-prog" style="width: 85%; background: var(--neon-cyan);"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. VisionOS Spatial Glass -->
+        <div id="view-vision" class="style-view">
+            <div class="style-vision">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 12px;">
+                        <div class="vision-circle-btn active" onclick="this.classList.toggle('active')">📶</div>
+                        <div class="vision-circle-btn active" onclick="this.classList.toggle('active')">🔵</div>
+                        <div class="vision-circle-btn" onclick="this.classList.toggle('active')">🌙</div>
                     </div>
-                    <div class="blade-gauge-box">
-                        <div class="blade-gauge-val">48°C</div>
-                        <div class="blade-gauge-lbl">TEMP</div>
+                    <div style="font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px;">🔋 56%</div>
+                </div>
+                <div class="vision-floating-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 600;">
+                        <span>Audio & Brightness</span>
+                        <span style="color: var(--neon-cyan);">Spatial Audio</span>
                     </div>
-                    <div class="blade-gauge-box">
-                        <div class="blade-gauge-val">56%</div>
-                        <div class="blade-gauge-lbl">BAT</div>
+                    <div class="slider-bar" style="margin-bottom: 12px;"><div class="slider-prog" style="width: 80%; background: #FFF;"></div></div>
+                    <div class="slider-bar"><div class="slider-prog" style="width: 65%; background: rgba(255,255,255,0.7);"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Bento Grid Studio -->
+        <div id="view-bento" class="style-view">
+            <div class="style-bento">
+                <div class="bento-grid-layout">
+                    <div class="bento-box" style="background: rgba(0, 255, 170, 0.08); border-color: rgba(0,255,170,0.3);">
+                        <div style="display: flex; justify-content: space-between;"><span style="font-size: 20px;">📶</span><span style="color: var(--neon-cyan); font-weight: 700; font-size: 11px;">CONNECTED</span></div>
+                        <div style="margin-top: 18px;"><div style="font-size: 14px; font-weight: 700;">JioFiber-5G</div><div style="font-size: 11px; color: var(--text-secondary);">184 Mbps · Ultra Fast</div></div>
+                    </div>
+                    <div class="bento-box">
+                        <div style="display: flex; justify-content: space-between;"><span style="font-size: 20px;">🔋</span><span style="color: var(--electric-blue); font-weight: 700; font-size: 11px;">56%</span></div>
+                        <div style="margin-top: 18px;"><div style="font-size: 14px; font-weight: 700;">Fast Charging</div><div style="font-size: 11px; color: var(--text-secondary);">42m to full</div></div>
                     </div>
                 </div>
-
-                <!-- Quick Action List -->
-                <div class="blade-tile-list">
-                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span>📶</span>
-                            <span style="font-size: 12.5px; font-weight: 600;">Wi-Fi Network</span>
-                        </div>
-                        <span style="font-size: 11px; color: var(--neon-cyan); font-weight: 600;">JioFiber-5G</span>
+                <div class="bento-box" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 22px;">🤖</span>
+                        <div><div style="font-size: 13px; font-weight: 700;">THAID Neural Engine</div><div style="font-size: 11px; color: var(--text-secondary);">Llama-3 8B Loaded</div></div>
                     </div>
-
-                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span>🔵</span>
-                            <span style="font-size: 12.5px; font-weight: 600;">Bluetooth</span>
-                        </div>
-                        <span style="font-size: 11px; color: var(--neon-cyan); font-weight: 600;">Active</span>
-                    </div>
-
-                    <div class="blade-tile-row" onclick="this.classList.toggle('active')">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span>🛡️</span>
-                            <span style="font-size: 12.5px; font-weight: 600;">Secure WireGuard VPN</span>
-                        </div>
-                        <span style="font-size: 11px; color: var(--text-secondary);">Standby</span>
-                    </div>
-
-                    <div class="blade-tile-row active" onclick="this.classList.toggle('active')">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span>⚡</span>
-                            <span style="font-size: 12.5px; font-weight: 600;">Performance Engine</span>
-                        </div>
-                        <span class="blade-pill">MAX BOOST</span>
-                    </div>
+                    <span style="background: rgba(0,255,170,0.15); color: var(--neon-cyan); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px;">READY</span>
                 </div>
+            </div>
+        </div>
 
-                <!-- Sliders -->
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 5px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary);">
-                        <span>DISPLAY BRIGHTNESS</span>
-                        <span style="color: #FFF; font-weight: 700;">70%</span>
+        <!-- 7. Sci-Fi Radial Hub -->
+        <div id="view-radial" class="style-view">
+            <div class="style-radial">
+                <div style="font-size: 13px; font-weight: 800; letter-spacing: 1px; color: var(--neon-cyan);">THEONIX NEURAL HUB</div>
+                <div class="radial-center-orb">🤖</div>
+                <div style="font-size: 13px; font-weight: 700; color: #FFF;">THAID Core: Online</div>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <div style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; padding: 10px; text-align: center;">
+                        <div style="font-size: 16px;">📶</div>
+                        <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Wi-Fi ON</div>
                     </div>
-                    <div class="tray-slider-bar"><div class="tray-slider-prog" style="width: 70%; background: var(--cyber-purple);"></div></div>
-
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                        <span>AUDIO OUTPUT VOLUME</span>
-                        <span style="color: #FFF; font-weight: 700;">85%</span>
+                    <div style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; padding: 10px; text-align: center;">
+                        <div style="font-size: 16px;">⚡</div>
+                        <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">OVERCLOCK</div>
                     </div>
-                    <div class="tray-slider-bar"><div class="tray-slider-prog" style="width: 85%; background: var(--electric-blue);"></div></div>
-                </div>
-
-                <!-- Footer -->
-                <div style="margin-top: auto; display: flex; gap: 10px;">
-                    <button style="flex: 1; background: rgba(168,85,247,0.2); border: 1px solid var(--cyber-purple); color: #FFF; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">⚙️ System Settings</button>
-                    <button style="background: rgba(239,68,68,0.2); border: 1px solid #EF4444; color: #FFF; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">⏻</button>
+                    <div style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; padding: 10px; text-align: center;">
+                        <div style="font-size: 16px;">🔋</div>
+                        <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">56% CHG</div>
+                    </div>
                 </div>
             </div>
         </div>
