@@ -1485,6 +1485,24 @@ class TheonixSettingsWindow(QMainWindow):
         main_layout.addWidget(sidebar_box)
         main_layout.addWidget(self.stack)
 
+    def open_page(self, page_target):
+        """Navigate directly to a page by index or keyword/name."""
+        if isinstance(page_target, int) and 0 <= page_target < len(self.nav_items):
+            btn = self.btn_group.button(page_target)
+            if btn:
+                btn.setChecked(True)
+            self.stack.setCurrentIndex(page_target)
+            return
+
+        tgt = str(page_target).strip().lower()
+        for idx, (label, _, keywords) in enumerate(self.nav_items):
+            if tgt in label.lower() or any(tgt in kw for kw in keywords):
+                btn = self.btn_group.button(idx)
+                if btn:
+                    btn.setChecked(True)
+                self.stack.setCurrentIndex(idx)
+                return
+
     def _on_search_query(self, query: str):
         q = query.strip().lower()
         if not q:
@@ -1514,6 +1532,16 @@ def main():
     app = QApplication(sys.argv)
     apply_theonix_style(app)
     win = TheonixSettingsWindow()
+
+    # Handle --page <page_id> argument
+    for i, arg in enumerate(sys.argv[1:]):
+        if arg in ("--page", "-p") and i + 2 < len(sys.argv):
+            win.open_page(sys.argv[i + 2])
+            break
+        elif arg.startswith("--page="):
+            win.open_page(arg.split("=", 1)[1])
+            break
+
     win.show()
     sys.exit(app.exec())
 
