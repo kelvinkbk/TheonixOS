@@ -944,6 +944,70 @@ class InputClient:
         return False
 
 
+class ControlCenterClient:
+    """High-level client for the decoupled org.theonix.ControlCenter D-Bus service."""
+
+    @staticmethod
+    def toggle() -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.ControlCenter", "/org/theonix/ControlCenter", "", "Toggle"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
+    def show() -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.ControlCenter", "/org/theonix/ControlCenter", "", "Show"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
+    def hide() -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.ControlCenter", "/org/theonix/ControlCenter", "", "Hide"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
+    @staticmethod
+    def get_quick_settings() -> Dict[str, Any]:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.ControlCenter", "/org/theonix/ControlCenter", "", "GetQuickSettings"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return json.loads(str(reply.arguments()[0]))
+        except Exception:
+            pass
+        return {}
+
+
 
 
 

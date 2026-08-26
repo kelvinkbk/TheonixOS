@@ -29,7 +29,8 @@ from .services import (
     AuthClient,
     NotificationClient,
     SearchClient,
-    InputClient
+    InputClient,
+    ControlCenterClient
 )
 
 # 7-Pillar THAID Architecture
