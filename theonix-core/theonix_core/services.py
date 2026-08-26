@@ -700,6 +700,8 @@ class UpdateClient:
             pass
         return {"os_name": "Theonix OS", "os_version": "2.0.0", "status": "standalone"}
 
+    get_update_status = get_system_status
+
     @staticmethod
     def check_for_updates() -> Dict[str, Any]:
         try:
@@ -879,6 +881,8 @@ class SearchClient:
         except Exception:
             pass
         return []
+
+    search = query
 
     @staticmethod
     def toggle_overlay():
