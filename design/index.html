@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theonix OS — Control Center Interactive Design Showroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark wallpaper-1" data-accent="cyan" data-style="glass" data-grid="3">
+
+    <!-- Warm Overlay for Night Light -->
+    <div id="night-light-overlay" class="night-light-overlay"></div>
+
+    <!-- Main Application Window Wrapper -->
+    <div class="app-window" id="app-window">
+        
+        <!-- ============================================================== -->
+        <!-- LEFT SIDEBAR                                                   -->
+        <!-- ============================================================== -->
+        <aside class="sidebar" aria-label="Showroom Navigation">
+            <div class="sidebar-header">
+                <div class="logo-mark">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" stroke="var(--accent-primary)" stroke-width="2" fill="rgba(0, 255, 170, 0.1)"/>
+                        <circle cx="12" cy="12" r="3.5" fill="var(--accent-primary)"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>THEONIX</h2>
+                    <span>CONTROL CENTER SHOWROOM</span>
+                </div>
+            </div>
+
+            <nav class="nav-list" role="navigation">
+                <button class="nav-item active" data-section="overview">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Overview</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="toggles">
+                    <span class="nav-icon">🎛️</span>
+                    <span class="nav-label">Quick Toggles</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="audio">
+                    <span class="nav-icon">🔊</span>
+                    <span class="nav-label">Audio</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="network">
+                    <span class="nav-icon">📶</span>
+                    <span class="nav-label">Network</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="display">
+                    <span class="nav-icon">☀️</span>
+                    <span class="nav-label">Display</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="power">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-label">Power</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="media">
+                    <span class="nav-icon">🎵</span>
+                    <span class="nav-label">Media</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="thaid">
+                    <span class="nav-icon">🤖</span>
+                    <span class="nav-label">THAID AI</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item" data-section="notifications">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-label">Notifications</span>
+                    <span class="indicator"></span>
+                </button>
+                <button class="nav-item nav-highlight" data-section="customization">
+                    <span class="nav-icon">✨</span>
+                    <span class="nav-label">Customization</span>
+                    <span class="indicator"></span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="os-badge">
+                    <span class="badge-dot"></span>
+                    <span>Theonix OS 1.0 (Rolling)</span>
+                </div>
+                <div class="sys-time" id="sidebar-time">12:45 PM</div>
+            </div>
+        </aside>
+
+        <!-- ============================================================== -->
+        <!-- MAIN CONTENT AREA                                              -->
+        <!-- ============================================================== -->
+        <main class="main-content">
+
+            <!-- Top Action Header -->
+            <header class="content-header">
+                <div class="header-titles">
+                    <h1>Control Center</h1>
+                    <p>Interactive live preview & customization sandbox</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="btn-toggle-customizer">
+                        <span class="icon">🛠️</span>
+                        <span>Customize Layout</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-reset-default">
+                        <span class="icon">↺</span>
+                        <span>Reset Defaults</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-apply-config">
+                        <span class="icon">✓</span>
+                        <span>Apply to Theonix</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Showroom Body (Preview Left/Center + Customizer Panel Right) -->
+            <div class="showroom-stage">
+
+                <!-- 1. LIVE CONTROL CENTER CONTAINER -->
+                <div class="preview-column">
+                    <div class="desktop-mockup" id="desktop-mockup">
+                        <div class="mockup-header-bar">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                            <span class="mockup-title">Theonix Desktop Panel // Control Center Flyout</span>
+                        </div>
+
+                        <!-- THE REALISTIC CONTROL CENTER PANEL -->
+                        <div class="control-center-panel" id="control-center-panel" data-style="glass">
+                            
+                            <!-- Header Info -->
+                            <div class="cc-header">
+                                <div class="user-greeting">
+                                    <h3>Good afternoon, Kelvin</h3>
+                                    <p>Theonix OS // Linux 6.x-arch</p>
+                                </div>
+                                <div class="header-pill-group">
+                                    <div class="battery-pill" id="battery-status-pill">
+                                        <span class="bat-icon">🔋</span>
+                                        <span class="bat-text">88%</span>
+                                    </div>
+                                    <div class="lock-avatar" title="Lock Screen">
+                                        <span>👤</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Status Row -->
+                            <div class="cc-status-row">
+                                <span class="status-chip chip-ai" id="chip-ai-status">● THAID Ready</span>
+                                <span class="status-chip" id="chip-wifi-status">● Wi-Fi Connected</span>
+                                <span class="status-chip" id="chip-bt-status">● Bluetooth On</span>
+                            </div>
+
+                            <!-- Airplane Mode Warning Banner (Hidden by default) -->
+                            <div class="airplane-banner" id="airplane-banner" style="display: none;">
+                                <span>✈️ Airplane Mode is active. Wi-Fi and Bluetooth radios are disabled.</span>
+                            </div>
+
+                            <!-- QUICK TOGGLES GRID (Reorderable / Drag-and-Drop) -->
+                            <div class="quick-toggles-grid" id="quick-toggles-grid">
+                                
+                                <!-- Tile 1: Wi-Fi -->
+                                <div class="toggle-tile active" id="tile-wifi" draggable="true" data-id="wifi" data-size="medium">
+                                    <div class="tile-icon-circle">⌁</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Wi-Fi</span>
+                                        <span class="tile-status" id="wifi-status-text">Connected</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 2: Bluetooth -->
+                                <div class="toggle-tile active" id="tile-bluetooth" draggable="true" data-id="bluetooth" data-size="medium">
+                                    <div class="tile-icon-circle">ᛒ</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Bluetooth</span>
+                                        <span class="tile-status" id="bt-status-text">Connected</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 3: Airplane Mode -->
+                                <div class="toggle-tile" id="tile-airplane" draggable="true" data-id="airplane" data-size="medium">
+                                    <div class="tile-icon-circle">✈</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Airplane Mode</span>
+                                        <span class="tile-status" id="airplane-status-text">Off</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 4: Dark Mode -->
+                                <div class="toggle-tile active" id="tile-darkmode" draggable="true" data-id="darkmode" data-size="medium">
+                                    <div class="tile-icon-circle">◑</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Dark Mode</span>
+                                        <span class="tile-status" id="darkmode-status-text">Dark</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 5: Night Light -->
+                                <div class="toggle-tile" id="tile-nightlight" draggable="true" data-id="nightlight" data-size="medium">
+                                    <div class="tile-icon-circle">🌙</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Night Light</span>
+                                        <span class="tile-status" id="nightlight-status-text">Off</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 6: Do Not Disturb -->
+                                <div class="toggle-tile" id="tile-dnd" draggable="true" data-id="dnd" data-size="medium">
+                                    <div class="tile-icon-circle">🔕</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Do Not Disturb</span>
+                                        <span class="tile-status" id="dnd-status-text">Off</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 7: Battery Saver -->
+                                <div class="toggle-tile" id="tile-battery" draggable="true" data-id="battery" data-size="medium">
+                                    <div class="tile-icon-circle">🔋</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Battery Saver</span>
+                                        <span class="tile-status" id="battery-status-text">Off</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 8: Performance Mode -->
+                                <div class="toggle-tile active" id="tile-performance" draggable="true" data-id="performance" data-size="medium">
+                                    <div class="tile-icon-circle">⚡</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">Performance</span>
+                                        <span class="tile-status" id="perf-status-text">Balanced</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                                <!-- Tile 9: THAID Quick AI -->
+                                <div class="toggle-tile active ai-tile" id="tile-thaid" draggable="true" data-id="thaid" data-size="medium">
+                                    <div class="tile-icon-circle ai-pulse">🤖</div>
+                                    <div class="tile-info">
+                                        <span class="tile-title">THAID AI</span>
+                                        <span class="tile-status">Active Core</span>
+                                    </div>
+                                    <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+                                </div>
+
+                            </div>
+
+                            <!-- SLIDERS SECTION (Audio & Brightness) -->
+                            <div class="cc-sliders-card">
+                                <!-- Volume Slider -->
+                                <div class="slider-group">
+                                    <div class="slider-meta">
+                                        <div class="meta-left">
+                                            <button class="icon-btn-inline" id="btn-volume-mute" title="Toggle Mute">🔊</button>
+                                            <span class="slider-title" id="volume-label">Volume 72%</span>
+                                        </div>
+                                        <div class="device-select-wrap">
+                                            <select id="audio-device-select" aria-label="Audio Output Device">
+                                                <option value="speakers" selected>Theonix Speakers</option>
+                                                <option value="headphones">Headphones (3.5mm)</option>
+                                                <option value="hdmi">HDMI Output Audio</option>
+                                                <option value="bluetooth">Bluetooth AirPods Pro</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="custom-slider-track">
+                                        <input type="range" id="slider-volume" min="0" max="150" value="72" aria-label="Master Volume Slider">
+                                        <div class="slider-fill fill-cyan" id="volume-slider-fill" style="width: 48%;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Brightness Slider -->
+                                <div class="slider-group">
+                                    <div class="slider-meta">
+                                        <div class="meta-left">
+                                            <span class="icon-span">☀️</span>
+                                            <span class="slider-title" id="brightness-label">Brightness 80%</span>
+                                        </div>
+                                        <div class="display-info-tag">
+                                            <span>Display 1 • 1920×1080 @ 144Hz</span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-slider-track">
+                                        <input type="range" id="slider-brightness" min="0" max="100" value="80" aria-label="Display Brightness Slider">
+                                        <div class="slider-fill fill-amber" id="brightness-slider-fill" style="width: 80%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NETWORK CARD -->
+                            <div class="cc-network-card">
+                                <div class="net-header">
+                                    <div class="net-left">
+                                        <span class="net-icon">📶</span>
+                                        <div>
+                                            <div class="net-title">Wi-Fi Network</div>
+                                            <div class="net-ssid" id="active-ssid">Theonix-Home</div>
+                                        </div>
+                                    </div>
+                                    <span class="net-badge connected">Connected</span>
+                                </div>
+                                <div class="net-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Signal</span>
+                                        <span class="stat-val">████████░░ 82%</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">IP Address</span>
+                                        <span class="stat-val" id="active-ip">192.168.1.42</span>
+                                    </div>
+                                </div>
+                                <div class="net-actions">
+                                    <button class="btn btn-xs btn-outline-danger" id="btn-net-disconnect">Disconnect</button>
+                                    <button class="btn btn-xs btn-outline" id="btn-open-network-modal">Change Network</button>
+                                </div>
+                            </div>
+
+                            <!-- MEDIA PLAYER CARD -->
+                            <div class="cc-media-card">
+                                <div class="media-art-col">
+                                    <div class="album-art-vinyl">
+                                        <span>🎵</span>
+                                    </div>
+                                </div>
+                                <div class="media-content-col">
+                                    <div class="media-eyebrow">NOW PLAYING</div>
+                                    <div class="media-track-name" id="track-name">Theonix — Neural Dreams</div>
+                                    <div class="media-album-name">Album: Theonix Collection</div>
+                                    
+                                    <div class="media-progress-bar">
+                                        <div class="media-progress-fill" id="media-progress-fill"></div>
+                                    </div>
+
+                                    <div class="media-controls">
+                                        <button class="media-btn" id="btn-media-prev" title="Previous Track">⏮</button>
+                                        <button class="media-btn media-play-btn" id="btn-media-play" title="Play/Pause">⏸</button>
+                                        <button class="media-btn" id="btn-media-next" title="Next Track">⏭</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- THAID AI CARD -->
+                            <div class="cc-thaid-card">
+                                <div class="thaid-top">
+                                    <div class="thaid-branding">
+                                        <div class="thaid-orb-mini"></div>
+                                        <div>
+                                            <h4>THAID</h4>
+                                            <span class="thaid-status-text">● LOCAL AI READY</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-privacy">🔒 Offline</span>
+                                </div>
+
+                                <div class="thaid-specs-grid">
+                                    <div class="spec-cell">
+                                        <span class="spec-label">Model</span>
+                                        <span class="spec-val">Llama 3 8B</span>
+                                    </div>
+                                    <div class="spec-cell">
+                                        <span class="spec-label">Backend</span>
+                                        <span class="spec-val">THAID Local</span>
+                                    </div>
+                                    <div class="spec-cell">
+                                        <span class="spec-label">Privacy</span>
+                                        <span class="spec-val">100% Offline</span>
+                                    </div>
+                                </div>
+
+                                <div class="thaid-actions">
+                                    <button class="btn btn-sm btn-purple" id="btn-ask-thaid">
+                                        <span>✨ Ask THAID</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-purple" id="btn-thaid-assistant">
+                                        <span>Open Assistant</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline" id="btn-thaid-voice">
+                                        <span>🎙️ Voice Mode</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- NOTIFICATION CENTER -->
+                            <div class="cc-notifications-card">
+                                <div class="notif-header">
+                                    <div class="notif-title-row">
+                                        <span class="notif-bell">🔔</span>
+                                        <h5>Notifications</h5>
+                                        <span class="notif-count-pill" id="notif-count-pill">3</span>
+                                    </div>
+                                    <button class="btn-text-action" id="btn-clear-all-notifs">Clear All</button>
+                                </div>
+
+                                <div class="notif-list" id="notif-list">
+                                    <!-- Card 1 -->
+                                    <div class="notif-item" id="notif-1">
+                                        <div class="notif-icon-box cyan">🔄</div>
+                                        <div class="notif-body">
+                                            <div class="notif-title">System Update</div>
+                                            <div class="notif-desc">Theonix OS has 4 updates available.</div>
+                                        </div>
+                                        <button class="notif-dismiss-btn" data-target="notif-1" title="Dismiss">✕</button>
+                                    </div>
+
+                                    <!-- Card 2 -->
+                                    <div class="notif-item" id="notif-2">
+                                        <div class="notif-icon-box purple">🤖</div>
+                                        <div class="notif-body">
+                                            <div class="notif-title">THAID</div>
+                                            <div class="notif-desc">Task completed successfully.</div>
+                                        </div>
+                                        <button class="notif-dismiss-btn" data-target="notif-2" title="Dismiss">✕</button>
+                                    </div>
+
+                                    <!-- Card 3 -->
+                                    <div class="notif-item" id="notif-3">
+                                        <div class="notif-icon-box blue">📥</div>
+                                        <div class="notif-body">
+                                            <div class="notif-title">Download</div>
+                                            <div class="notif-desc">TheonixOS ISO verification completed.</div>
+                                        </div>
+                                        <button class="notif-dismiss-btn" data-target="notif-3" title="Dismiss">✕</button>
+                                    </div>
+                                </div>
+                                <div class="notif-empty-state" id="notif-empty" style="display: none;">
+                                    <span>✓ No new notifications</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. INTERACTIVE CUSTOMIZER / CONTROLS PANEL (Right Pane) -->
+                <div class="customizer-column" id="customizer-column">
+                    <div class="customizer-card">
+                        <div class="customizer-header">
+                            <h3>CUSTOMIZE CONTROL CENTER</h3>
+                            <p>Drag tiles to rearrange them. Click a tile to edit it.</p>
+                        </div>
+
+                        <!-- Accent Color Picker -->
+                        <div class="cust-group">
+                            <label class="cust-label">Primary Accent Color</label>
+                            <div class="color-palette-grid">
+                                <button class="color-swatch-btn active" data-color="cyan" style="background: #00FFAA;" title="Neon Cyan (#00FFAA)"></button>
+                                <button class="color-swatch-btn" data-color="blue" style="background: #00D4FF;" title="Electric Blue (#00D4FF)"></button>
+                                <button class="color-swatch-btn" data-color="purple" style="background: #A855F7;" title="Cyber Purple (#A855F7)"></button>
+                                <button class="color-swatch-btn" data-color="emerald" style="background: #10B981;" title="Emerald Green (#10B981)"></button>
+                            </div>
+                        </div>
+
+                        <!-- Tile Size Selector -->
+                        <div class="cust-group">
+                            <label class="cust-label">Selected Tile Size</label>
+                            <div class="segmented-control" id="tile-size-control">
+                                <button class="segment-btn" data-size="small">Small</button>
+                                <button class="segment-btn active" data-size="medium">Medium</button>
+                                <button class="segment-btn" data-size="large">Large</button>
+                            </div>
+                        </div>
+
+                        <!-- Grid Columns Selector -->
+                        <div class="cust-group">
+                            <label class="cust-label">Quick Toggle Grid Columns</label>
+                            <div class="segmented-control" id="grid-columns-control">
+                                <button class="segment-btn" data-cols="2">2 Columns</button>
+                                <button class="segment-btn active" data-cols="3">3 Columns</button>
+                                <button class="segment-btn" data-cols="4">4 Columns</button>
+                            </div>
+                        </div>
+
+                        <!-- Control Center Style Paradigm -->
+                        <div class="cust-group">
+                            <label class="cust-label">Panel Style</label>
+                            <div class="segmented-control" id="style-paradigm-control">
+                                <button class="segment-btn" data-style="compact">Compact</button>
+                                <button class="segment-btn active" data-style="glass">Glass</button>
+                                <button class="segment-btn" data-style="expanded">Expanded</button>
+                            </div>
+                        </div>
+
+                        <!-- Wallpaper Preset Preview -->
+                        <div class="cust-group">
+                            <label class="cust-label">Theonix Desktop Wallpaper</label>
+                            <div class="wallpaper-grid">
+                                <button class="wallpaper-thumb active wp-1" data-wp="1" title="Cyber Obsidian Dark"></button>
+                                <button class="wallpaper-thumb wp-2" data-wp="2" title="Neon Cyberpunk Aurora"></button>
+                                <button class="wallpaper-thumb wp-3" data-wp="3" title="Deep Indigo Void"></button>
+                                <button class="wallpaper-thumb wp-4" data-wp="4" title="Solaris High Contrast"></button>
+                                <button class="wallpaper-thumb wp-5" data-wp="5" title="Emerald Circuit Grid"></button>
+                                <button class="wallpaper-thumb wp-6" data-wp="6" title="Quantum Mesh Nebula"></button>
+                            </div>
+                        </div>
+
+                        <!-- Drag Order Tip -->
+                        <div class="drag-tip-box">
+                            <span class="tip-icon">💡</span>
+                            <span class="tip-text"><b>Tip:</b> Grab any tile's <code>⋮⋮</code> handle inside the live preview to reorder on the fly!</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODALS & DIALOGS                                               -->
+    <!-- ============================================================== -->
+
+    <!-- Network Selection Modal -->
+    <div class="modal-backdrop" id="network-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Select Wi-Fi Network</h3>
+                <button class="modal-close-btn" id="btn-close-net-modal">✕</button>
+            </div>
+            <div class="network-list">
+                <div class="net-row active" data-ssid="Theonix-Home" data-ip="192.168.1.42">
+                    <span class="net-row-icon">📶</span>
+                    <div class="net-row-meta">
+                        <strong>Theonix-Home</strong>
+                        <span>Connected • Signal 82%</span>
+                    </div>
+                    <span class="badge-active">Active</span>
+                </div>
+                <div class="net-row" data-ssid="Home-5G" data-ip="192.168.1.108">
+                    <span class="net-row-icon">📶</span>
+                    <div class="net-row-meta">
+                        <strong>Home-5G</strong>
+                        <span>Secure (WPA3) • Signal 98%</span>
+                    </div>
+                    <button class="btn btn-xs btn-outline">Connect</button>
+                </div>
+                <div class="net-row" data-ssid="Galaxy-Hotspot" data-ip="172.20.10.4">
+                    <span class="net-row-icon">📱</span>
+                    <div class="net-row-meta">
+                        <strong>Galaxy Hotspot</strong>
+                        <span>Personal Hotspot • Signal 64%</span>
+                    </div>
+                    <button class="btn btn-xs btn-outline">Connect</button>
+                </div>
+                <div class="net-row" data-ssid="Theonix-Guest" data-ip="10.0.0.15">
+                    <span class="net-row-icon">📶</span>
+                    <div class="net-row-meta">
+                        <strong>Guest Network</strong>
+                        <span>Open • Signal 45%</span>
+                    </div>
+                    <button class="btn btn-xs btn-outline">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THAID Interactive Dialog Modal -->
+    <div class="modal-backdrop" id="thaid-dialog-modal">
+        <div class="modal-card modal-card-thaid">
+            <div class="modal-header">
+                <div class="thaid-dialog-title">
+                    <div class="thaid-orb-small"></div>
+                    <div>
+                        <h3>THAID OS Assistant</h3>
+                        <span>Local Llama-3 8B • Offline Neural Core</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="btn-close-thaid-modal">✕</button>
+            </div>
+
+            <div class="thaid-chat-log" id="thaid-chat-log">
+                <div class="chat-bubble bot">
+                    <span>Good afternoon Kelvin! What would you like me to do?</span>
+                </div>
+            </div>
+
+            <form class="thaid-input-bar" id="thaid-input-form">
+                <input type="text" id="thaid-user-input" placeholder="Type a command (e.g. 'Turn on DND', 'Install Firefox', 'Check battery')..." autocomplete="off">
+                <button type="submit" class="btn btn-purple">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Apply Confirmation Toast / Modal -->
+    <div class="toast-notification" id="apply-toast">
+        <div class="toast-icon">✓</div>
+        <div class="toast-content">
+            <strong>Control Center Configuration Saved</strong>
+            <p>This layout is saved and ready to be compiled into Theonix OS!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
