@@ -7,6 +7,7 @@ hotkeys, and compositor gesture integration for Theonix OS.
 
 import sys
 import os
+import glob
 import json
 import subprocess
 import configparser
@@ -80,7 +81,7 @@ class InputService(QObject):
 
         # 1. Update kcminputrc
         try:
-            config = configparser.ConfigParser(interpolation=None)
+            config = configparser.ConfigParser(interpolation=None, strict=False)
             if os.path.exists(KCMINPUTRC_PATH):
                 config.read(KCMINPUTRC_PATH)
             
@@ -104,7 +105,7 @@ class InputService(QObject):
 
         # 2. Update kwinrc for Wayland precision gestures
         try:
-            config = configparser.ConfigParser(interpolation=None)
+            config = configparser.ConfigParser(interpolation=None, strict=False)
             if os.path.exists(KWINRC_PATH):
                 config.read(KWINRC_PATH)
             if "Touchpad" not in config:
@@ -123,6 +124,50 @@ class InputService(QObject):
             )
         except Exception as e:
             print(f"[InputService] kwinrc sync error: {e}")
+
+    @pyqtSlot(result=bool)
+    def RecoverTouchpad(self) -> bool:
+        """Forces unfreezing, power restore, and re-enabling of Touchpad after lid close/open or sleep."""
+        print("[InputService] Executing Touchpad Lid/Wake Recovery...")
+        try:
+            # 1. Ensure runtime power management is 'on' for all I2C and input devices
+            for p in glob.glob("/sys/bus/i2c/devices/*/power/control"):
+                try:
+                    with open(p, "w") as f:
+                        f.write("on")
+                except Exception:
+                    pass
+
+            for p in glob.glob("/sys/devices/platform/AMDI0010*/*/power/control"):
+                try:
+                    with open(p, "w") as f:
+                        f.write("on")
+                except Exception:
+                    pass
+
+            # 2. Re-enable all Touchpad input devices in KWin Wayland over D-Bus
+            try:
+                out = subprocess.run(["busctl", "--user", "tree", "org.kde.KWin"], capture_output=True, text=True, timeout=2)
+                for line in out.stdout.splitlines():
+                    if "/org/kde/KWin/InputDevice/event" in line:
+                        obj_path = line.strip().split()[-1]
+                        subprocess.run(
+                            ["busctl", "--user", "set-property", "org.kde.KWin", obj_path, "org.kde.KWin.InputDevice", "enabled", "b", "true"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1
+                        )
+                        subprocess.run(
+                            ["busctl", "--user", "set-property", "org.kde.KWin", obj_path, "org.kde.KWin.InputDevice", "tapToClick", "b", "true"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1
+                        )
+            except Exception as e:
+                print(f"[InputService] KWin D-Bus enable error: {e}")
+
+            # 3. Resync settings to KWin
+            self._sync_to_system()
+            return True
+        except Exception as e:
+            print(f"[InputService] RecoverTouchpad error: {e}")
+            return False
 
     @pyqtSlot(result=str)
     def GetGestureConfig(self) -> str:
@@ -188,11 +233,54 @@ class InputService(QObject):
         return json.dumps(actions)
 
 
+class LidWatcher(QObject):
+    """Monitors systemd-logind LidClosed and PrepareForSleep signals to auto-recover Touchpad."""
+    def __init__(self, input_service: InputService):
+        super().__init__()
+        self.service = input_service
+        self.last_lid_closed = False
+
+        from PyQt6.QtCore import QTimer
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._check_lid_state)
+        self.timer.start(2000)
+
+    @pyqtSlot(bool)
+    def onPrepareForSleep(self, sleeping: bool):
+        if not sleeping:
+            print("[LidWatcher] System resume/wake detected! Recovering touchpad...")
+            self.service.RecoverTouchpad()
+
+    def _check_lid_state(self):
+        try:
+            r = subprocess.run(
+                ["busctl", "get-property", "org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", "LidClosed"],
+                capture_output=True, text=True, timeout=1
+            )
+            is_closed = "true" in r.stdout.lower()
+            if self.last_lid_closed and not is_closed:
+                print("[LidWatcher] Lid opened detected! Recovering touchpad...")
+                self.service.RecoverTouchpad()
+            self.last_lid_closed = is_closed
+        except Exception:
+            pass
+
+
 def main():
     app = QCoreApplication(sys.argv)
     bus = QDBusConnection.sessionBus()
 
     service = InputService()
+    lid_watcher = LidWatcher(service)
+
+    # Listen to System Sleep/Wake signal
+    system_bus = QDBusConnection.systemBus()
+    system_bus.connect(
+        "org.freedesktop.login1", "/org/freedesktop/login1",
+        "org.freedesktop.login1.Manager", "PrepareForSleep",
+        lid_watcher.onPrepareForSleep
+    )
+
     if not bus.registerService("org.theonix.Input"):
         print("[InputService] Failed to register D-Bus service 'org.theonix.Input'")
         sys.exit(1)
@@ -201,7 +289,7 @@ def main():
         print("[InputService] Failed to register D-Bus object at '/org/theonix/Input'")
         sys.exit(1)
 
-    print("[InputService] Theonix Input Service active on org.theonix.Input [/org/theonix/Input]")
+    print("[InputService] Theonix Input Service active on org.theonix.Input [/org/theonix/Input] with Lid Recovery")
     sys.exit(app.exec())
 
 

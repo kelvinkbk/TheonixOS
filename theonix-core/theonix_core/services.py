@@ -943,6 +943,21 @@ class InputClient:
             pass
         return False
 
+    @staticmethod
+    def recover_touchpad() -> bool:
+        try:
+            from PyQt6.QtDBus import QDBusConnection, QDBusMessage, QDBus
+            bus = QDBusConnection.sessionBus()
+            msg = QDBusMessage.createMethodCall(
+                "org.theonix.Input", "/org/theonix/Input", "", "RecoverTouchpad"
+            )
+            reply = bus.call(msg, QDBus.CallMode.Block, 2000)
+            if reply.type() == QDBusMessage.MessageType.ReplyMessage and reply.arguments():
+                return bool(reply.arguments()[0])
+        except Exception:
+            pass
+        return False
+
 
 class ControlCenterClient:
     """High-level client for the decoupled org.theonix.ControlCenter D-Bus service."""
