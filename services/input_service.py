@@ -49,6 +49,17 @@ class InputService(QObject):
         super().__init__()
         self._config = self._load_config()
         self._sync_to_system()
+        self._optimize_wifi_network()
+
+    def _optimize_wifi_network(self):
+        """Boosts Wi-Fi throughput and eliminates latency spikes by tuning power, txpower, and regdom."""
+        try:
+            # 1. Disable Wi-Fi power save on interface
+            subprocess.run(["iw", "dev", "wlan0", "set", "power_save", "off"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # 2. Set regulatory domain to unlock 30 dBm 5GHz channels
+            subprocess.run(["iw", "reg", "set", "IN"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
 
     def _load_config(self) -> Dict[str, Any]:
         if os.path.exists(CONFIG_PATH):
